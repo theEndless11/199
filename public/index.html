@@ -84,65 +84,67 @@
         <input type="text" id="message-input" placeholder="Type a message...">
         <button onclick="sendMessage()">Send</button>
     </div>
-    <script>
-        // Show the login form
-        function showLogin() {
-            document.getElementById('login-form').style.display = 'block';
-            document.getElementById('signup-form').style.display = 'none';
-        }
+   <script>
+    // Show the login form
+    function showLogin() {
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('signup-form').style.display = 'none';
+    }
 
-        // Show the signup form
-        function showSignup() {
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('signup-form').style.display = 'block';
-        }
+    // Show the signup form
+    function showSignup() {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('signup-form').style.display = 'block';
+    }
 
-        // Handle login
-        document.getElementById('login').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
+    // Handle login
+    document.getElementById('login').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
 
-            const response = await fetch('/api/auth', {  // Updated path
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert('Login successful!');
-                const userId = data.userId;
-                localStorage.setItem('userId', userId);
-                window.location.href = `/users.html?userId=${userId}`;
-            } else {
-                alert(data.message);
-            }
+        const response = await fetch('/api/auth', {  // Same API for login/signup
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password, action: 'login' })  // Added 'action' to differentiate
         });
 
-        // Handle signup
-        document.getElementById('signup').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const username = document.getElementById('signup-username').value;
-            const password = document.getElementById('signup-password').value;
+        const data = await response.json();
 
-            const response = await fetch('/api/auth', {  // Updated path
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password })
-            });
+        if (response.ok) {
+            alert('Login successful!');
+            const userId = data.userId;
+            localStorage.setItem('userId', userId);
+            window.location.href = `/users.html?userId=${userId}`;
+        } else {
+            alert(data.message);
+        }
+    });
 
-            const data = await response.json();
-            if (response.ok) {
-                alert('Signup successful! Please login.');
-                showLogin();
-            } else {
-                alert(data.message);
-            }
+    // Handle signup
+    document.getElementById('signup').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('signup-username').value;
+        const password = document.getElementById('signup-password').value;
+
+        const response = await fetch('/api/auth', {  // Same API for login/signup
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password, action: 'signup' })  // Added 'action' to differentiate
         });
-    </script>
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('Signup successful! Please login.');
+            showLogin();
+        } else {
+            alert(data.message);
+        }
+    });
+</script>
+

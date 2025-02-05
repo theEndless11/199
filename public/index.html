@@ -116,7 +116,13 @@ document.getElementById('login').addEventListener('submit', async function(e) {
             })
         });
 
-        const data = await response.json();
+        // Check if response is valid JSON
+        let data;
+        try {
+            data = await response.json(); // Parse JSON response
+        } catch (err) {
+            throw new Error('Invalid JSON response from server');
+        }
 
         if (response.ok) {
             alert('Login successful!');
@@ -131,6 +137,7 @@ document.getElementById('login').addEventListener('submit', async function(e) {
         alert('An error occurred during the request. Please try again later.');
     }
 });
+
 
 // Handle signup
 document.getElementById('signup').addEventListener('submit', async function(e) {

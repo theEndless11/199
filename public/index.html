@@ -98,6 +98,7 @@ function showSignup() {
 }
 
 // Handle login
+// Handle login
 document.getElementById('login').addEventListener('submit', async function(e) {
     e.preventDefault();
     const username = document.getElementById('login-username').value;
@@ -116,17 +117,23 @@ document.getElementById('login').addEventListener('submit', async function(e) {
             })
         });
 
-        // Check if response is valid JSON
-        if (response.ok) {
-            const data = await response.json(); // Parse JSON response
-            alert('Login successful!');
-            const userId = data.userId;
-            localStorage.setItem('userId', userId);
-            window.location.href = `/users.html?userId=${userId}`;
-        } else {
-            // If the response is not OK, alert the error message
-            const data = await response.json();
-            alert(data.message);
+        // Log the response text to debug it
+        const responseText = await response.text(); // Get the raw response text
+
+        try {
+            const data = JSON.parse(responseText); // Try parsing as JSON
+            if (response.ok) {
+                alert('Login successful!');
+                const userId = data.userId;
+                localStorage.setItem('userId', userId);
+                window.location.href = `/users.html?userId=${userId}`;
+            } else {
+                alert(data.message); // If response is not OK, alert the error message
+            }
+        } catch (jsonError) {
+            // If parsing fails, log the error and show the raw response
+            console.error('Error parsing JSON:', jsonError);
+            alert('Server error: ' + responseText); // Show the raw server response
         }
     } catch (error) {
         console.error('Error during fetch:', error);
@@ -153,17 +160,24 @@ document.getElementById('signup').addEventListener('submit', async function(e) {
             })
         });
 
-        if (response.ok) {
-            const data = await response.json();  // Get the data from the server response
-            alert('Signup successful! Please login.');
-            showLogin();
-        } else {
-            const data = await response.json();  // Get error message from server
-            alert(data.message);
+        const responseText = await response.text(); // Get the raw response text
+
+        try {
+            const data = JSON.parse(responseText);  // Try parsing as JSON
+            if (response.ok) {
+                alert('Signup successful! Please login.');
+                showLogin();
+            } else {
+                alert(data.message);  // Show error message from server
+            }
+        } catch (jsonError) {
+            console.error('Error parsing JSON:', jsonError);
+            alert('Server error: ' + responseText); // Show the raw server response
         }
     } catch (error) {
         console.error('Error during fetch:', error);
         alert('An error occurred during the request. Please try again later.');
     }
 });
+
 </script>

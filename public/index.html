@@ -117,25 +117,23 @@ document.getElementById('login').addEventListener('submit', async function(e) {
         });
 
         const responseText = await response.text(); // Get raw response text
-        try {
-            const data = JSON.parse(responseText); // Try parsing JSON
-            if (response.ok) {
-                alert('Login successful!');
-                const userId = data.userId;
-                localStorage.setItem('userId', userId);
-                window.location.href = `/users.html?userId=${userId}`;
-            } else {
-                alert(data.message); // Show error message
-            }
-        } catch (jsonError) {
-            console.error('Error parsing JSON:', jsonError);
-            alert('Server error: ' + responseText); // Show raw response if JSON parsing fails
+        const data = JSON.parse(responseText); // Try parsing JSON
+
+        if (response.ok) {
+            alert('Login successful!');
+            const userId = data.userId;
+            localStorage.setItem('userId', userId);
+            window.location.href = `/users.html?userId=${userId}`;
+        } else {
+            // Handling server response failure
+            alert(data.message || 'An error occurred during login.');
         }
     } catch (error) {
         console.error('Error during fetch:', error);
         alert('An error occurred during the request. Please try again later.');
     }
 });
+
 
 // Handle signup
 document.getElementById('signup').addEventListener('submit', async function(e) {

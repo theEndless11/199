@@ -147,19 +147,25 @@
 // Get the logged-in user's ID from the query parameter or localStorage
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId') || localStorage.getItem('userId'); // Fallback to localStorage if userId not in URL
+console.log('Parsed userId from URL or localStorage:', userId); // Log the userId for debugging
 
 let loggedInUser = {};
 
 async function fetchLoggedInUser() {
     try {
+        console.log(`Fetching logged-in user with ID: ${userId}`); // Log before fetching user
+        
         const response = await fetch(`/api/users/${userId}`); // Fetch specific user using /api/users/{userId}
+        
+        console.log('Response from fetchLoggedInUser:', response); // Log the response
         
         if (!response.ok) {
             throw new Error(`Error: ${response.status} - ${response.statusText}`);
         }
 
         const data = await response.json();
-
+        console.log('Data fetched for logged-in user:', data); // Log the fetched data
+        
         if (data.user) {
             loggedInUser = data.user;
             displayLoggedInUser();
@@ -178,14 +184,19 @@ async function fetchLoggedInUser() {
 function displayLoggedInUser() {
     const loggedInUserContainer = document.getElementById('logged-in-user');
     loggedInUserContainer.textContent = `Logged in as: ${loggedInUser.username}`;
+    console.log(`Displaying logged-in user: ${loggedInUser.username}`); // Log to confirm display
 }
 
 // Fetch all users excluding the logged-in user
 let allUsers = [];
 
 async function fetchUsers() {
+    console.log('Fetching all users excluding the logged-in user...'); // Log before fetching users
     const response = await fetch(`/api/users?userId=${userId}`); // Fetch all users excluding the logged-in user
+    console.log('Response from fetchUsers:', response); // Log the response
+
     const data = await response.json();
+    console.log('Fetched users data:', data); // Log the fetched users data
 
     if (response.ok) {
         allUsers = data.users; // Save the original users list for search functionality
@@ -216,6 +227,8 @@ function displayUsers(users) {
         userElement.appendChild(addButton);
         usersContainer.appendChild(userElement);
     });
+
+    console.log('Displayed users:', users); // Log the displayed users
 }
 
 // Add a user to the friends section
@@ -226,6 +239,7 @@ function addFriend(user) {
     friendElement.textContent = user.username;
     
     friendContainer.appendChild(friendElement);
+    console.log(`Added friend: ${user.username}`); // Log added friend
     
     // Optionally, you can send a POST request to save the friend in the database
 }
@@ -233,7 +247,10 @@ function addFriend(user) {
 // Search users by name
 function searchUsers() {
     const searchQuery = document.getElementById('search').value.toLowerCase();
+    console.log(`Searching for users with query: ${searchQuery}`); // Log search query
+    
     const filteredUsers = allUsers.filter(user => user.username.toLowerCase().includes(searchQuery));
+    console.log('Filtered users based on search:', filteredUsers); // Log filtered users
     displayUsers(filteredUsers);
 }
 

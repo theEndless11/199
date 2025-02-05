@@ -222,7 +222,7 @@ fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
         });
 
         // Optionally, store the message in the database here after sending it
-      fetch('/api/messages', {
+    fetch('/api/messages', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'

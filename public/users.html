@@ -11,39 +11,41 @@
 
     <!-- Users section -->
     <div id="users-container"></div>
-
- <script>
+<script>
 // Get the logged-in user's ID from the query parameter or localStorage
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId') || localStorage.getItem('userId');  // Fallback to localStorage if userId is not in URL
 
-let loggedInUser = {};
+let loggedInUser = {};  // Store the logged-in user data
+let allUsers = [];  // Store all users
 
-async function fetchLoggedInUser() {
+async function fetchUsers() {
     try {
-        console.log(`Fetching logged-in user with ID: ${userId}`); // Log before fetching user
-        
-        const response = await fetch(`/api/users/${userId}`); // Fetch the logged-in user
-        console.log('Response from fetchLoggedInUser:', response); // Log the response
-        
+        console.log(`Fetching users for userId: ${userId}`);
+
+        const response = await fetch(`/api/users?userId=${userId}`);  // Fetch users and logged-in user
+        console.log('Response from fetchUsers:', response);
+
         if (!response.ok) {
             throw new Error(`Error: ${response.status} - ${response.statusText}`);
         }
 
         const data = await response.json();
-        console.log('Data fetched for logged-in user:', data); // Log the fetched data
-        
-        if (data.user) {
-            loggedInUser = data.user;
-            displayLoggedInUser();
-            fetchUsers(); // Fetch other users after displaying the logged-in user's info
+        console.log('Fetched users data:', data);
+
+        if (data.loggedInUser && data.allUsers) {
+            loggedInUser = data.loggedInUser;  // Set logged-in user data
+            allUsers = data.allUsers;  // Set all users excluding logged-in user
+
+            displayLoggedInUser();  // Display logged-in user
+            displayUsers();  // Display all users
         } else {
-            console.error('User data is missing:', data);
-            alert('User data not found');
+            console.error('Missing user data:', data);
+            alert('Error fetching users data.');
         }
     } catch (error) {
-        console.error('Error fetching logged-in user:', error);
-        alert('Error fetching logged-in user. Please try again later.');
+        console.error('Error fetching users:', error);
+        alert('An error occurred while fetching users. Please try again later.');
     }
 }
 
@@ -58,40 +60,12 @@ function displayLoggedInUser() {
     }
 }
 
-// Fetch all users excluding the logged-in user
-let allUsers = [];
-
-async function fetchUsers() {
-    try {
-        const response = await fetch(`/api/users?userId=${userId}`); // Fetch all users excluding the logged-in user
-        console.log('Response from fetchUsers:', response); // Log the response
-
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log('Fetched users data:', data); // Log the fetched users data
-
-        if (data.users) {
-            allUsers = data.users; // Save the original users list for search functionality
-            displayUsers(data.users);
-        } else {
-            console.error('User data is missing:', data);
-            alert('User data not found');
-        }
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        alert('Error fetching users. Please try again later.');
-    }
-}
-
-// Display users in the Users section
-function displayUsers(users) {
+// Display all users (excluding the logged-in user)
+function displayUsers() {
     const usersContainer = document.getElementById('users-container');
-    usersContainer.innerHTML = ''; // Clear previous data
+    usersContainer.innerHTML = '';  // Clear previous data
 
-    users.forEach(user => {
+    allUsers.forEach(user => {
         const userElement = document.createElement('div');
         userElement.classList.add('user');
         userElement.textContent = user.username;
@@ -115,8 +89,8 @@ function addFriend(user) {
     friendContainer.appendChild(friendElement);
 }
 
-// Fetch logged-in user and all other users
-fetchLoggedInUser();
+// Fetch users data when the page loads
+fetchUsers();
 </script>
 
 

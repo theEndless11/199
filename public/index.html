@@ -84,73 +84,75 @@
         <input type="text" id="message-input" placeholder="Type a message...">
         <button onclick="sendMessage()">Send</button>
     </div>
-   <script>
-    // Show the login form
-    function showLogin() {
-        document.getElementById('login-form').style.display = 'block';
-        document.getElementById('signup-form').style.display = 'none';
-    }
+    <script>
+// Show the login form
+function showLogin() {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('signup-form').style.display = 'none';
+}
 
-    // Show the signup form
-    function showSignup() {
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('signup-form').style.display = 'block';
-    }
+// Show the signup form
+function showSignup() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('signup-form').style.display = 'block';
+}
 
-    // Handle login
-    document.getElementById('login').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const username = document.getElementById('login-username').value;
-        const password = document.getElementById('login-password').value;
+// Handle login
+document.getElementById('login').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
 
-   const response = await fetch('/api/auth', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    username, 
-    password, 
-    action: 'login'
-  })
-});
-      if (response.ok) {
-            alert('Login successful!');
-            const userId = data.userId;
-            localStorage.setItem('userId', userId);
-            window.location.href = `/users.html?userId=${userId}`;
-        } else {
-            alert(data.message);
-        }
+    const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            username,
+            password,
+            action: 'login',
+        })
     });
 
-    // Handle signup
-    document.getElementById('signup').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const username = document.getElementById('signup-username').value;
-        const password = document.getElementById('signup-password').value;
+    const data = await response.json();  // Get the data from the server response
 
-      const response = await fetch('/api/auth', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    username, 
-    password, 
-    action: 'signup'
-  })
+    if (response.ok) {
+        alert('Login successful!');
+        const userId = data.userId;  // Use data from the response
+        localStorage.setItem('userId', userId);
+        window.location.href = `/users.html?userId=${userId}`;
+    } else {
+        alert(data.message);
+    }
 });
 
+// Handle signup
+document.getElementById('signup').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('signup-username').value;
+    const password = document.getElementById('signup-password').value;
 
-        const data = await response.json();
-
-        if (response.ok) {
-            alert('Signup successful! Please login.');
-            showLogin();
-        } else {
-            alert(data.message);
-        }
+    const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            username,
+            password,
+            action: 'signup',
+        })
     });
+
+    const data = await response.json();  // Get the data from the server response
+
+    if (response.ok) {
+        alert('Signup successful! Please login.');
+        showLogin();
+    } else {
+        alert(data.message);
+    }
+});
+
 </script>
-

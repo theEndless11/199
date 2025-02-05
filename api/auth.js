@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { pool } = require('../utils/db'); // Now using promise-enabled pool
+const pool = require('../utils/db'); // This must be promisePool from db.js
 
 module.exports = async (req, res) => {
   const { username, password, action } = req.body;

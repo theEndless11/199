@@ -1,5 +1,5 @@
-// /utils/db.js
-const mysql = require('mysql2/promise'); // <-- Make sure you're using the promise-based version here
+const mysql = require('mysql2/promise'); // <-- Ensure we're importing from promise-based mysql2
+
 require('dotenv').config(); // To load environment variables from .env
 
 // Create a connection pool using environment variables
@@ -13,5 +13,5 @@ const pool = mysql.createPool({
   queueLimit: 0 // Unlimited queue length
 });
 
-// Export the pool so it can be used by other files
-module.exports = pool;  // No need for .promise() since `mysql2/promise` was already used
+// Export the pool (no need for .promise() since mysql2/promise already returns a promise-enabled pool)
+module.exports = pool;  

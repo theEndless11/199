@@ -1,4 +1,5 @@
-const mysql = require('mysql2');
+// /utils/db.js
+const mysql = require('mysql2/promise'); // <-- Make sure you're using the promise-based version here
 require('dotenv').config(); // To load environment variables from .env
 
 // Create a connection pool using environment variables
@@ -13,4 +14,4 @@ const pool = mysql.createPool({
 });
 
 // Export the pool so it can be used by other files
-module.exports = pool.promise(); // We use .promise() to enable async/await
+module.exports = pool;  // No need for .promise() since `mysql2/promise` was already used

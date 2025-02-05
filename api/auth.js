@@ -32,26 +32,28 @@ router.post('/signup', async (req, res) => {
 });
 
 // Login route
+// Login route with enhanced logging
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
+    console.log('Login attempt for username:', username);
+
     const [results] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
 
     if (results.length === 0) {
+      console.log('Username not found');
       return res.status(401).json({ message: 'Incorrect username or password' });
     }
 
     const user = results[0];
-
-    // Compare password with hashed password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
+      console.log('Password mismatch');
       return res.status(401).json({ message: 'Incorrect username or password' });
     }
 
-    // Create JWT token
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
 
     res.status(200).json({ message: 'Login successful', token });

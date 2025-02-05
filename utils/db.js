@@ -1,4 +1,4 @@
-const mysql = require('mysql2'); // No need for 'promise' directly here
+const mysql = require('mysql2'); // No need for 'mysql2/promise' separately
 
 require('dotenv').config(); // To load environment variables from .env
 
@@ -14,7 +14,7 @@ const pool = mysql.createPool({
 });
 
 // Explicitly call .promise() to enable promise-based queries
-const promisePool = pool.promise();
+const promisePool = pool.promise(); // Here, ensure this line is included
 
-// Export the pool so it can be used by other files
-module.exports = promisePool; // Export the promise-enabled pool
+// Export the promise-enabled pool
+module.exports = promisePool; // Export promisePool

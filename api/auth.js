@@ -1,9 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { pool } = require('../utils/db'); // Assuming you have your DB pool setup in utils/db.js
+const { pool } = require('../utils/db'); // Now using the promise version of mysql2
 
 module.exports = async (req, res) => {
-  const { username, password, action } = req.body; // Get the action type (login/signup)
+  const { username, password, action } = req.body;
 
   // Check if required fields are provided
   if (!username || !password || !action) {

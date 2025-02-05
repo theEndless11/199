@@ -1,11 +1,16 @@
-// /utils/db.js
-const mysql = require('mysql2/promise');
+const mysql = require('mysql2');
+require('dotenv').config(); // To load environment variables from .env
 
+// Create a connection pool using environment variables
 const pool = mysql.createPool({
-  host: 'srv787.hstgr.io', // Replace with your DB host
-  user: 'u208245805_Crypto21', // Replace with your DB username
-  password: 'crypto21@', // Replace with your DB password
-  database: 'u208245805_Crypto21', // Replace with your database name
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10, // Number of connections allowed in the pool
+  queueLimit: 0 // Unlimited queue length
 });
 
-module.exports = { pool };
+// Export the pool so it can be used by other files
+module.exports = pool.promise(); // We use .promise() to enable async/await

@@ -103,13 +103,17 @@
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-password').value;
 
-        const response = await fetch('/api/auth', {  // Same API for login/signup
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password, action: 'login' })  // Added 'action' to differentiate
-        });
+   const response = await fetch('/api/auth', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    username, 
+    password, 
+    action: 'login'
+  })
+});
 
         const data = await response.json();
 
@@ -129,13 +133,18 @@
         const username = document.getElementById('signup-username').value;
         const password = document.getElementById('signup-password').value;
 
-        const response = await fetch('/api/auth', {  // Same API for login/signup
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password, action: 'signup' })  // Added 'action' to differentiate
-        });
+      const response = await fetch('/api/auth', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    username, 
+    password, 
+    action: 'signup'
+  })
+});
+
 
         const data = await response.json();
 

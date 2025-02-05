@@ -3,78 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Users Page</title>
+    <title>Users List</title>
 </head>
 <body>
-    <!-- Logged-in user section -->
-    <div id="logged-in-user">Loading logged-in user...</div>
-
-    <!-- Users section -->
-    <div id="users-container"></div>
+        <!-- Main container -->
+        <div class="container">
+        
+            <!-- Header -->
+            <header>
+                <h1>Users</h1>
+                <input type="text" id="search" class="search-box" placeholder="Search users..." oninput="searchUsers()" />
+            </header>
+    
+            <!-- Users Section -->
+            <section id="users-section">
+                <h2>Users</h2>
+                <div id="users-container" class="section-content"></div>
+            </section>
+    
+            <!-- Friends Section -->
+            <section id="friends-section">
+                <h2>Friends</h2>
+                <div id="friends-container" class="section-content"></div>
+            </section>
+    
+            <!-- X Section (Empty for now, to be modified later) -->
+            <section id="x-section">
+                <h2>X Section</h2>
+                <div id="x-container" class="section-content"></div>
+            </section>
+            
+        </div>
+    
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        
+        /* Main container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin: 0;
+        }
+        
+        .search-box {
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 200px;
+        }
+        
+        /* Section styling */
+        section {
+            margin-bottom: 30px;
+        }
+        
+        section h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        /* Section content container */
+        .section-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .user, .friend {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .user:hover, .friend:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user {
+            background-color: #e6f7ff;
+        }
+        
+        .friend {
+            background-color: #e8f5e9;
+        }
+        
+        button.add-friend {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+    
+</style>
 <script>
-// Get the logged-in user's ID from the query parameter or localStorage
+ // Get the logged-in user's ID from the query parameter
 const urlParams = new URLSearchParams(window.location.search);
-const userId = urlParams.get('userId') || localStorage.getItem('userId');  // Fallback to localStorage if userId is not in URL
+const userId = urlParams.get('userId');
 
-let loggedInUser = {};  // Store the logged-in user data
-let allUsers = [];  // Store all users
+// Search users
+let allUsers = [];
 
 async function fetchUsers() {
-    try {
-        console.log(`Fetching users for userId: ${userId}`);
+    const response = await fetch(`/api/users?userId=${userId}`);
+    const data = await response.json();
 
-        const response = await fetch(`/api/users?userId=${userId}`);  // Fetch users and logged-in user
-        console.log('Response from fetchUsers:', response);
-
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log('Fetched users data:', data);
-
-        if (data.loggedInUser && data.allUsers) {
-            loggedInUser = data.loggedInUser;  // Set logged-in user data
-            allUsers = data.allUsers;  // Set all users excluding logged-in user
-
-            displayLoggedInUser();  // Display logged-in user
-            displayUsers();  // Display all users
-        } else {
-            console.error('Missing user data:', data);
-            alert('Error fetching users data.');
-        }
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        alert('An error occurred while fetching users. Please try again later.');
-    }
-}
-
-// Display the logged-in user's username
-function displayLoggedInUser() {
-    const loggedInUserContainer = document.getElementById('logged-in-user');
-    if (loggedInUserContainer) {
-        loggedInUserContainer.textContent = `Logged in as: ${loggedInUser.username}`;
-        console.log(`Displaying logged-in user: ${loggedInUser.username}`);
+    if (response.ok) {
+        allUsers = data.users; // Save the original users list for search functionality
+        displayUsers(data.users);
     } else {
-        console.error('Element with id "logged-in-user" not found');
+        console.error('Error fetching users:', data.message);
+        alert(data.message);
     }
 }
 
-// Display all users (excluding the logged-in user)
-function displayUsers() {
+// Display users in the Users section
+function displayUsers(users) {
     const usersContainer = document.getElementById('users-container');
-    usersContainer.innerHTML = '';  // Clear previous data
+    usersContainer.innerHTML = ''; // Clear previous data
 
-    allUsers.forEach(user => {
+    users.forEach(user => {
         const userElement = document.createElement('div');
         userElement.classList.add('user');
         userElement.textContent = user.username;
 
+        // Add "Add to Friends" icon
         const addButton = document.createElement('button');
         addButton.classList.add('add-friend');
         addButton.textContent = 'Add Friend';
         addButton.onclick = () => addFriend(user);
 
+        // Append user element with button to the container
         userElement.appendChild(addButton);
         usersContainer.appendChild(userElement);
     });
@@ -86,10 +175,19 @@ function addFriend(user) {
     const friendElement = document.createElement('div');
     friendElement.classList.add('friend');
     friendElement.textContent = user.username;
+    
     friendContainer.appendChild(friendElement);
+    
+    // Optionally, you can send a POST request to save the friend in the database
 }
 
-// Fetch users data when the page loads
+// Search users by name
+function searchUsers() {
+    const searchQuery = document.getElementById('search').value.toLowerCase();
+    const filteredUsers = allUsers.filter(user => user.username.toLowerCase().includes(searchQuery));
+    displayUsers(filteredUsers);
+}
+
 fetchUsers();
 </script>
 

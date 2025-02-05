@@ -1,19 +1,21 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { pool } = require('../utils/db'); // Now using the promise version of mysql2
+const { pool } = require('../utils/db'); // Should already be using the promise-based pool
 
 module.exports = async (req, res) => {
   const { username, password, action } = req.body;
 
-  // Check if required fields are provided
   if (!username || !password || !action) {
     return res.status(400).json({ message: 'Missing required fields: username, password, action' });
   }
 
   try {
+    let results;
+
     if (action === 'signup') {
       // Signup logic
-      const [results] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+      // Ensure we're using the promise-enabled query
+      [results] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
 
       if (results.length > 0) {
         return res.status(400).json({ message: 'Username already exists' });
@@ -29,7 +31,8 @@ module.exports = async (req, res) => {
 
     } else if (action === 'login') {
       // Login logic
-      const [results] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+      // Ensure we're using the promise-enabled query
+      [results] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
 
       if (results.length === 0) {
         return res.status(401).json({ message: 'Incorrect username or password' });
@@ -57,5 +60,4 @@ module.exports = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
 

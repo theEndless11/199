@@ -151,16 +151,26 @@ const userId = urlParams.get('userId') || localStorage.getItem('userId'); // Fal
 let loggedInUser = {};
 
 async function fetchLoggedInUser() {
-    const response = await fetch(`/api/users/${userId}`); // Fetch specific user using /api/users/{userId}
-    const data = await response.json();
+    try {
+        const response = await fetch(`/api/users/${userId}`); // Fetch specific user using /api/users/{userId}
+        
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
 
-    if (response.ok) {
-        loggedInUser = data.user;
-        displayLoggedInUser();
-        fetchUsers(); // Fetch other users after displaying the logged-in user's info
-    } else {
-        console.error('Error fetching logged-in user:', data.message);
-        alert(data.message);
+        const data = await response.json();
+
+        if (data.user) {
+            loggedInUser = data.user;
+            displayLoggedInUser();
+            fetchUsers(); // Fetch other users after displaying the logged-in user's info
+        } else {
+            console.error('User data is missing:', data);
+            alert('User data not found');
+        }
+    } catch (error) {
+        console.error('Error fetching logged-in user:', error);
+        alert('Error fetching logged-in user. Please try again later.');
     }
 }
 

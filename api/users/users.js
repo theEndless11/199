@@ -1,20 +1,22 @@
-// /api/users.js
+const express = require('express');
+const pool = require('../../utils/db'); // Adjust the path if necessary
+const router = express.Router();
 
-import { pool } from '../../utils/db';  // Assuming your DB connection is in utils/db.js
+// Get all users excluding the logged-in user
+router.get('/', (req, res) => {
+    const { userId } = req.query; // Get userId from query parameters
 
-export default async function handler(req, res) {
-  if (req.method === 'GET') {
-    try {
-      // Query all users from the database
-      const [rows] = await pool.query('SELECT id, username FROM users');
-      // Send the users as a response
-      res.status(200).json({ users: rows });
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      res.status(500).json({ message: 'Server error' });
+    if (!userId) {
+        return res.status(400).json({ message: 'User ID is required' });
     }
-  } else {
-    // If method is not GET, respond with 405 Method Not Allowed
-    res.status(405).json({ message: 'Method Not Allowed' });
-  }
-}
+
+    pool.query('SELECT id, username FROM users WHERE id != ?', [userId], (err, results) => {
+        if (err) {
+            return res.status(500).json({ message: 'Server error' });
+        }
+
+        res.status(200).json({ users: results });
+    });
+});
+
+module.exports = router;

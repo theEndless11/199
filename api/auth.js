@@ -1,4 +1,3 @@
-// /api/auth.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../utils/db'); // Assuming you have your DB pool setup in utils/db.js

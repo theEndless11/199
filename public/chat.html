@@ -69,136 +69,173 @@
         
         </script>
   
-    <div id="chatbox-container">
-        <div id="category-tabs">
-            <button class="tab-btn" onclick="changeCategory('support')">Support</button>
+<div id="chatbox-container">
+    <div id="category-tabs">
+        <button class="tab-btn" onclick="changeCategory('support')">Support</button>
+    </div>
+
+    <div id="chatbox">
+        <div id="messages-container">
+            <!-- Predefined questions and answers will be automatically added here -->
         </div>
-    
-        <div id="chatbox">
-            <div id="messages-container">
-                <!-- Predefined questions and answers will be automatically added here -->
-            </div>
-    
-            <div id="message-input">
-                <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
-                <button onclick="sendMessage()">Send</button>
-            </div>
+
+        <div id="message-input">
+            <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
+            <button onclick="sendMessage()">Send</button>
         </div>
     </div>
-    <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
+</div>
 
-  
-    <script>
-        // Get userId and chatWith from query parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('userId');
-        const chatWith = urlParams.get('chatWith');
-        
-        // Placeholder for the user's name (replace this with your logic to fetch the name)
-        const chatWithName = "User " + chatWith; // You could fetch this name based on chatWith
-        document.getElementById("chatWithName").textContent = chatWithName;
+<script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
 
-        // Ably API Key
-        const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
-        
-        // Initialize Ably connection
-        const ably = new Ably.Realtime(ablyApiKey);
-        
-        // Channel name based on userIds
-        const channelName = `chat-${userId}-${chatWith}`;
-        const channel = ably.channels.get(channelName);
+<script>
+    // Get userId and chatWith from query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+    const chatWith = urlParams.get('chatWith');
 
-        // Fetch and display previous messages
-        fetchMessages();
+    // Ably API Key
+    const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
 
-        // Listen for incoming messages
-        channel.subscribe('message', function(message) {
-            displayMessage(message.data.message, message.data.userId);
-        });
+    // Initialize Ably connection directly using API key
+    const ably = new Ably.Realtime(ablyApiKey);
 
-        // Fetch previous messages from the database
-        function fetchMessages() {
-            fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.messages) {
-                        data.messages.forEach(msg => {
-                            displayMessage(msg.message, msg.userId);
-                        });
-                    }
-                })
-                .catch(error => console.error('Error fetching messages:', error));
+    // Unique channel name based on the user IDs
+    const channelName = `chat-${userId}-${chatWith}`;
+    const channel = ably.channels.get(channelName);
+
+    // Fetch previous messages from the database
+    fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
+        .then(response => response.json())
+        .then(data => {
+            displayMessages(data.messages); // Display the fetched messages from the database
+        })
+        .catch(error => console.error('Error fetching messages:', error));
+
+    // Listen for incoming messages in real-time from Ably
+    channel.subscribe('message', function(message) {
+        // Dynamically update the UI with the received message
+        const messagesContainer = document.getElementById('messages-container');
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message');
+
+        // Create the message bubble
+        const messageBubble = document.createElement('div');
+        messageBubble.classList.add('msg-bubble');
+        messageBubble.textContent = message.data.message;  // Assuming message.data.message contains the text
+
+        // Check if the message is from the user or the other person
+        if (message.data.userId === userId) {
+            messageElement.classList.add('user-msg'); // This is the user's message
+        } else {
+            messageElement.classList.add('other-msg'); // This is the other user's message
         }
 
-        // Display a single message
-        function displayMessage(message, senderId) {
-            const messagesContainer = document.getElementById('messages-container');
+        // Append the message bubble to the message container
+        messageElement.appendChild(messageBubble);
+        messagesContainer.appendChild(messageElement);
+
+        // Scroll to the bottom to show the latest message
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+
+    // Quick Sync / Refresh: Periodically fetch the latest messages every 3 seconds
+    function quickSyncMessages() {
+        fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
+            .then(response => response.json())
+            .then(data => {
+                displayMessages(data.messages);
+            })
+            .catch(error => console.error('Error fetching messages for quick sync:', error));
+    }
+
+    // Sync every 3 seconds (adjustable time interval)
+    setInterval(quickSyncMessages, 3000);
+
+    // Function to display messages (to be used after fetching from the database)
+    function displayMessages(messages) {
+        const messagesContainer = document.getElementById('messages-container');
+        messagesContainer.innerHTML = ''; // Clear any existing messages
+
+        // Iterate over the messages and display them
+        messages.forEach(msg => {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message');
 
+            // Create the message bubble
             const messageBubble = document.createElement('div');
             messageBubble.classList.add('msg-bubble');
-            messageBubble.textContent = message;
+            messageBubble.textContent = msg.message; // Display message text
 
-            // Classify the message sender
-            if (senderId === parseInt(userId)) {
-                messageElement.classList.add('user-msg');
+            // Check who sent the message to align correctly
+            if (msg.userId === parseInt(userId)) {
+                messageElement.classList.add('user-msg'); // Apply class for right alignment
             } else {
-                messageElement.classList.add('other-msg');
+                messageElement.classList.add('other-msg'); // Apply class for left alignment
             }
 
+            // Append the message bubble to the message container
             messageElement.appendChild(messageBubble);
             messagesContainer.appendChild(messageElement);
+        });
 
-            // Scroll to the bottom to show the latest message
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        // Scroll to the bottom to show the latest message
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Send message function
+    window.sendMessage = function() {
+        const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
+        if (!message) {
+            alert('Please type a message');
+            return;
         }
 
-        // Send message to both Ably and the database
-        function sendMessage() {
-            const message = document.getElementById('user-message').value.trim();
-            if (!message) {
-                alert('Please type a message');
-                return;
+        // Publish message to Ably (this sends it to the channel and thus to the other user)
+        channel.publish('message', {
+            message: message,
+            userId: userId, // Include the userId so we can distinguish messages
+            chatWith: chatWith
+        }, function(err) {
+            if (err) {
+                console.error('Error sending message:', err);
+            } else {
+                console.log('Message sent');
+                document.getElementById('user-message').value = ''; // Clear input after sending
             }
+        });
 
-            // Publish to Ably
-            channel.publish('message', {
-                message: message,
+        // Optionally, store the message in the database here after sending it
+        fetch('/api/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
                 userId: userId,
-                chatWith: chatWith
-            }, function(err) {
-                if (err) {
-                    console.error('Error sending message:', err);
-                } else {
-                    console.log('Message sent');
-                    document.getElementById('user-message').value = ''; // Clear input field
-                }
-            });
+                chatWith: chatWith,
+                message: message
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message === 'Message sent') {
+                console.log('Message stored successfully');
+            }
+        })
+        .catch(err => {
+            console.error('Error storing message:', err);
+        });
+    };
 
-            // Store the message in the database
-            fetch('/api/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: userId,
-                    chatWith: chatWith,
-                    message: message
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message === 'Message sent') {
-                    console.log('Message stored successfully');
-                }
-            })
-            .catch(err => {
-                console.error('Error storing message:', err);
-            });
+    // Handle 'Enter' key press to send message
+    function handleKey(event) {
+        if (event.key === 'Enter') {
+            sendMessage(); // Call sendMessage function if Enter is pressed
         }
-    </script>
+    }
+</script>
+
 </body>    
 </html>
 <style>

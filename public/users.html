@@ -192,15 +192,17 @@ let allUsers = [];
 
 async function fetchUsers() {
     console.log('Fetching all users excluding the logged-in user...'); // Log before fetching users
-    const response = await fetch(`/api/users?userId=${userId}`); // Fetch all users excluding the logged-in user
+    
+    // Fetch all users, but handle the exclusion of the logged-in user on the frontend
+    const response = await fetch(`/api/users`); // Fetch all users
     console.log('Response from fetchUsers:', response); // Log the response
 
     const data = await response.json();
     console.log('Fetched users data:', data); // Log the fetched users data
 
     if (response.ok) {
-        allUsers = data.users; // Save the original users list for search functionality
-        displayUsers(data.users);
+        allUsers = data.users.filter(user => user.id !== parseInt(userId)); // Exclude the logged-in user
+        displayUsers(allUsers); // Display filtered users
     } else {
         console.error('Error fetching users:', data.message);
         alert(data.message);
@@ -217,7 +219,7 @@ function displayUsers(users) {
         userElement.classList.add('user');
         userElement.textContent = user.username;
 
-        // Add "Add to Friends" icon
+        // Add "Add to Friends" button
         const addButton = document.createElement('button');
         addButton.classList.add('add-friend');
         addButton.textContent = 'Add Friend';

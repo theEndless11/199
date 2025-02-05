@@ -144,14 +144,14 @@
         }
 </style>
 <script>
-// Get the logged-in user's ID from the query parameter
+// Get the logged-in user's ID from the query parameter or localStorage
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId') || localStorage.getItem('userId'); // Fallback to localStorage if userId not in URL
 
 let loggedInUser = {};
 
 async function fetchLoggedInUser() {
-    const response = await fetch(`/api/users/${userId}`);
+    const response = await fetch(`/api/users/${userId}`); // Fetch specific user using /api/users/{userId}
     const data = await response.json();
 
     if (response.ok) {
@@ -170,11 +170,11 @@ function displayLoggedInUser() {
     loggedInUserContainer.textContent = `Logged in as: ${loggedInUser.username}`;
 }
 
-// Fetch all users except the logged-in user
+// Fetch all users excluding the logged-in user
 let allUsers = [];
 
 async function fetchUsers() {
-    const response = await fetch(`/api/users?userId=${userId}`);
+    const response = await fetch(`/api/users?userId=${userId}`); // Fetch all users excluding the logged-in user
     const data = await response.json();
 
     if (response.ok) {

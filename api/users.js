@@ -3,9 +3,9 @@ const pool = require('../utils/db');
 
 const router = express.Router();
 
-// Get logged-in user by ID
+// Get a specific user by ID (for the logged-in user)
 router.get('/:userId', (req, res) => {
-  const { userId } = req.params;
+  const { userId } = req.params; // Get userId from the URL parameters
 
   pool.query('SELECT id, username FROM users WHERE id = ?', [userId], (err, results) => {
     if (err) {
@@ -20,9 +20,9 @@ router.get('/:userId', (req, res) => {
   });
 });
 
-// Get all users excluding the current user
+// Get all users excluding the current logged-in user
 router.get('/', (req, res) => {
-  const userId = req.query.userId;
+  const userId = req.query.userId; // Get the logged-in user's ID from the query parameter
 
   pool.query('SELECT id, username FROM users WHERE id != ?', [userId], (err, results) => {
     if (err) {

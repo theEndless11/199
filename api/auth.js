@@ -1,16 +1,15 @@
 const express = require('express');
-const bodyParser = require('body-parser'); 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../utils/db'); // Import the pool from db.js
 
-const router = express.Router();
+const router = express.Router(); // Create a router instance
 
 // Middleware to parse JSON request body
-app.use(express.json()); 
+router.use(express.json()); // Use the router to handle JSON parsing
 
 // Signup and Login route (combined)
-app.post('/', async (req, res) => {
+router.post('/', async (req, res) => {
   const { username, password, action } = req.body;  // Get the action type (login/signup)
 
   // Check if required fields are provided
@@ -67,4 +66,5 @@ app.post('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router; // Export the router
+

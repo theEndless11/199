@@ -66,6 +66,11 @@
                 addButton.textContent = 'Add Friend';
                 addButton.onclick = () => addFriend(user);
 
+                // Add click event to redirect to chat page when user is clicked
+                userElement.onclick = () => {
+                    window.location.href = `chat.html?userId=${user.id}`;
+                };
+
                 // Append user element with button to the container
                 userElement.appendChild(addButton);
                 usersContainer.appendChild(userElement);
@@ -87,3 +92,4 @@
         fetchUsers();
     </script>
 </body>
+

@@ -103,7 +103,7 @@
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
 
-            const response = await fetch('/api/login', {  // Updated path
+            const response = await fetch('/api/auth', {  // Updated path
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -129,7 +129,7 @@
             const username = document.getElementById('signup-username').value;
             const password = document.getElementById('signup-password').value;
 
-            const response = await fetch('/api/signup', {  // Updated path
+            const response = await fetch('/api/auth', {  // Updated path
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

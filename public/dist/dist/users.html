@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users List</title>
+</head>
+<body>
+    <h2>Users</h2>
+    <div id="users-container"></div>
+    <style>
+            /* General Styles */
+            body {
+                font-family: 'Arial', sans-serif;
+                background-color: #f4f7fc;
+                color: #333;
+                margin: 0;
+                padding: 0;
+            }
+    
+            h2 {
+                text-align: center;
+                color: #444;
+                font-size: 2rem;
+                margin: 30px 0;
+                text-transform: uppercase;
+            }
+    
+            #users-container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 20px;
+                padding: 20px;
+            }
+    
+            .user-card {
+                background-color: #fff;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                width: 250px;
+                padding: 20px;
+                text-align: center;
+                transition: all 0.3s ease;
+            }
+    
+            .user-card:hover {
+                transform: scale(1.05);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            }
+    
+            .user-card img {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                margin-bottom: 15px;
+            }
+    
+            .user-card h3 {
+                font-size: 1.2rem;
+                color: #333;
+                margin-bottom: 5px;
+            }
+    
+            .user-card p {
+                color: #777;
+                font-size: 0.9rem;
+            }
+    
+            /* Card button style */
+            .user-card .btn {
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                padding: 10px;
+                border-radius: 5px;
+                text-decoration: none;
+                font-weight: bold;
+                margin-top: 10px;
+                display: inline-block;
+                transition: background-color 0.3s;
+            }
+    
+            .user-card .btn:hover {
+                background-color: #45a049;
+            }
+    
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                #users-container {
+                    flex-direction: column;
+                    align-items: center;
+                }
+    
+                .user-card {
+                    width: 90%;
+                    max-width: 350px;
+                }
+            }
+    </style>
+
+    <script>
+        // Get the logged-in user's ID from the query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+
+        // Fetch the list of users except the logged-in user
+        async function fetchUsers() {
+            const response = await fetch(`/users?userId=${userId}`);
+            const data = await response.json();
+        
+            if (response.ok) {
+                const usersContainer = document.getElementById('users-container');
+                data.users.forEach(user => {
+                    const userElement = document.createElement('div');
+                    userElement.classList.add('user');
+                    userElement.textContent = user.username;
+        
+                    // Redirect to chat.html with the clicked user's ID
+                    userElement.addEventListener('click', function() {
+                        window.location.href = `/chat.html?userId=${userId}&chatWith=${user.id}`;
+                    });
+        
+                    usersContainer.appendChild(userElement);
+                });
+            } else {
+                console.error('Error fetching users:', data.message);
+                alert(data.message);
+            }
+        }
+        
+        fetchUsers();
+    </script>
+</body>
+</html>

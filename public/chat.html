@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- 3 Dots Button for Options -->
+        <div class="three-dots-menu">
+          <button class="dots-btn" onclick="toggleMenu()">︙ </button>
+          <div class="menu-options" id="menu-options">
+            <ul>
+              <li onclick="toggleDarkMode()">Dark Mode</li>
+              <li onclick="deleteChat()">Delete Chat</li>
+              <li onclick="shareChat()">Share</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <script>// Toggle the visibility of the dropdown menu
+        function toggleMenu() {
+          const menu = document.getElementById('menu-options');
+          menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+        }
+        
+        // Function for Dark Mode (you can add actual functionality here)
+        function toggleDarkMode() {
+          document.body.classList.toggle('dark-mode');
+          console.log('Dark Mode Toggled');
+          toggleMenu(); // Close menu after selecting an option
+        }
+        
+        // Function to delete chat (you can replace with actual delete functionality)
+        function deleteChat() {
+          if (confirm('Are you sure you want to delete the chat?')) {
+            console.log('Chat Deleted');
+          }
+          toggleMenu(); // Close menu after selecting an option
+        }
+        
+        // Function to share the chat (you can implement actual share functionality here)
+        function shareChat() {
+          const shareText = "Check out this chat!";
+          const shareUrl = window.location.href;
+        
+          if (navigator.share) {
+            // If the Web Share API is supported
+            navigator.share({
+              title: 'Chat Share',
+              text: shareText,
+              url: shareUrl
+            }).then(() => {
+              console.log('Successfully shared the chat');
+            }).catch(err => {
+              console.error('Error sharing:', err);
+            });
+          } else {
+            // Fallback if Web Share API is not supported
+            const shareLink = `mailto:?subject=Check out this chat&body=Here's a link to the chat: ${shareUrl}`;
+            window.location.href = shareLink;
+            console.log('Share failed, fallback using email.');
+          }
+          toggleMenu(); // Close menu after selecting an option
+        }
+        
+        </script>
+  
+    <div id="chatbox-container">
+        <div id="category-tabs">
+            <button class="tab-btn" onclick="changeCategory('support')">Support</button>
+        </div>
+    
+        <div id="chatbox">
+            <div id="messages-container">
+                <!-- Predefined questions and answers will be automatically added here -->
+            </div>
+    
+            <div id="message-input">
+                <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
+
+    <script>
+         // Get userId and chatWith from query parameters
+         const urlParams = new URLSearchParams(window.location.search);
+         const userId = urlParams.get('userId');
+         const chatWith = urlParams.get('chatWith');
+ 
+         // Ably API Key
+         const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
+ 
+         // Initialize Ably connection directly using API key
+         const ably = new Ably.Realtime(ablyApiKey);
+ 
+         // Unique channel name based on the user IDs
+         const channelName = `chat-${userId}-${chatWith}`; // Example: chat-1-2 for user 1 and 2
+         const channel = ably.channels.get(channelName);
+ 
+         // Fetch previous messages from the database
+         fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
+             .then(response => response.json())
+             .then(data => {
+                 displayMessages(data.messages); // Display the fetched messages from the database
+             })
+             .catch(error => console.error('Error fetching messages:', error));
+ 
+         // Listen for incoming messages in real-time from Ably
+         channel.subscribe('message', function(message) {
+             // Dynamically update the UI with the received message
+             const messagesContainer = document.getElementById('messages-container');
+             const messageElement = document.createElement('div');
+             messageElement.classList.add('message');
+             
+             // Create the message bubble
+             const messageBubble = document.createElement('div');
+             messageBubble.classList.add('msg-bubble');
+             messageBubble.textContent = message.data.message;  // Assuming message.data.message contains the text
+             
+             // Check if the message is from the user or the other person
+             if (message.data.userId === userId) {
+                 messageElement.classList.add('user-msg'); // This is the user's message
+             } else {
+                 messageElement.classList.add('other-msg'); // This is the other user's message
+             }
+ 
+             // Append the message bubble to the message container
+             messageElement.appendChild(messageBubble);
+             messagesContainer.appendChild(messageElement);
+ 
+             // Scroll to the bottom to show the latest message
+             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+         });
+ 
+         // Quick Sync / Refresh: Periodically fetch the latest messages every 3 seconds
+         function quickSyncMessages() {
+             fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
+                 .then(response => response.json())
+                 .then(data => {
+                     displayMessages(data.messages);
+                 })
+                 .catch(error => console.error('Error fetching messages for quick sync:', error));
+         }
+ 
+         // Sync every 3 seconds (adjustable time interval)
+         setInterval(quickSyncMessages, 3000);
+ 
+         // Function to display messages (to be used after fetching from the database)
+         function displayMessages(messages) {
+             const messagesContainer = document.getElementById('messages-container');
+             messagesContainer.innerHTML = ''; // Clear any existing messages
+ 
+             // Iterate over the messages and display them
+             messages.forEach(msg => {
+                 const messageElement = document.createElement('div');
+                 messageElement.classList.add('message');
+                 
+                 // Create the message bubble
+                 const messageBubble = document.createElement('div');
+                 messageBubble.classList.add('msg-bubble');
+                 messageBubble.textContent = msg.message; // Display message text
+ 
+                 // Check who sent the message to align correctly
+                 if (msg.userId === parseInt(userId)) {
+                     messageElement.classList.add('user-msg'); // Apply class for right alignment
+                 } else {
+                     messageElement.classList.add('other-msg'); // Apply class for left alignment
+                 }
+ 
+                 // Append the message bubble to the message container
+                 messageElement.appendChild(messageBubble);
+                 messagesContainer.appendChild(messageElement);
+             });
+ 
+             // Scroll to the bottom to show the latest message
+             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+         }
+ 
+         // Send message function
+         window.sendMessage = function() {
+             const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
+             if (!message) {
+                 alert('Please type a message');
+                 return;
+             }
+ 
+             // Publish message to Ably (this sends it to the channel and thus to the other user)
+             channel.publish('message', {
+                 message: message,
+                 userId: userId, // Include the userId so we can distinguish messages
+                 chatWith: chatWith
+             }, function(err) {
+                 if (err) {
+                     console.error('Error sending message:', err);
+                 } else {
+                     console.log('Message sent');
+                     document.getElementById('user-message').value = ''; // Clear input after sending
+                 }
+             });
+             
+             // Optionally, store the message in the database here after sending it
+             fetch('/api/messages', {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json'
+                 },
+                 body: JSON.stringify({
+                     userId: userId,
+                     chatWith: chatWith,
+                     message: message
+                 })
+             })
+             .then(response => response.json())
+             .then(data => {
+                 if (data.message === 'Message saved and sent') {
+                     console.log('Message stored successfully');
+                 }
+             })
+             .catch(err => {
+                 console.error('Error storing message:', err);
+             });
+         };
+    
+</script>
+</body>    
+</html>
+<style>
+    #chatbox-container {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        width: 350px;
+        display: flex;
+        flex-direction: column;
+        height: 500px;
+        font-family: 'Arial', sans-serif;
+    }
+    
+    #category-tabs {
+        display: flex;
+        justify-content: space-around;
+        background-color: #4CAF50;
+        padding: 10px;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .tab-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .tab-btn:hover {
+        text-decoration: underline;
+    }
+    
+    #chatbox {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 10px;
+        padding-top: 20px;
+        position: relative;
+    }
+    
+    #messages-container {
+        flex-grow: 1;
+        overflow-y: auto;
+        margin-bottom: 15px;
+        padding-right: 10px;
+        padding-left: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .message {
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        animation: fadeIn 0.5s ease-out;
+    }
+ /* Message bubbles for the user */
+.user-msg .msg-bubble {
+    background-color: #4CAF50;
+    color: white;
+    margin-left: auto;
+    border-top-left-radius: 0;
+    text-align: right;
+}
+
+/* Message bubbles for the other person */
+.other-msg .msg-bubble {
+    background-color: #e0e0e0;
+    color: #333;
+    margin-right: auto;
+    border-top-right-radius: 0;
+    text-align: left;
+}
+
+/* Common styles for message bubble */
+.msg-bubble {
+    padding: 10px;
+    border-radius: 20px;
+    max-width: 70%;
+    word-wrap: break-word;
+    font-size: 14px;
+    transition: all 0.3s ease-in-out;
+}
+
+    
+    #message-input {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+    }
+    
+    #user-message {
+        width: 80%;
+        padding: 8px;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+    }
+    
+    button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    button:hover {
+        background-color: #45a049;
+    }
+    
+    @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Media query for larger screens (e.g., tablets, desktops) */
+    @media screen and (min-width: 768px) {
+        #chatbox-container {
+            width: 500px; /* Increase chatbox width */
+            height: 600px; /* Increase height for larger screens */
+        }
+    
+        #message-input {
+            font-size: 16px; /* Increase font size for larger screens */
+        }
+    
+        .msg-bubble {
+            font-size: 16px; /* Increase message font size */
+        }
+    
+        #user-message {
+            font-size: 16px; /* Larger text input for better visibility */
+        }
+    
+        button {
+            font-size: 16px; /* Larger button text */
+        }
+    }
+    
+    /* Media query for extra large screens (e.g., desktops or wide monitors) */
+    @media screen and (min-width: 1024px) {
+        #chatbox-container {
+            width: 600px; /* Further increase chatbox width */
+            height: 650px; /* Adjust height for even larger screens */
+        }
+    
+        .msg-bubble {
+            max-width: 80%; /* Increase width of the message bubble */
+        }
+    
+        #message-input {
+            font-size: 18px; /* Larger input field text */
+        }
+    
+        button {
+            font-size: 18px; /* Larger button text */
+        }
+    }
+   /* Basic styling for the wrapper */
+/* Basic styling for the wrapper */
+.wrapper {
+    position: relative;
+  }
+  
+  /* The 3 dots button */
+  .three-dots-menu {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+  }
+  
+  /* Styling the 3 dots button */
+  .dots-btn {
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  /* Menu options dropdown (hidden by default) */
+  .menu-options {
+    display: none;
+    position: absolute;
+    top: 30px; /* Position below the 3 dots button */
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 150px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+  }
+  
+  /* Styling for each menu item */
+  .menu-options ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .menu-options ul li {
+    padding: 10px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .menu-options ul li:hover {
+    background-color: #f0f0f0;
+  }
+/* Dark Mode Styles */
+#chatbox-container .dark-mode {
+    background-color: #333;
+    color: black;
+  }
+    

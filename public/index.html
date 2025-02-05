@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up / Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .form-container {
+            width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .form-container h2 {
+            text-align: center;
+        }
+        .toggle-link {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .chatbox {
+            display: none;
+            width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .chatbox input {
+            width: calc(100% - 20px);
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-form" class="form-container">
+        <h2>Login</h2>
+        <form id="login">
+            <input type="text" id="login-username" placeholder="Username" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div class="toggle-link">
+            <p>Don't have an account? <a href="javascript:void(0)" onclick="showSignup()">Sign Up</a></p>
+        </div>
+    </div>
+
+    <div id="signup-form" class="form-container" style="display:none;">
+        <h2>Sign Up</h2>
+        <form id="signup">
+            <input type="text" id="signup-username" placeholder="Username" required>
+            <input type="password" id="signup-password" placeholder="Password" required>
+            <button type="submit">Sign Up</button>
+        </form>
+        <div class="toggle-link">
+            <p>Already have an account? <a href="javascript:void(0)" onclick="showLogin()">Login</a></p>
+        </div>
+    </div>
+
+    <div id="chatbox" style="display: none;">
+        <div id="messages-container"></div> <!-- Display messages here -->
+        <input type="text" id="message-input" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <script>
+        // Show the login form
+        function showLogin() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('signup-form').style.display = 'none';
+        }
+
+        // Show the signup form
+        function showSignup() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('signup-form').style.display = 'block';
+        }
+
+        // Handle login
+        document.getElementById('login').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            const response = await fetch('/api/login', {  // Updated path
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Login successful!');
+                const userId = data.userId;
+                localStorage.setItem('userId', userId);
+                window.location.href = `/users.html?userId=${userId}`;
+            } else {
+                alert(data.message);
+            }
+        });
+
+        // Handle signup
+        document.getElementById('signup').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('signup-username').value;
+            const password = document.getElementById('signup-password').value;
+
+            const response = await fetch('/api/signup', {  // Updated path
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert('Signup successful! Please login.');
+                showLogin();
+            } else {
+                alert(data.message);
+            }
+        });
+    </script>

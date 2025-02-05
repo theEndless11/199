@@ -84,6 +84,7 @@
         <input type="text" id="message-input" placeholder="Type a message...">
         <button onclick="sendMessage()">Send</button>
     </div>
+
 <script>
 // Show the login form
 function showLogin() {
@@ -123,9 +124,8 @@ document.getElementById('login').addEventListener('submit', async function(e) {
             alert('Login successful!');
             const userId = data.userId;
             localStorage.setItem('userId', userId);
-            window.location.href = `/users.html?userId=${userId}`;
+            window.location.href = `/users.html?userId=${userId}`;  // Redirect to users page with userId
         } else {
-            // Handling server response failure
             alert(data.message || 'An error occurred during login.');
         }
     } catch (error) {
@@ -133,7 +133,6 @@ document.getElementById('login').addEventListener('submit', async function(e) {
         alert('An error occurred during the request. Please try again later.');
     }
 });
-
 
 // Handle signup
 document.getElementById('signup').addEventListener('submit', async function(e) {
@@ -155,18 +154,13 @@ document.getElementById('signup').addEventListener('submit', async function(e) {
         });
 
         const responseText = await response.text(); // Get raw response text
+        const data = JSON.parse(responseText); // Try parsing JSON
 
-        try {
-            const data = JSON.parse(responseText);  // Try parsing JSON
-            if (response.ok) {
-                alert('Signup successful! Please login.');
-                showLogin();
-            } else {
-                alert(data.message);  // Show error message from server
-            }
-        } catch (jsonError) {
-            console.error('Error parsing JSON:', jsonError);
-            alert('Server error: ' + responseText); // Show the raw response
+        if (response.ok) {
+            alert('Signup successful! Please login.');
+            showLogin();
+        } else {
+            alert(data.message);  // Show error message from server
         }
     } catch (error) {
         console.error('Error during fetch:', error);

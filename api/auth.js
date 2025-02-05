@@ -5,14 +5,21 @@ const pool = require('../utils/db'); // Import the pool from db.js
 
 const router = express.Router();
 
+// Middleware to parse JSON request body
+router.use(express.json());  // Ensure JSON parsing is set up
+
 // Signup and Login route (combined)
 router.post('/', async (req, res) => {
   const { username, password, action } = req.body;  // Get the action type (login/signup)
 
-  console.log('Received request:', { username, action });  // Log request for debugging
+  // Check if required fields are provided
+  if (!username || !password || !action) {
+    return res.status(400).json({ message: 'Missing required fields: username, password, action' });
+  }
 
-  if (action === 'signup') {
-    try {
+  try {
+    if (action === 'signup') {
+      // Signup logic
       // Check if username already exists
       const [results] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
 
@@ -28,12 +35,8 @@ router.post('/', async (req, res) => {
 
       res.status(201).json({ message: 'Signup successful' });
 
-    } catch (err) {
-      console.error('Error during signup:', err);
-      res.status(500).json({ message: 'Server error', error: err.message });
-    }
-  } else if (action === 'login') {
-    try {
+    } else if (action === 'login') {
+      // Login logic
       const [results] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
 
       if (results.length === 0) {
@@ -41,22 +44,25 @@ router.post('/', async (req, res) => {
       }
 
       const user = results[0];
+
+      // Compare password with hashed password
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
         return res.status(401).json({ message: 'Incorrect username or password' });
       }
 
+      // Create JWT token
       const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
 
       res.status(200).json({ message: 'Login successful', userId: user.id, token });
 
-    } catch (err) {
-      console.error('Error during login:', err);
-      res.status(500).json({ message: 'Server error', error: err.message });
+    } else {
+      res.status(400).json({ message: 'Invalid action' });
     }
-  } else {
-    res.status(400).json({ message: 'Invalid action' });
+  } catch (err) {
+    console.error('Error during authentication:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

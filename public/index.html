@@ -84,7 +84,7 @@
         <input type="text" id="message-input" placeholder="Type a message...">
         <button onclick="sendMessage()">Send</button>
     </div>
-    <script>
+<script>
 // Show the login form
 function showLogin() {
     document.getElementById('login-form').style.display = 'block';
@@ -117,19 +117,15 @@ document.getElementById('login').addEventListener('submit', async function(e) {
         });
 
         // Check if response is valid JSON
-        let data;
-        try {
-            data = await response.json(); // Parse JSON response
-        } catch (err) {
-            throw new Error('Invalid JSON response from server');
-        }
-
         if (response.ok) {
+            const data = await response.json(); // Parse JSON response
             alert('Login successful!');
             const userId = data.userId;
             localStorage.setItem('userId', userId);
             window.location.href = `/users.html?userId=${userId}`;
         } else {
+            // If the response is not OK, alert the error message
+            const data = await response.json();
             alert(data.message);
         }
     } catch (error) {
@@ -138,33 +134,36 @@ document.getElementById('login').addEventListener('submit', async function(e) {
     }
 });
 
-
 // Handle signup
 document.getElementById('signup').addEventListener('submit', async function(e) {
     e.preventDefault();
     const username = document.getElementById('signup-username').value;
     const password = document.getElementById('signup-password').value;
 
-    const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            username,
-            password,
-            action: 'signup',
-        })
-    });
+    try {
+        const response = await fetch('/api/auth', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username,
+                password,
+                action: 'signup',
+            })
+        });
 
-    const data = await response.json();  // Get the data from the server response
-
-    if (response.ok) {
-        alert('Signup successful! Please login.');
-        showLogin();
-    } else {
-        alert(data.message);
+        if (response.ok) {
+            const data = await response.json();  // Get the data from the server response
+            alert('Signup successful! Please login.');
+            showLogin();
+        } else {
+            const data = await response.json();  // Get error message from server
+            alert(data.message);
+        }
+    } catch (error) {
+        console.error('Error during fetch:', error);
+        alert('An error occurred during the request. Please try again later.');
     }
 });
-
 </script>

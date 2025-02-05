@@ -3,262 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Users List</title>
+    <title>Users Page</title>
 </head>
 <body>
-        <!-- Main container -->
-        <div class="container">
-        
-            <!-- Header -->
-            <header>
-                <h1>Users</h1>
-                <input type="text" id="search" class="search-box" placeholder="Search users..." oninput="searchUsers()" />
-            </header>
-    
-            <!-- Users Section -->
-            <section id="users-section">
-                <h2>Users</h2>
-                <div id="users-container" class="section-content"></div>
-            </section>
-    
-            <!-- Friends Section -->
-            <section id="friends-section">
-                <h2>Friends</h2>
-                <div id="friends-container" class="section-content"></div>
-            </section>
-    
-            <!-- X Section (Empty for now, to be modified later) -->
-            <section id="x-section">
-                <h2>X Section</h2>
-                <div id="x-container" class="section-content"></div>
-            </section>
-            
-        </div>
-    
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f6;
-            color: #333;
-        }
-        
-        /* Main container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        /* Header */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        header h1 {
-            font-size: 2.5em;
-            margin: 0;
-        }
-        
-        .search-box {
-            padding: 10px;
-            font-size: 1em;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 200px;
-        }
-        
-        /* Section styling */
-        section {
-            margin-bottom: 30px;
-        }
-        
-        section h2 {
-            font-size: 2em;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        
-        /* Section content container */
-        .section-content {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .user, .friend {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .user:hover, .friend:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .user {
-            background-color: #e6f7ff;
-        }
-        
-        .friend {
-            background-color: #e8f5e9;
-        }
-        
-        button.add-friend {
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        button.add-friend:hover {
-            background-color: #45a049;
-        }
-        
-        /* Friends and X section styling */
-        #friends-section {
-            background-color: #f1f8e9;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        #x-section {
-            background-color: #ffebf0;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-</style>
-<script>
-// Get the logged-in user's ID from the query parameter or localStorage
-const urlParams = new URLSearchParams(window.location.search);
-const userId = urlParams.get('userId') || localStorage.getItem('userId'); // Fallback to localStorage if userId not in URL
-console.log('Parsed userId from URL or localStorage:', userId); // Log the userId for debugging
+    <!-- Logged-in user section -->
+    <div id="logged-in-user">Loading logged-in user...</div>
 
-let loggedInUser = {};
+    <!-- Users section -->
+    <div id="users-container"></div>
 
-async function fetchLoggedInUser() {
-    try {
-        console.log(`Fetching logged-in user with ID: ${userId}`); // Log before fetching user
-        
-        const response = await fetch(`/api/users/${userId}`); // Fetch specific user using /api/users/{userId}
-        
-        console.log('Response from fetchLoggedInUser:', response); // Log the response
-        
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    <script>
+        // Get the logged-in user's ID from the query parameter or localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId') || localStorage.getItem('userId'); // Fallback to localStorage if userId not in URL
+
+        let loggedInUser = {};
+
+        async function fetchLoggedInUser() {
+            try {
+                const response = await fetch(`/api/users/${userId}`); // Fetch specific user using /api/users/{userId}
+                const data = await response.json();
+
+                if (data.user) {
+                    loggedInUser = data.user;
+                    displayLoggedInUser();
+                    fetchUsers(); // Fetch other users after displaying the logged-in user's info
+                } else {
+                    console.error('User data is missing:', data);
+                    alert('User data not found');
+                }
+            } catch (error) {
+                console.error('Error fetching logged-in user:', error);
+                alert('Error fetching logged-in user. Please try again later.');
+            }
         }
 
-        const data = await response.json();
-        console.log('Data fetched for logged-in user:', data); // Log the fetched data
-        
-        if (data.user) {
-            loggedInUser = data.user;
-            displayLoggedInUser();
-            fetchUsers(); // Fetch other users after displaying the logged-in user's info
-        } else {
-            console.error('User data is missing:', data);
-            alert('User data not found');
+        // Display the logged-in user's username
+        function displayLoggedInUser() {
+            const loggedInUserContainer = document.getElementById('logged-in-user');
+            if (loggedInUserContainer) { // Ensure the element exists before updating it
+                loggedInUserContainer.textContent = `Logged in as: ${loggedInUser.username}`;
+                console.log(`Displaying logged-in user: ${loggedInUser.username}`);
+            } else {
+                console.error('Element with id "logged-in-user" not found');
+            }
         }
-    } catch (error) {
-        console.error('Error fetching logged-in user:', error);
-        alert('Error fetching logged-in user. Please try again later.');
-    }
-}
 
-// Display the logged-in user's username
-function displayLoggedInUser() {
-    const loggedInUserContainer = document.getElementById('logged-in-user');
-    loggedInUserContainer.textContent = `Logged in as: ${loggedInUser.username}`;
-    console.log(`Displaying logged-in user: ${loggedInUser.username}`); // Log to confirm display
-}
+        // Fetch all users excluding the logged-in user
+        async function fetchUsers() {
+            const response = await fetch(`/api/users?userId=${userId}`); // Fetch all users excluding the logged-in user
+            const data = await response.json();
+            if (response.ok) {
+                displayUsers(data.users);
+            } else {
+                console.error('Error fetching users:', data.message);
+                alert(data.message);
+            }
+        }
 
-// Fetch all users excluding the logged-in user
-let allUsers = [];
+        // Display users in the Users section
+        function displayUsers(users) {
+            const usersContainer = document.getElementById('users-container');
+            usersContainer.innerHTML = ''; // Clear previous data
 
-async function fetchUsers() {
-    console.log('Fetching all users excluding the logged-in user...'); // Log before fetching users
-    
-    // Fetch all users, but handle the exclusion of the logged-in user on the frontend
-    const response = await fetch(`/api/users`); // Fetch all users
-    console.log('Response from fetchUsers:', response); // Log the response
+            users.forEach(user => {
+                const userElement = document.createElement('div');
+                userElement.classList.add('user');
+                userElement.textContent = user.username;
 
-    const data = await response.json();
-    console.log('Fetched users data:', data); // Log the fetched users data
+                const addButton = document.createElement('button');
+                addButton.classList.add('add-friend');
+                addButton.textContent = 'Add Friend';
+                addButton.onclick = () => addFriend(user);
 
-    if (response.ok) {
-        allUsers = data.users.filter(user => user.id !== parseInt(userId)); // Exclude the logged-in user
-        displayUsers(allUsers); // Display filtered users
-    } else {
-        console.error('Error fetching users:', data.message);
-        alert(data.message);
-    }
-}
+                userElement.appendChild(addButton);
+                usersContainer.appendChild(userElement);
+            });
+        }
 
-// Display users in the Users section
-function displayUsers(users) {
-    const usersContainer = document.getElementById('users-container');
-    usersContainer.innerHTML = ''; // Clear previous data
+        // Add a user to the friends section
+        function addFriend(user) {
+            const friendContainer = document.getElementById('friends-container');
+            const friendElement = document.createElement('div');
+            friendElement.classList.add('friend');
+            friendElement.textContent = user.username;
+            friendContainer.appendChild(friendElement);
+        }
 
-    users.forEach(user => {
-        const userElement = document.createElement('div');
-        userElement.classList.add('user');
-        userElement.textContent = user.username;
-
-        // Add "Add to Friends" button
-        const addButton = document.createElement('button');
-        addButton.classList.add('add-friend');
-        addButton.textContent = 'Add Friend';
-        addButton.onclick = () => addFriend(user);
-
-        // Append user element with button to the container
-        userElement.appendChild(addButton);
-        usersContainer.appendChild(userElement);
-    });
-
-    console.log('Displayed users:', users); // Log the displayed users
-}
-
-// Add a user to the friends section
-function addFriend(user) {
-    const friendContainer = document.getElementById('friends-container');
-    const friendElement = document.createElement('div');
-    friendElement.classList.add('friend');
-    friendElement.textContent = user.username;
-    
-    friendContainer.appendChild(friendElement);
-    console.log(`Added friend: ${user.username}`); // Log added friend
-    
-    // Optionally, you can send a POST request to save the friend in the database
-}
-
-// Search users by name
-function searchUsers() {
-    const searchQuery = document.getElementById('search').value.toLowerCase();
-    console.log(`Searching for users with query: ${searchQuery}`); // Log search query
-    
-    const filteredUsers = allUsers.filter(user => user.username.toLowerCase().includes(searchQuery));
-    console.log('Filtered users based on search:', filteredUsers); // Log filtered users
-    displayUsers(filteredUsers);
-}
-
-// Fetch logged-in user and all other users
-fetchLoggedInUser();
-</script>
-
+        // Fetch logged-in user and all other users
+        fetchLoggedInUser();
+    </script>
 </body>
 </html>
+

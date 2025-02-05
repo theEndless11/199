@@ -114,10 +114,7 @@
     action: 'login'
   })
 });
-
-        const data = await response.json();
-
-        if (response.ok) {
+      if (response.ok) {
             alert('Login successful!');
             const userId = data.userId;
             localStorage.setItem('userId', userId);

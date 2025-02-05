@@ -111,20 +111,17 @@
     const channel = ably.channels.get(channelName);
 
     // Fetch previous messages from the database
-    fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch messages');
-            }
-            return response.json();
-        })
-        .then(data => {
-            displayMessages(data.messages); // Display the fetched messages from the database
-        })
-        .catch(error => {
-            console.error('Error fetching messages:', error);
-            alert('Error fetching messages, please try again later.');
-        });
+fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
+  .then(response => response.json())
+  .then(data => {
+    if (data.messages) {
+      displayMessages(data.messages);  // Display fetched messages
+    } else {
+      console.error('Error fetching messages:', data.error);
+    }
+  })
+  .catch(error => console.error('Error fetching messages:', error));
+
 
     // Listen for incoming messages in real-time from Ably
     channel.subscribe('message', function(message) {
@@ -225,33 +222,27 @@
         });
 
         // Optionally, store the message in the database here after sending it
-        fetch('/api/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: userId,
-                chatWith: chatWith,
-                message: message
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to send message');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.message === 'Message sent') {
-                console.log('Message stored successfully');
-            }
-        })
-        .catch(err => {
-            console.error('Error storing message:', err);
-            alert('Error sending message, please try again later.');
-        });
-    };
+      fetch('/api/messages', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    userId: userId,
+    chatWith: chatWith,
+    message: message
+  })
+})
+  .then(response => response.json())
+  .then(data => {
+    if (data.message === 'Message sent') {
+      console.log('Message sent');
+    } else {
+      console.error('Error sending message:', data.error);
+    }
+  })
+  .catch(error => console.error('Error sending message:', error));
+
 
     // Handle 'Enter' key press to send message
     function handleKey(event) {

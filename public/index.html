@@ -103,27 +103,32 @@ document.getElementById('login').addEventListener('submit', async function(e) {
     const username = document.getElementById('login-username').value;
     const password = document.getElementById('login-password').value;
 
-    const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            username,
-            password,
-            action: 'login',
-        })
-    });
+    try {
+        const response = await fetch('/api/auth', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username,
+                password,
+                action: 'login',
+            })
+        });
 
-    const data = await response.json();  // Get the data from the server response
+        const data = await response.json();
 
-    if (response.ok) {
-        alert('Login successful!');
-        const userId = data.userId;  // Use data from the response
-        localStorage.setItem('userId', userId);
-        window.location.href = `/users.html?userId=${userId}`;
-    } else {
-        alert(data.message);
+        if (response.ok) {
+            alert('Login successful!');
+            const userId = data.userId;
+            localStorage.setItem('userId', userId);
+            window.location.href = `/users.html?userId=${userId}`;
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        console.error('Error during fetch:', error);
+        alert('An error occurred during the request. Please try again later.');
     }
 });
 

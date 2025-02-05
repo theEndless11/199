@@ -25,7 +25,8 @@
         try {
             console.log(`Fetching logged-in user with ID: ${userId}`); // Log before fetching user
 
-            const response = await fetch(`/api/users/userid/${userId}`); // Correct API path
+          const response = await fetch(`/api/users/${userId}`);
+ // Correct API path
             console.log('Response from fetchLoggedInUser:', response); // Log the response
 
             if (!response.ok) {

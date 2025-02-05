@@ -28,68 +28,77 @@
         
     </div>
 
-    <script>
-        // Get the logged-in user's ID from the query parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('userId');
+<script>
+    // Get the logged-in user's ID from the query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
 
-        // Search users
-        let allUsers = [];
+    // Check if userId is available, if not, redirect to login page or handle it accordingly
+    if (!userId) {
+        alert('Missing userId parameter.');
+        window.location.href = '/login'; // Redirect to login or handle the error
+    }
 
-        async function fetchUsers() {
-            console.log(`Fetching users for userId: ${userId}`); // Debugging
-            const response = await fetch(`/api/users?userId=${userId}`);
-            const data = await response.json();
+    // Search users
+    let allUsers = [];
 
-            if (response.ok) {
-                allUsers = data.users; // Save the original users list for search functionality
-                displayUsers(data.users);
-            } else {
-                console.error('Error fetching users:', data.message);
-                alert(data.message);
-            }
+    async function fetchUsers() {
+        console.log(`Fetching users for userId: ${userId}`); // Debugging
+        const response = await fetch(`/api/users?userId=${userId}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            allUsers = data.users; // Save the original users list for search functionality
+            displayUsers(data.users);
+        } else {
+            console.error('Error fetching users:', data.message);
+            alert(data.message);
         }
+    }
 
-        // Display users in the Users section
-        function displayUsers(users) {
-            const usersContainer = document.getElementById('users-container');
-            usersContainer.innerHTML = ''; // Clear previous data
+    // Display users in the Users section
+    function displayUsers(users) {
+        const usersContainer = document.getElementById('users-container');
+        usersContainer.innerHTML = ''; // Clear previous data
 
-            users.forEach(user => {
-                const userElement = document.createElement('div');
-                userElement.classList.add('user');
-                userElement.textContent = user.username;
+        users.forEach(user => {
+            const userElement = document.createElement('div');
+            userElement.classList.add('user');
+            userElement.textContent = user.username;
 
-                // Add "Add to Friends" icon
-                const addButton = document.createElement('button');
-                addButton.classList.add('add-friend');
-                addButton.textContent = 'Add Friend';
-                addButton.onclick = () => addFriend(user);
+            // Add "Add to Friends" icon
+            const addButton = document.createElement('button');
+            addButton.classList.add('add-friend');
+            addButton.textContent = 'Add Friend';
+            addButton.onclick = () => addFriend(user);
 
-                // Add click event to redirect to chat page when user is clicked
-                userElement.onclick = () => {
-                    window.location.href = `chat.html?userId=${user.id}`;
-                };
+            // Add click event to redirect to chat page when user is clicked
+            userElement.onclick = () => {
+                if (user.id !== parseInt(userId)) {
+                    window.location.href = `chat.html?userId=${userId}&chatWith=${user.id}`;
+                }
+            };
 
-                // Append user element with button to the container
-                userElement.appendChild(addButton);
-                usersContainer.appendChild(userElement);
-            });
-        }
+            // Append user element with button to the container
+            userElement.appendChild(addButton);
+            usersContainer.appendChild(userElement);
+        });
+    }
 
-        // Function for searching users
-        function searchUsers() {
-            const searchInput = document.getElementById('search').value.toLowerCase();
-            const filteredUsers = allUsers.filter(user => user.username.toLowerCase().includes(searchInput));
-            displayUsers(filteredUsers);
-        }
+    // Function for searching users
+    function searchUsers() {
+        const searchInput = document.getElementById('search').value.toLowerCase();
+        const filteredUsers = allUsers.filter(user => user.username.toLowerCase().includes(searchInput));
+        displayUsers(filteredUsers);
+    }
 
-        // Placeholder function for adding friends (you can implement it later)
-        function addFriend(user) {
-            console.log(`Adding ${user.username} to friends...`); // Add friend functionality
-        }
+    // Placeholder function for adding friends (you can implement it later)
+    function addFriend(user) {
+        console.log(`Adding ${user.username} to friends...`); // Add friend functionality
+    }
 
-        fetchUsers();
-    </script>
+    fetchUsers();
+</script>
+
 </body>
 

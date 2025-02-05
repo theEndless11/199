@@ -1,6 +1,12 @@
 const mysql = require('mysql2');
 require('dotenv').config(); // To load environment variables from .env
 
+// Ensure environment variables are loaded
+if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
+  console.error('Missing database environment variables!');
+  process.exit(1); // Stop execution if environment variables are missing
+}
+
 // Create a connection pool using environment variables
 const pool = mysql.createPool({
   host: process.env.DB_HOST,

@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { pool } = require('../utils/db'); // This will now have the correct promise API
+const { pool } = require('../utils/db'); // Now using promise-enabled pool
 
 module.exports = async (req, res) => {
   const { username, password, action } = req.body;
@@ -57,5 +57,3 @@ module.exports = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
-

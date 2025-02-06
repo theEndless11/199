@@ -136,6 +136,7 @@ channel.subscribe('message', function(message) {
 // Function to add message to the chat
 function addMessageToChat(message) {
     const messagesContainer = document.getElementById('messages-container');
+    if (!messagesContainer) return;
 
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
@@ -184,8 +185,8 @@ function displayMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Send message function
-window.sendMessage = function() {
+// Send message function with button event
+document.getElementById('sendMessageBtn').addEventListener('click', async function() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
     if (!message) {
         alert('Please type a message');
@@ -200,7 +201,7 @@ window.sendMessage = function() {
 
     console.log('Sending message data:', messageData); // Log the message data to console
 
-    // Publish message to Ably
+    // Publish message to Ably (real-time update for the other user)
     channel.publish('message', {
         message: message,
         userId: userId,
@@ -213,39 +214,41 @@ window.sendMessage = function() {
         }
     });
 
-    // Send the message to the backend via API
-    fetch(`/api/messages`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(messageData)  // Send userId, chatWith, and message in the body
-    })
-    .then(response => response.json()) // Parse the response as JSON
-    .then(data => {
-        console.log('Response body:', data); // Log response
+    // Send the message to the backend via API (stores in DB)
+    try {
+        const response = await fetch(`/api/messages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(messageData)  // Send userId, chatWith, and message in the body
+        });
+
+        const data = await response.json();
+        console.log('Backend response:', data);
+
         if (data.message === 'Message sent') {
             console.log('Message successfully sent');
-            // Add the sent message to the chat UI for the sender
-            addMessageToChat(messageData);  // Display the message on the sender's screen as well
+            // Add the new message to the chat immediately (for the sender)
+            addMessageToChat(messageData);
             document.getElementById('user-message').value = ''; // Clear input after sending
         } else {
             console.error('Error sending message:', data.error);
         }
-    })
-    .catch(error => {
-        console.error('Error sending message:', error);
-    });
-}
+    } catch (error) {
+        console.error('Error sending message to backend:', error);
+    }
+});
 
 // Handle 'Enter' key press to send message
 function handleKey(event) {
     if (event.key === 'Enter') {
-        sendMessage(); // Call sendMessage function if Enter is pressed
+        document.getElementById('sendMessageBtn').click(); // Trigger button click on Enter key press
     }
 }
 
 document.getElementById('user-message').addEventListener('keypress', handleKey);
+
 </script>
 
 

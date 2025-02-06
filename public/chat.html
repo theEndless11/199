@@ -126,15 +126,25 @@ fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
 
 // Listen for incoming messages in real-time from Ably
 channel.subscribe('message', function(message) {
+    const incomingMessage = message.data;
+    console.log('Real-time new message:', incomingMessage);
+
+    // Add the incoming message to the chat
+    addMessageToChat(incomingMessage);
+});
+
+// Function to add message to the chat
+function addMessageToChat(message) {
     const messagesContainer = document.getElementById('messages-container');
+
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
 
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('msg-bubble');
-    messageBubble.textContent = message.data.message;  // Assuming message.data.message contains the text
+    messageBubble.textContent = message.message;  // Assuming message.data.message contains the text
 
-    if (message.data.userId === userId) {
+    if (message.userId === userId) {
         messageElement.classList.add('user-msg');
     } else {
         messageElement.classList.add('other-msg');
@@ -142,10 +152,12 @@ channel.subscribe('message', function(message) {
 
     messageElement.appendChild(messageBubble);
     messagesContainer.appendChild(messageElement);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-});
 
-// Function to display messages
+    // Scroll to the bottom of the container
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Function to display messages from initial fetch
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
     messagesContainer.innerHTML = '';
@@ -168,6 +180,7 @@ function displayMessages(messages) {
         messagesContainer.appendChild(messageElement);
     });
 
+    // Scroll to the bottom after displaying messages
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
@@ -201,7 +214,7 @@ window.sendMessage = function() {
         }
     });
 
-    // Send the message to the backend via API, including `userId` and `chatWith` in the request body
+    // Send the message to the backend via API
     fetch(`/api/messages`, {
         method: 'POST',
         headers: {
@@ -233,7 +246,6 @@ function handleKey(event) {
 document.getElementById('user-message').addEventListener('keypress', handleKey);
 
 </script>
-
 
 
 </body>    

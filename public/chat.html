@@ -205,27 +205,35 @@ function sendMessage() {
         message: message  // Include the actual message
     };
 
-    // Send the message to the backend via API (stores in DB)
-    fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(messageData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message === 'Message sent') {
-            console.log('Message successfully sent');
-            addMessageToChat(messageData); // Add message to the chat immediately
-            document.getElementById('user-message').value = ''; // Clear input
-        }
-    })
-    .catch(error => {
-        console.error('Error sending message to backend:', error);
+fetch('/api/messages', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(messageData),
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error('Error response from server: ' + response.statusText);
+    }
+
+    // Try to parse JSON response
+    return response.json();
+})
+.then(data => {
+    if (data.message === 'Message sent successfully') {
+        console.log('Message successfully sent');
+        addMessageToChat(messageData); // Add message to the chat immediately
+        document.getElementById('user-message').value = ''; // Clear input field
+    } else {
+        console.error('Error sending message:', data.error);
         showNotification('Failed to send the message. Please try again later.', true);
-    });
-}
+    }
+})
+.catch(error => {
+    console.error('Error sending message to backend:', error);
+    showNotification('Failed to send the message. Please try again later.', true);
+});
 
 // Function to show a notification to the user
 function showNotification(message, isError = false) {

@@ -1,12 +1,7 @@
-const express = require('express');
 const pool = require('../utils/db');
-const router = express.Router();
-
-// Ensure express.json() middleware is enabled for body parsing
-router.use(express.json()); // This will parse JSON bodies for all incoming requests
 
 // Get all messages for a chat
-router.get('/messages', async (req, res) => {
+module.exports = async (req, res) => {
   const { userId, chatWith } = req.query;
 
   // Validate required parameters
@@ -15,29 +10,30 @@ router.get('/messages', async (req, res) => {
   }
 
   try {
+    // Log the query parameters for debugging
+    console.log('Fetching messages for:', { userId, chatWith });
+
     const query = `
       SELECT * FROM messages 
       WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?)
       ORDER BY timestamp ASC
     `;
-    
+
     const [results] = await pool.query(query, [userId, chatWith, chatWith, userId]);
 
     return res.status(200).json({ messages: results });
   } catch (err) {
-    console.error('Error fetching messages:', err); // Log the error for debugging
-    return res.status(500).json({ error: 'Error fetching messages' });
+    console.error('Error fetching messages:', err);
+    return res.status(500).json({ error: 'Error fetching messages', details: err.message });
   }
-});
-
+};
 
 // Send a new message
-// Send a new message
-router.post('/messages', async (req, res) => {
+module.exports.sendMessage = async (req, res) => {
   const { userId, chatWith, message } = req.body;
 
   // Log the request body for debugging
-  console.log('Request body:', req.body);
+  console.log('Received message data:', req.body);
 
   // Validate required fields
   if (!userId || !chatWith || !message) {
@@ -51,9 +47,7 @@ router.post('/messages', async (req, res) => {
     return res.status(200).json({ message: 'Message sent' });
   } catch (err) {
     console.error('Error inserting message:', err);
-    return res.status(500).json({ error: 'Failed to store message' });
+    return res.status(500).json({ error: 'Failed to store message', details: err.message });
   }
-});
-
-module.exports = router;
+};
 

@@ -185,8 +185,8 @@ function displayMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Send message function with button event
-document.getElementById('sendMessageBtn').addEventListener('click', async function() {
+// Define the sendMessage function
+function sendMessage() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
     if (!message) {
         alert('Please type a message');
@@ -215,18 +215,16 @@ document.getElementById('sendMessageBtn').addEventListener('click', async functi
     });
 
     // Send the message to the backend via API (stores in DB)
-    try {
-        const response = await fetch(`/api/messages`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(messageData)  // Send userId, chatWith, and message in the body
-        });
-
-        const data = await response.json();
+    fetch(`/api/messages`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(messageData)  // Send userId, chatWith, and message in the body
+    })
+    .then(response => response.json())
+    .then(data => {
         console.log('Backend response:', data);
-
         if (data.message === 'Message sent') {
             console.log('Message successfully sent');
             // Add the new message to the chat immediately (for the sender)
@@ -235,19 +233,24 @@ document.getElementById('sendMessageBtn').addEventListener('click', async functi
         } else {
             console.error('Error sending message:', data.error);
         }
-    } catch (error) {
+    })
+    .catch(error => {
         console.error('Error sending message to backend:', error);
-    }
-});
+    });
+}
 
 // Handle 'Enter' key press to send message
 function handleKey(event) {
     if (event.key === 'Enter') {
-        document.getElementById('sendMessageBtn').click(); // Trigger button click on Enter key press
+        sendMessage(); // Trigger sendMessage function on Enter key
     }
 }
 
-document.getElementById('user-message').addEventListener('keypress', handleKey);
+// Wait for DOM to fully load before adding event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);  // Attach click listener for the send button
+    document.getElementById('user-message').addEventListener('keypress', handleKey);  // Attach keypress listener for the Enter key
+});
 
 </script>
 

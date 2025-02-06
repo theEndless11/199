@@ -109,7 +109,7 @@ const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
 const ably = new Ably.Realtime(ablyApiKey);
 
 // Unique channel name based on the user IDs
-const channelName = `chat-${userId}-${chatWith}`;
+const channelName = `chat-${userId}-${chatWith}`; // Ensure consistent naming
 const channel = ably.channels.get(channelName);
 
 // Fetch previous messages from the database
@@ -140,7 +140,7 @@ function addMessageToChat(messageData) {
 
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('msg-bubble');
-    messageBubble.textContent = messageData.message;  // Assuming message.data.message contains the text
+    messageBubble.textContent = messageData.message;  // Use messageData.message
 
     if (messageData.userId === userId) {
         messageElement.classList.add('user-msg');
@@ -151,14 +151,14 @@ function addMessageToChat(messageData) {
     messageElement.appendChild(messageBubble);
     messagesContainer.appendChild(messageElement);
 
-    // Scroll to the bottom after adding the message
+    // Scroll to the bottom of the container
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
-    messagesContainer.innerHTML = '';  // Clear the container first
+    messagesContainer.innerHTML = '';
 
     messages.forEach(msg => {
         const messageElement = document.createElement('div');
@@ -247,7 +247,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('user-message').addEventListener('keypress', handleKey);  // Attach keypress listener for the Enter key
 });
 </script>
-
 </body>    
 <style>
     #chatbox-container {

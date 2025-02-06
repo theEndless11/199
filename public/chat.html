@@ -180,7 +180,9 @@ window.sendMessage = function() {
     }
 
     const messageData = {
-        message: message
+        userId: userId,  // Include userId
+        chatWith: chatWith,  // Include chatWith
+        message: message  // Include the actual message
     };
 
     console.log('Sending message data:', messageData); // Log the message data to console
@@ -199,26 +201,21 @@ window.sendMessage = function() {
         }
     });
 
-    // Send the message to the backend via API, including `userId` and `chatWith` in the query string
-    fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`, {
+    // Send the message to the backend via API, including `userId` and `chatWith` in the request body
+    fetch(`/api/messages`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(messageData)
+        body: JSON.stringify(messageData)  // Send userId, chatWith, and message in the body
     })
-    .then(response => response.text()) // Get the response as text (not JSON)
+    .then(response => response.json()) // Parse the response as JSON
     .then(data => {
-        console.log('Response body:', data); // Log raw response body
-        try {
-            const responseJson = JSON.parse(data); // Try parsing response as JSON
-            if (responseJson.message === 'Message sent') {
-                console.log('Message sent');
-            } else {
-                console.error('Error sending message:', responseJson.error);
-            }
-        } catch (err) {
-            console.error('Error parsing response:', err);
+        console.log('Response body:', data); // Log response
+        if (data.message === 'Message sent') {
+            console.log('Message successfully sent');
+        } else {
+            console.error('Error sending message:', data.error);
         }
     })
     .catch(error => {
@@ -236,6 +233,7 @@ function handleKey(event) {
 document.getElementById('user-message').addEventListener('keypress', handleKey);
 
 </script>
+
 
 
 </body>    

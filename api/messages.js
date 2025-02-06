@@ -25,7 +25,6 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Error fetching messages' });
   }
 };
-
 // Send a new message
 module.exports.sendMessage = async (req, res) => {
   const { userId, chatWith, message } = req.body;

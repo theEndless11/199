@@ -124,15 +124,20 @@ fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
     })
     .catch(error => console.error('Error fetching messages:', error));
 
-// Listen for incoming messages in real-time from Ably
-channel.subscribe('message', function(message) {
-    const incomingMessage = message.data;
-    console.log('Real-time new message:', incomingMessage);
-
-    // Add the incoming message to the chat
-    addMessageToChat(incomingMessage);
+// Listen for new messages on the Ably channel
+channel.subscribe('newMessage', function (message) {
+    console.log('Real-time new message:', message.data); // Log the received message
+    addMessageToChat(message.data);  // Add the new message to the chat UI
 });
 
+// Function to add message to the chat UI
+function addMessageToChat(messageData) {
+    const chatContainer = document.getElementById('chat-container');
+    const newMessageElement = document.createElement('div');
+    newMessageElement.classList.add('message');
+    newMessageElement.innerHTML = `<strong>${messageData.userId}</strong>: ${messageData.message}`;
+    chatContainer.appendChild(newMessageElement);
+}
 // Function to add message to the chat
 function addMessageToChat(message) {
     const messagesContainer = document.getElementById('messages-container');
@@ -199,53 +204,25 @@ function sendMessage() {
         message: message  // Include the actual message
     };
 
-    console.log('Sending message data:', messageData); // Log the message data to console
-
-    // Publish message to Ably (real-time update for the other user)
-    channel.publish('message', {
-        message: message,
-        userId: userId,
-        chatWith: chatWith
-    }, function(err) {
-        if (err) {
-            console.error('Error sending message to Ably:', err);
-        } else {
-            console.log('Message sent to Ably');
-        }
-    });
-
     // Send the message to the backend via API (stores in DB)
-    fetch(`/api/messages`, {
+    fetch('/api/messages', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(messageData)
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Error from backend: ${response.statusText}`);
-        }
-        return response.text(); // Read response as text
-    })
+    .then(response => response.json())
     .then(data => {
-        try {
-            const jsonData = JSON.parse(data);  // Attempt to parse it as JSON
-            console.log('Backend response:', jsonData);
-            if (jsonData.message === 'Message sent') {
-                console.log('Message successfully sent');
-                addMessageToChat(messageData); // Add message to the chat immediately
-                document.getElementById('user-message').value = ''; // Clear input
-            } else {
-                console.error('Error sending message:', jsonData.error);
-            }
-        } catch (e) {
-            console.error('Error parsing response:', e, 'Response data:', data); // Log error if parsing fails
+        if (data.message === 'Message sent') {
+            console.log('Message successfully sent');
+            addMessageToChat(messageData); // Add message to the chat immediately
+            document.getElementById('user-message').value = ''; // Clear input
         }
     })
     .catch(error => {
-        console.error('Error sending message to backend:', error);  // Log the specific error from the API
-        showNotification('Failed to send the message. Please try again later.', true);  // Notify the user
+        console.error('Error sending message to backend:', error);
+        showNotification('Failed to send the message. Please try again later.', true);
     });
 }
 

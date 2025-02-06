@@ -5,13 +5,13 @@ module.exports = async (req, res) => {
   // Ensure that we always return JSON responses
   res.setHeader('Content-Type', 'application/json');
 
-  if (req.method === 'GET') {
-    const { userId, chatWith } = req.query;
-    if (!userId || !chatWith) {
-      return res.status(400).json({ error: 'Missing required parameters: userId and chatWith' });
-    }
+  try {
+    if (req.method === 'GET') {
+      const { userId, chatWith } = req.query;
+      if (!userId || !chatWith) {
+        return res.status(400).json({ error: 'Missing required parameters: userId and chatWith' });
+      }
 
-    try {
       const query = `
         SELECT * FROM messages 
         WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?)
@@ -24,19 +24,14 @@ module.exports = async (req, res) => {
       } else {
         return res.status(200).json({ messages: [] });  // Handle case where no messages exist
       }
-    } catch (err) {
-      console.error('Error fetching messages:', err);
-      return res.status(500).json({ error: 'Error fetching messages', details: err.message });
-    }
-  } else if (req.method === 'POST') {
-    const { userId, chatWith, message } = req.body;
+    } else if (req.method === 'POST') {
+      const { userId, chatWith, message } = req.body;
 
-    // Validate the required fields
-    if (!userId || !chatWith || !message) {
-      return res.status(400).json({ error: 'Missing required fields: userId, chatWith, message' });
-    }
+      // Validate the required fields
+      if (!userId || !chatWith || !message) {
+        return res.status(400).json({ error: 'Missing required fields: userId, chatWith, message' });
+      }
 
-    try {
       // Insert the new message into the database
       const sql = 'INSERT INTO messages (userId, chatWith, message, timestamp) VALUES (?, ?, ?, NOW())';
       const [result] = await pool.query(sql, [userId, chatWith, message]);
@@ -57,12 +52,12 @@ module.exports = async (req, res) => {
         console.error('Message insertion failed:', message);
         return res.status(500).json({ error: 'Failed to insert message into the database' });
       }
-    } catch (err) {
-      console.error('Error inserting message:', err);
-      return res.status(500).json({ error: 'Failed to store message', details: err.message });
+    } else {
+      return res.status(405).json({ error: 'Method Not Allowed' });
     }
-  } else {
-    res.status(405).json({ error: 'Method Not Allowed' });
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    return res.status(500).json({ error: 'Unexpected error occurred', details: err.message });
   }
 };
 

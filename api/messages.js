@@ -1,7 +1,5 @@
-// api/messages.js
-
 const pool = require('../utils/db');
-const { publishToAbly } = require('../utils/ably'); // Assuming this is already set up
+const { publishToAbly } = require('../utils/ably');  // Assuming this is already set up
 
 module.exports = async (req, res) => {
   if (req.method === 'GET') {
@@ -25,19 +23,32 @@ module.exports = async (req, res) => {
   } else if (req.method === 'POST') {
     const { userId, chatWith, message } = req.body;
 
+    // Validate the required fields
     if (!userId || !chatWith || !message) {
-      return res.status(400).json({ error: 'Missing required fields (userId, chatWith, message)' });
+      return res.status(400).json({ error: 'Missing required fields: userId, chatWith, message' });
     }
 
     try {
+      // Insert the new message into the database
       const sql = 'INSERT INTO messages (userId, chatWith, message, timestamp) VALUES (?, ?, ?, NOW())';
-      await pool.query(sql, [userId, chatWith, message]);
+      const result = await pool.query(sql, [userId, chatWith, message]);
 
-      // Publish message to Ably after successful insertion
-      const messageData = { userId, chatWith, message };
-      await publishToAbly('newMessage', messageData);
+      // Check if the insert was successful
+      if (result.affectedRows > 0) {
+        console.log('Message inserted successfully:', message);
 
-      return res.status(200).json({ message: 'Message sent' });
+        // Prepare the message data for Ably
+        const messageData = { userId, chatWith, message };
+
+        // Publish the new message to Ably for real-time updates
+        await publishToAbly('newMessage', messageData);
+        console.log('Message published to Ably:', messageData);
+
+        return res.status(200).json({ message: 'Message sent successfully' });
+      } else {
+        console.error('Message insertion failed:', message);
+        return res.status(500).json({ error: 'Failed to insert message into the database' });
+      }
     } catch (err) {
       console.error('Error inserting message:', err);
       return res.status(500).json({ error: 'Failed to store message', details: err.message });

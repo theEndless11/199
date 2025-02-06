@@ -132,14 +132,6 @@ channel.subscribe('newMessage', function (message) {
 
 // Function to add message to the chat UI
 function addMessageToChat(messageData) {
-    const chatContainer = document.getElementById('chat-container');
-    const newMessageElement = document.createElement('div');
-    newMessageElement.classList.add('message');
-    newMessageElement.innerHTML = `<strong>${messageData.userId}</strong>: ${messageData.message}`;
-    chatContainer.appendChild(newMessageElement);
-}
-// Function to add message to the chat
-function addMessageToChat(message) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
@@ -148,9 +140,9 @@ function addMessageToChat(message) {
 
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('msg-bubble');
-    messageBubble.textContent = message.message;  // Assuming message.data.message contains the text
+    messageBubble.textContent = messageData.message;  // Assuming message.data.message contains the text
 
-    if (message.userId === userId) {
+    if (messageData.userId === userId) {
         messageElement.classList.add('user-msg');
     } else {
         messageElement.classList.add('other-msg');
@@ -159,14 +151,14 @@ function addMessageToChat(message) {
     messageElement.appendChild(messageBubble);
     messagesContainer.appendChild(messageElement);
 
-    // Scroll to the bottom of the container
+    // Scroll to the bottom after adding the message
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
-    messagesContainer.innerHTML = '';
+    messagesContainer.innerHTML = '';  // Clear the container first
 
     messages.forEach(msg => {
         const messageElement = document.createElement('div');
@@ -242,7 +234,6 @@ function showNotification(message, isError = false) {
     }, 5000);
 }
 
-
 // Handle 'Enter' key press to send message
 function handleKey(event) {
     if (event.key === 'Enter') {
@@ -255,9 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);  // Attach click listener for the send button
     document.getElementById('user-message').addEventListener('keypress', handleKey);  // Attach keypress listener for the Enter key
 });
-
 </script>
-
 
 </body>    
 <style>

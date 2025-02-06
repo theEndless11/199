@@ -185,7 +185,7 @@ function displayMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Define the sendMessage function
+// Send message function
 function sendMessage() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
     if (!message) {
@@ -222,7 +222,12 @@ function sendMessage() {
         },
         body: JSON.stringify(messageData)
     })
-    .then(response => response.text())  // Parse response as text for debugging
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Error from backend: ${response.statusText}`);
+        }
+        return response.text(); // Read response as text
+    })
     .then(data => {
         try {
             const jsonData = JSON.parse(data);  // Attempt to parse it as JSON
@@ -239,9 +244,27 @@ function sendMessage() {
         }
     })
     .catch(error => {
-        console.error('Error sending message to backend:', error);
+        console.error('Error sending message to backend:', error);  // Log the specific error from the API
+        showNotification('Failed to send the message. Please try again later.', true);  // Notify the user
     });
 }
+
+// Function to show a notification to the user
+function showNotification(message, isError = false) {
+    const notification = document.createElement('div');
+    notification.classList.add('notification');
+    if (isError) {
+        notification.classList.add('error');
+    } else {
+        notification.classList.add('success');
+    }
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
 
 // Handle 'Enter' key press to send message
 function handleKey(event) {

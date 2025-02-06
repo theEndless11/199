@@ -114,23 +114,24 @@ const channel = ably.channels.get(channelName);
 
 // Fetch previous messages from the database
 fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
-    .then(response => response.text())  // Get response as text first
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to fetch messages: ' + response.statusText);
+        }
+        return response.json();  // Parse the response as JSON
+    })
     .then(data => {
-        try {
-            const parsedData = JSON.parse(data);  // Attempt to parse the response as JSON
-            if (parsedData.messages) {
-                displayMessages(parsedData.messages);  // Display fetched messages
-            } else {
-                console.error('Error fetching messages:', parsedData.error);
-            }
-        } catch (e) {
-            console.error('Error parsing response:', e);
-            console.log('Response text:', data);  // Log the raw response for debugging
+        if (data.messages) {
+            displayMessages(data.messages);  // Display fetched messages
+        } else {
+            console.error('Error fetching messages:', data.error);
         }
     })
     .catch(error => {
         console.error('Error fetching messages:', error);
+        showNotification('Failed to fetch messages. Please try again later.', true);
     });
+
 
 // Listen for new messages on the Ably channel
 channel.subscribe('newMessage', function (message) {

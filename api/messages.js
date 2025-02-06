@@ -2,6 +2,9 @@ const pool = require('../utils/db'); // This must be promisePool from db.js
 const { publishToAbly } = require('../utils/ably');  // Assuming this is already set up
 
 module.exports = async (req, res) => {
+  // Ensure that we always return JSON responses
+  res.setHeader('Content-Type', 'application/json');
+
   if (req.method === 'GET') {
     const { userId, chatWith } = req.query;
     if (!userId || !chatWith) {
@@ -15,7 +18,12 @@ module.exports = async (req, res) => {
         ORDER BY timestamp ASC
       `;
       const [results] = await pool.query(query, [userId, chatWith, chatWith, userId]);
-      return res.status(200).json({ messages: results });
+
+      if (results.length > 0) {
+        return res.status(200).json({ messages: results });
+      } else {
+        return res.status(200).json({ messages: [] });  // Handle case where no messages exist
+      }
     } catch (err) {
       console.error('Error fetching messages:', err);
       return res.status(500).json({ error: 'Error fetching messages', details: err.message });
@@ -57,3 +65,4 @@ module.exports = async (req, res) => {
     res.status(405).json({ error: 'Method Not Allowed' });
   }
 };
+

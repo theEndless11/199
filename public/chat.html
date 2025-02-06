@@ -132,7 +132,6 @@ fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
         showNotification('Failed to fetch messages. Please try again later.', true);
     });
 
-
 // Listen for new messages on the Ably channel
 channel.subscribe('newMessage', function (message) {
     console.log('Real-time new message:', message.data); // Log the received message

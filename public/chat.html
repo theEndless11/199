@@ -185,7 +185,7 @@ window.sendMessage = function() {
         message: message
     };
 
-    console.log('Sending message data:', messageData); // Debugging
+    console.log('Sending message data:', messageData); // Log the message data to console
 
     // Publish message to Ably
     channel.publish('message', {
@@ -210,10 +210,13 @@ window.sendMessage = function() {
         body: JSON.stringify(messageData)
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error(`Error sending message: ${response.statusText}`);
-        }
-        return response.json(); // Attempt to parse as JSON
+        // Log the response status and body for debugging
+        console.log('Response status:', response.status);
+        return response.text(); // Read the raw text of the response
+    })
+    .then(responseText => {
+        console.log('Response body:', responseText); // Log the response body (could be useful for debugging)
+        return JSON.parse(responseText); // Try parsing the response as JSON
     })
     .then(data => {
         if (data.message === 'Message sent') {

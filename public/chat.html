@@ -93,26 +93,22 @@ const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId');
 const chatWith = urlParams.get('chatWith');
 
-// Log the query parameters to check if they are correctly passed
-console.log('userId:', userId, 'chatWith:', chatWith); // Debugging
-
-// Ensure userId and chatWith are valid
-if (!userId || !chatWith) {
-    alert('Missing userId or chatWith in the URL parameters');
-    window.location.href = '/'; // Redirect to homepage or login
-}
-
 // Ably API Key
 const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
 
-// Initialize Ably connection directly using API key
+// Initialize Ably connection
 const ably = new Ably.Realtime(ablyApiKey);
-
-// Unique channel name based on the user IDs
 const channelName = `chat-${userId}-${chatWith}`;
 const channel = ably.channels.get(channelName);
 
-// Fetch previous messages from the database
+// Real-time message listener
+channel.subscribe('newMessage', function (message) {
+    const incomingMessage = message.data;
+    console.log('New message received:', incomingMessage);
+    addMessageToChat(incomingMessage);
+});
+
+// Fetch previous messages on initial load
 fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
     .then(response => response.json())
     .then(data => {
@@ -124,15 +120,6 @@ fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
     })
     .catch(error => console.error('Error fetching messages:', error));
 
-// Listen for incoming messages in real-time from Ably
-channel.subscribe('message', function(message) {
-    const incomingMessage = message.data;
-    console.log('Real-time new message:', incomingMessage);
-
-    // Add the incoming message to the chat
-    addMessageToChat(incomingMessage);
-});
-
 // Function to add message to the chat
 function addMessageToChat(message) {
     const messagesContainer = document.getElementById('messages-container');
@@ -142,7 +129,7 @@ function addMessageToChat(message) {
 
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('msg-bubble');
-    messageBubble.textContent = message.message;  // Assuming message.data.message contains the text
+    messageBubble.textContent = message.message; // Assuming message.data.message contains the text
 
     if (message.userId === userId) {
         messageElement.classList.add('user-msg');
@@ -184,67 +171,41 @@ function displayMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Send message function
+// Function to send a new message
 window.sendMessage = function() {
-    const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
+    const message = document.getElementById('user-message').value.trim();
     if (!message) {
         alert('Please type a message');
         return;
     }
 
-    const messageData = {
-        userId: userId,  // Include userId
-        chatWith: chatWith,  // Include chatWith
-        message: message  // Include the actual message
-    };
+    const messageData = { userId, chatWith, message };
 
-    console.log('Sending message data:', messageData); // Log the message data to console
-
-    // Publish message to Ably
-    channel.publish('message', {
-        message: message,
-        userId: userId,
-        chatWith: chatWith
-    }, function(err) {
-        if (err) {
-            console.error('Error sending message:', err);
-        } else {
-            console.log('Message sent');
-            document.getElementById('user-message').value = ''; // Clear input after sending
-        }
-    });
-
-    // Send the message to the backend via API
-    fetch(`/api/messages`, {
+    // Send the message to the backend and Ably
+    fetch('/api/messages', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(messageData)  // Send userId, chatWith, and message in the body
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(messageData)
     })
-    .then(response => response.json()) // Parse the response as JSON
+    .then(response => response.json())
     .then(data => {
-        console.log('Response body:', data); // Log response
         if (data.message === 'Message sent') {
-            console.log('Message successfully sent');
-        } else {
-            console.error('Error sending message:', data.error);
+            // Send to Ably for real-time updates
+            channel.publish('newMessage', messageData);
+            document.getElementById('user-message').value = ''; // Clear input
         }
     })
-    .catch(error => {
-        console.error('Error sending message:', error);
-    });
-}
+    .catch(error => console.error('Error sending message:', error));
+};
 
 // Handle 'Enter' key press to send message
 function handleKey(event) {
     if (event.key === 'Enter') {
-        sendMessage(); // Call sendMessage function if Enter is pressed
+        sendMessage();
     }
 }
 
 document.getElementById('user-message').addEventListener('keypress', handleKey);
-
 </script>
 
 

@@ -88,16 +88,20 @@
 
 <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
 <script>
-    // Get userId and chatWith from query parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('userId');
-    const chatWith = urlParams.get('chatWith');
+// Get userId and chatWith from query parameters
+const urlParams = new URLSearchParams(window.location.search);
+const userId = urlParams.get('userId');
+const chatWith = urlParams.get('chatWith');
 
-    // Ensure userId and chatWith are valid
-    if (!userId || !chatWith) {
-        alert('Missing userId or chatWith in the URL parameters');
-        window.location.href = '/'; // Redirect to homepage or login
-    }
+// Log the query parameters to check if they are correctly passed
+console.log('userId:', userId, 'chatWith:', chatWith); // Debugging
+
+// Ensure userId and chatWith are valid
+if (!userId || !chatWith) {
+    alert('Missing userId or chatWith in the URL parameters');
+    window.location.href = '/'; // Redirect to homepage or login
+}
+
 
     // Ably API Key
     const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';

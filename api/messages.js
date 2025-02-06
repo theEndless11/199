@@ -1,4 +1,4 @@
-const pool = require('../utils/db');
+const pool = require('../utils/db'); // This must be promisePool from db.js
 const { publishToAbly } = require('../utils/ably');  // Assuming this is already set up
 
 module.exports = async (req, res) => {
@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
     try {
       // Insert the new message into the database
       const sql = 'INSERT INTO messages (userId, chatWith, message, timestamp) VALUES (?, ?, ?, NOW())';
-      const result = await pool.query(sql, [userId, chatWith, message]);
+      const [result] = await pool.query(sql, [userId, chatWith, message]);
 
       // Check if the insert was successful
       if (result.affectedRows > 0) {
@@ -57,4 +57,3 @@ module.exports = async (req, res) => {
     res.status(405).json({ error: 'Method Not Allowed' });
   }
 };
-

@@ -178,51 +178,51 @@
         // Scroll to the bottom to show the latest message
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
-
-    // Send message function
-    window.sendMessage = function() {
-        const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
-        if (!message) {
-            alert('Please type a message');
-            return;
-        }
-
-        // Publish message to Ably (this sends it to the channel and thus to the other user)
-        channel.publish('message', {
-            message: message,
-            userId: userId, // Include the userId so we can distinguish messages
-            chatWith: chatWith
-        }, function(err) {
-            if (err) {
-                console.error('Error sending message:', err);
-            } else {
-                console.log('Message sent');
-                document.getElementById('user-message').value = ''; // Clear input after sending
-            }
-        });
-
-        // Optionally, store the message in the database here after sending it
-        fetch('/api/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: userId,
-                chatWith: chatWith,
-                message: message
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message === 'Message sent') {
-                console.log('Message sent');
-            } else {
-                console.error('Error sending message:', data.error);
-            }
-        })
-        .catch(error => console.error('Error sending message:', error));
+// Send message function
+window.sendMessage = function() {
+    const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
+    if (!message) {
+        alert('Please type a message');
+        return;
     }
+
+    // Publish message to Ably (this sends it to the channel and thus to the other user)
+    channel.publish('message', {
+        message: message,
+        userId: userId, // Include the userId so we can distinguish messages
+        chatWith: chatWith
+    }, function(err) {
+        if (err) {
+            console.error('Error sending message:', err);
+        } else {
+            console.log('Message sent');
+            document.getElementById('user-message').value = ''; // Clear input after sending
+        }
+    });
+
+    // Send the message to the database as well (POST request)
+    fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            userId: userId,     // Ensure userId is included
+            chatWith: chatWith, // Ensure chatWith is included
+            message: message    // Include the message
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === 'Message sent') {
+            console.log('Message sent');
+        } else {
+            console.error('Error sending message:', data.error);
+        }
+    })
+    .catch(error => console.error('Error sending message:', error));
+}
+
 
     // Handle 'Enter' key press to send message
     function handleKey(event) {

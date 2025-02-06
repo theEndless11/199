@@ -180,8 +180,6 @@ window.sendMessage = function() {
     }
 
     const messageData = {
-        userId: userId,
-        chatWith: chatWith,
         message: message
     };
 
@@ -201,23 +199,15 @@ window.sendMessage = function() {
         }
     });
 
-    // Send the message to the backend via API
-    fetch('/api/messages', {
+    // Send the message to the backend via API, including `userId` and `chatWith` in the query string
+    fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(messageData)
     })
-    .then(response => {
-        // Log the response status and body for debugging
-        console.log('Response status:', response.status);
-        return response.text(); // Read the raw text of the response
-    })
-    .then(responseText => {
-        console.log('Response body:', responseText); // Log the response body (could be useful for debugging)
-        return JSON.parse(responseText); // Try parsing the response as JSON
-    })
+    .then(response => response.json())
     .then(data => {
         if (data.message === 'Message sent') {
             console.log('Message sent');

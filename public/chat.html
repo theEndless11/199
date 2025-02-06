@@ -201,24 +201,26 @@ window.sendMessage = function() {
         }
     });
 
-    // Send the message to the database
-    fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'  // Make sure the Content-Type is application/json
-        },
-        body: JSON.stringify(messageData)  // Send the message data as a JSON string
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message === 'Message sent') {
-            console.log('Message sent');
-        } else {
-            console.error('Error sending message:', data.error);
-        }
-    })
-    .catch(error => console.error('Error sending message:', error));
-}
+  fetch('/api/messages', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(messageData)
+})
+.then(response => response.json().catch(() => { 
+    throw new Error('Invalid JSON response'); 
+}))
+.then(data => {
+    if (data.message === 'Message sent') {
+        console.log('Message sent');
+    } else {
+        console.error('Error sending message:', data.error);
+    }
+})
+.catch(error => {
+    console.error('Error sending message:', error);
+});
 
 // Handle 'Enter' key press to send message
 function handleKey(event) {

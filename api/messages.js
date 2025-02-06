@@ -25,11 +25,13 @@ router.get('/messages', async (req, res) => {
 
     return res.status(200).json({ messages: results });
   } catch (err) {
-    console.error('Error fetching messages:', err);
+    console.error('Error fetching messages:', err); // Log the error for debugging
     return res.status(500).json({ error: 'Error fetching messages' });
   }
 });
 
+
+// Send a new message
 // Send a new message
 router.post('/messages', async (req, res) => {
   const { userId, chatWith, message } = req.body;

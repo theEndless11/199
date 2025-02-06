@@ -205,9 +205,9 @@ window.sendMessage = function() {
     fetch('/api/messages', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json'  // Make sure the Content-Type is application/json
         },
-        body: JSON.stringify(messageData) // Send the data as JSON
+        body: JSON.stringify(messageData)  // Send the message data as a JSON string
     })
     .then(response => response.json())
     .then(data => {

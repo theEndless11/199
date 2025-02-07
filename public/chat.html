@@ -85,8 +85,7 @@
         </div>
     </div>
 </div>
-
-    <script>
+<script>
 // Get userId and chatWith from query parameters
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId');
@@ -113,7 +112,7 @@ console.log('Channel name:', channelName);
 
 const channel = ably.channels.get(channelName);
 
-// Fetch previous messages from the database on page load
+// Function to fetch and display previous messages
 async function fetchMessages() {
     try {
         const response = await fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`);
@@ -144,7 +143,11 @@ function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
-    // Ensure the message is correctly placed on the right if it's from the current user
+    // Only display the message if it is from the other user
+    if (messageData.userId === parseInt(userId)) {
+        return;  // Skip adding the message if it is from the current user
+    }
+
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
 
@@ -152,17 +155,16 @@ function addMessageToChat(messageData) {
     messageBubble.classList.add('msg-bubble');
     messageBubble.textContent = messageData.message;
 
-    // Check if the message is from the current user and align accordingly
     if (messageData.userId === parseInt(userId)) {
-        messageElement.classList.add('user-msg');  // Align to the right (for the sender)
+        messageElement.classList.add('user-msg');
     } else {
-        messageElement.classList.add('other-msg');  // Align to the left (for the other user)
+        messageElement.classList.add('other-msg');
     }
 
     messageElement.appendChild(messageBubble);
     messagesContainer.appendChild(messageElement);
 
-    // Scroll to the bottom of the container to show the latest message
+    // Scroll to the bottom of the container
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
@@ -193,7 +195,7 @@ function displayMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Send message function (async/await version)
+// Function to send a message
 async function sendMessage() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
     if (!message) {
@@ -204,8 +206,7 @@ async function sendMessage() {
     const messageData = {
         userId: userId,  // Include userId
         chatWith: chatWith,  // Include chatWith
-        message: message,  // Include the actual message
-        isSenderMessage: true  // Mark the message as being from the sender (so it appears on the right)
+        message: message  // Include the actual message
     };
 
     console.log('Sending message:', messageData); // Log the message data being sent
@@ -239,8 +240,7 @@ async function sendMessage() {
             const realTimeMessage = {
                 userId: userId,  // The user who sent the message
                 chatWith: chatWith,  // The other user in the chat
-                message: message,  // The message content
-                isSenderMessage: true  // Indicate this message was sent by the sender
+                message: message  // The message content
             };
 
             channel.publish('newMessage', realTimeMessage);  // Publish to the Ably channel
@@ -282,10 +282,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);  // Attach click listener for the send button
     document.getElementById('user-message').addEventListener('keypress', handleKey);  // Attach keypress listener for the Enter key
 
-    // Initial fetch on page load
+    // Fetch the initial set of messages on page load
     fetchMessages();
 });
 </script>
+
 
 </body>    
 <style>

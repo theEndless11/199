@@ -7,7 +7,30 @@ module.exports = async (req, res) => {
   try {
     console.log('Request received at: ', new Date().toISOString());
 
-    if (req.method === 'POST') {
+    // Handle GET request to fetch messages
+    if (req.method === 'GET') {
+      const { userId, chatWith } = req.query;
+
+      // Validate required query parameters
+      if (!userId || !chatWith) {
+        console.error('Missing query parameters');
+        return res.status(400).json({ error: 'Missing required query parameters: userId, chatWith' });
+      }
+
+      const sql = 'SELECT * FROM messages WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) ORDER BY timestamp';
+      const [messages] = await pool.query(sql, [userId, chatWith, chatWith, userId]);
+
+      if (messages.length > 0) {
+        console.log('Fetched messages:', messages);
+        return res.status(200).json({ messages });  // Return messages in the response
+      } else {
+        console.log('No messages found');
+        return res.status(404).json({ error: 'No messages found for this chat' });
+      }
+    }
+
+    // Handle POST request to send a message
+   if (req.method === 'POST') {
       const { userId, chatWith, message } = req.body;
 
       // Validate required fields

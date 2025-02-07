@@ -85,7 +85,7 @@
         </div>
     </div>
 </div>
-<script>
+    <script>
 // Get userId and chatWith from query parameters
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId');
@@ -115,7 +115,6 @@ console.log('User Channel:', userChannel, 'Other User Channel:', otherUserChanne
 // Subscribe to the current user's channel
 const channel = ably.channels.get(userChannel);
 
-
 // Listen for new messages on the current user's channel (Sender's Channel)
 channel.subscribe('newMessage', function (message) {
     console.log('Real-time new message received on channel:', userChannel);
@@ -139,6 +138,15 @@ function addMessageToChat(messageData) {
     messageBubble.classList.add('msg-bubble');
     messageBubble.textContent = messageData.message;
 
+    // Get the timestamp and format it
+    const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+    const timeElement = document.createElement('span');
+    timeElement.classList.add('timestamp');
+    timeElement.textContent = timestamp;
+
+    // Append the time to the message bubble
+    messageBubble.appendChild(timeElement);
+
     // Check if the message is from the current user or the other user to position it
     if (messageData.userId === parseInt(userId)) {
         messageElement.classList.add('user-msg');  // Right side for sender
@@ -150,6 +158,43 @@ function addMessageToChat(messageData) {
     messagesContainer.appendChild(messageElement);
 
     // Scroll to the bottom of the container
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Function to display messages from initial fetch
+function displayMessages(messages) {
+    const messagesContainer = document.getElementById('messages-container');
+    messagesContainer.innerHTML = ''; // Clear any existing messages
+
+    messages.forEach(msg => {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message');
+
+        const messageBubble = document.createElement('div');
+        messageBubble.classList.add('msg-bubble');
+        messageBubble.textContent = msg.message;
+
+        // Get the timestamp and format it
+        const timestamp = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+        const timeElement = document.createElement('span');
+        timeElement.classList.add('timestamp');
+        timeElement.textContent = timestamp;
+
+        // Append the time to the message bubble
+        messageBubble.appendChild(timeElement);
+
+        // Check if the message is from the current user or the other user to position it
+        if (msg.userId === parseInt(userId)) {
+            messageElement.classList.add('user-msg');  // Right side for sender
+        } else {
+            messageElement.classList.add('other-msg');  // Left side for receiver
+        }
+
+        messageElement.appendChild(messageBubble);
+        messagesContainer.appendChild(messageElement);
+    });
+
+    // Scroll to the bottom after displaying messages
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
@@ -199,7 +244,8 @@ function sendMessage() {
             const realTimeMessage = {
                 userId: userId,  // The user who sent the message
                 chatWith: chatWith,  // The other user in the chat
-                message: message  // The message content
+                message: message,  // The message content
+                timestamp: new Date().toISOString() // Add timestamp
             };
 
             // Publish to the receiver's channel
@@ -216,35 +262,22 @@ function sendMessage() {
     });
 }
 
-
-// Function to show a notification to the user
-function showNotification(message, isError = false) {
-    const notification = document.createElement('div');
-    notification.classList.add('notification');
-    if (isError) {
-        notification.classList.add('error');
-    } else {
-        notification.classList.add('success');
-    }
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
+// Fetch and display previous messages from the database (initial load)
+function loadMessages() {
+    fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.messages) {
+            displayMessages(data.messages);  // Display messages from the server
+        }
+    })
+    .catch(error => {
+        console.error('Error loading messages:', error);
+    });
 }
 
-// Handle 'Enter' key press to send message
-function handleKey(event) {
-    if (event.key === 'Enter') {
-        sendMessage(); // Trigger sendMessage function on Enter key
-    }
-}
-
-// Wait for DOM to fully load before adding event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);  // Attach click listener for the send button
-    document.getElementById('user-message').addEventListener('keypress', handleKey);  // Attach keypress listener for the Enter key
-});
+// Call the function to load previous messages when the page is loaded
+loadMessages();
 </script>
 
 

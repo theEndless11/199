@@ -86,6 +86,7 @@
     </div>
 </div>
 
+
 <script>
 // Get userId and chatWith from query parameters
 const urlParams = new URLSearchParams(window.location.search);
@@ -107,19 +108,13 @@ const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
 // Initialize Ably connection directly using API key
 const ably = new Ably.Realtime(ablyApiKey);
 
-
 // Unique channel name based on the user IDs
 const channelName = `chat-${userId}-${chatWith}`; // Ensure consistent naming
 const channel = ably.channels.get(channelName);
 
 // Fetch previous messages from the database
 fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to fetch messages: ' + response.statusText);
-        }
-        return response.json();  // Parse the response as JSON
-    })
+    .then(response => response.json())
     .then(data => {
         if (data.messages) {
             displayMessages(data.messages);  // Display fetched messages
@@ -137,7 +132,7 @@ channel.subscribe('newMessage', function (message) {
     console.log('Real-time new message:', message.data); // Log the received message
     addMessageToChat(message.data);  // Add the new message to the chat UI
 });
-    
+
 // Function to add message to the chat UI
 function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
@@ -191,7 +186,7 @@ function displayMessages(messages) {
 }
 
 // Send message function
-function sendMessage() {
+async function sendMessage() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
     if (!message) {
         alert('Please type a message');
@@ -204,36 +199,35 @@ function sendMessage() {
         message: message  // Include the actual message
     };
 
-  fetch('/api/messages', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify(messageData),
-  timeout: 60000  // Allow up to 60 seconds for a response
-})
-.then(response => {
-  if (!response.ok) {
-    throw new Error('Error response from server: ' + response.statusText);
-  }
-  return response.json();
-})
-.then(data => {
-  if (data.message === 'Message sent successfully') {
-    console.log('Message successfully sent');
-    addMessageToChat(messageData); // Add message to the chat immediately
-    document.getElementById('user-message').value = ''; // Clear input field
-  } else {
-    console.error('Error sending message:', data.error);
-    showNotification('Failed to send the message. Please try again later.', true);
-  }
-})
-    .catch(error => {
+    try {
+        const response = await fetch('/api/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(messageData),
+        });
+
+        if (!response.ok) {
+            throw new Error('Error response from server: ' + response.statusText);
+        }
+
+        // Try to parse JSON response
+        const data = await response.json();
+        if (data.message === 'Message sent successfully') {
+            console.log('Message successfully sent');
+            addMessageToChat(messageData); // Add message to the chat immediately
+            document.getElementById('user-message').value = ''; // Clear input field
+
+            // Publish the new message to Ably for real-time updates
+            channel.publish('newMessage', messageData);
+        } else {
+            console.error('Error sending message:', data.error);
+            showNotification('Failed to send the message. Please try again later.', true);
+        }
+    } catch (error) {
         console.error('Error sending message to backend:', error);
         showNotification('Failed to send the message. Please try again later.', true);
-    });
+    }
 }
-
 
 // Function to show a notification to the user
 function showNotification(message, isError = false) {

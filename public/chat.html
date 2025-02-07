@@ -139,13 +139,12 @@ channel.subscribe('newMessage', function (message) {
     addMessageToChat(message.data);  // Add the new message to the chat UI
 });
 
-// Function to add message to the chat UIssagesContainer.scrollTop = messagesContainer.scrollHeight;
 function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
     // Only display the message if it is from the other user
-    if (messageData.userId !== parseInt(userId)) {
+    if (messageData.userId === parseInt(userId)) {
         return;  // Skip adding the message if it is from the current user
     }
 
@@ -156,7 +155,7 @@ function addMessageToChat(messageData) {
     messageBubble.classList.add('msg-bubble');
     messageBubble.textContent = messageData.message;
 
-    if (messageData.userId === userId) {
+    if (messageData.userId === parseInt(userId)) {
         messageElement.classList.add('user-msg');
     } else {
         messageElement.classList.add('other-msg');
@@ -168,7 +167,6 @@ function addMessageToChat(messageData) {
     // Scroll to the bottom of the container
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
-
 
 
 // Function to display messages from initial fetch
@@ -199,7 +197,6 @@ function displayMessages(messages) {
 }
 
 // Send message function
-// Send message function
 function sendMessage() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
     if (!message) {
@@ -214,6 +211,9 @@ function sendMessage() {
     };
 
     console.log('Sending message:', messageData); // Log the message data being sent
+
+    // Add the message to the chat immediately (for the sender's side)
+    addMessageToChat(messageData);
 
     // Send message to the server
     fetch('/api/messages', {
@@ -256,6 +256,7 @@ function sendMessage() {
         showNotification('Failed to send the message. Please try again later.', true);
     });
 }
+
 
 
 

@@ -135,9 +135,11 @@ fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
 channel.subscribe('newMessage', function (message) {
     console.log('Real-time new message received on channel:', channelName);
     console.log('Received message:', message.data); // Log the received message
-    addMessageToChat(message.data);  // Add the new message to the chat UI
+    // Only add the message if it's from the other user
+    if (message.data.userId !== parseInt(userId)) {
+        addMessageToChat(message.data);  // Add the new message to the chat UI
+    }
 });
-
 
 // Function to add message to the chat UI
 function addMessageToChat(messageData) {
@@ -151,10 +153,11 @@ function addMessageToChat(messageData) {
     messageBubble.classList.add('msg-bubble');
     messageBubble.textContent = messageData.message;
 
+    // Check if the message is from the current user or the other user to position it
     if (messageData.userId === parseInt(userId)) {
-        messageElement.classList.add('user-msg');
+        messageElement.classList.add('user-msg');  // Right side for sender
     } else {
-        messageElement.classList.add('other-msg');
+        messageElement.classList.add('other-msg');  // Left side for receiver
     }
 
     messageElement.appendChild(messageBubble);
@@ -163,7 +166,6 @@ function addMessageToChat(messageData) {
     // Scroll to the bottom of the container
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
-
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {
@@ -178,10 +180,11 @@ function displayMessages(messages) {
         messageBubble.classList.add('msg-bubble');
         messageBubble.textContent = msg.message;
 
+        // Check if the message is from the current user or the other user to position it
         if (msg.userId === parseInt(userId)) {
-            messageElement.classList.add('user-msg');
+            messageElement.classList.add('user-msg');  // Right side for sender
         } else {
-            messageElement.classList.add('other-msg');
+            messageElement.classList.add('other-msg');  // Left side for receiver
         }
 
         messageElement.appendChild(messageBubble);
@@ -191,7 +194,6 @@ function displayMessages(messages) {
     // Scroll to the bottom after displaying messages
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
-  
 
 // Send message function
 function sendMessage() {
@@ -209,7 +211,7 @@ function sendMessage() {
 
     console.log('Sending message:', messageData); // Log the message data being sent
 
-    // Immediately display the sent message in the UI
+    // Immediately display the sent message in the UI (on the sender's side)
     addMessageToChat(messageData);
 
     // Send message to the server
@@ -253,7 +255,6 @@ function sendMessage() {
         showNotification('Failed to send the message. Please try again later.', true);
     });
 }
-
 
 // Function to show a notification to the user
 function showNotification(message, isError = false) {

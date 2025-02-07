@@ -228,9 +228,10 @@ function sendMessage() {
     showNotification('Failed to send the message. Please try again later.', true);
   }
 })
-.catch(error => {
-  console.error('Error sending message to backend:', error);
-  showNotification('Failed to send the message. Please try again later.', true);
+    .catch(error => {
+        console.error('Error sending message to backend:', error);
+        showNotification('Failed to send the message. Please try again later.', true);
+    });
 }
 
 

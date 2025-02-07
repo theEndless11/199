@@ -1,5 +1,6 @@
 const pool = require('../utils/db'); // This must be promisePool from db.js
 const { publishToAbly } = require('../utils/ably');
+console.log('publishToAbly function:', publishToAbly);  // Log the imported function
 
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');

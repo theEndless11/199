@@ -17,9 +17,11 @@ module.exports = async (req, res) => {
         console.error('Missing query parameters');
         return res.status(400).json({ error: 'Missing required query parameters: userId, chatWith' });
       }
+const sql = 'SELECT * FROM messages WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) ORDER BY timestamp';
+const [messages] = await pool.query(sql, [userId, chatWith, chatWith, userId]);
 
-      const sql = 'SELECT * FROM messages WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) ORDER BY timestamp';
-      const [messages] = await pool.query(sql, [userId, chatWith, chatWith, userId]);
+// Ensure messages include timestamps when sent to the frontend
+return res.status(200).json({ messages });
 
       if (messages.length > 0) {
         console.log('Fetched messages:', messages);

@@ -107,11 +107,11 @@ const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
 const ably = new Ably.Realtime(ablyApiKey);
 
 // Unique channel name based on the user IDs
-const channelName = chat-${userId}-${chatWith};
+const channelName = `chat-${userId}-${chatWith}`; // Fixed the string interpolation
 const channel = ably.channels.get(channelName);
 
 // Fetch previous messages from the database
-fetch(/api/messages?userId=${userId}&chatWith=${chatWith})
+fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
     .then(response => {
         if (!response.ok) {
             throw new Error('Failed to fetch messages: ' + response.statusText);
@@ -137,14 +137,13 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
-// Function to add message to the chat UI
 function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
-    // Do not display the message if it is from the current user (we're sending it, so it shouldn't show again)
+    // Only display the message if it is from the other user
     if (messageData.userId === parseInt(userId)) {
-        return;  // Skip this message as it's from the current user
+        return;  // Skip adding the message if it is from the current user
     }
 
     const messageElement = document.createElement('div');
@@ -166,7 +165,6 @@ function addMessageToChat(messageData) {
     // Scroll to the bottom of the container
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
-
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {
@@ -196,7 +194,6 @@ function displayMessages(messages) {
 }
 
 // Send message function
-// Send message function
 function sendMessage() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
     if (!message) {
@@ -223,7 +220,7 @@ function sendMessage() {
     .then(response => {
         if (!response.ok) {
             return response.text().then(text => {
-                throw new Error(Error response from server: ${response.statusText}, Details: ${text});
+                throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`); // Fixed the template string formatting
             });
         }
         return response.json();
@@ -233,7 +230,6 @@ function sendMessage() {
 
         if (data.message === 'Message sent successfully') {
             console.log('Message successfully sent');
-            addMessageToChat(messageData); // Add message to the chat immediately
             document.getElementById('user-message').value = ''; // Clear input field
 
             // Publish the message to the Ably channel so the other user can see it in real-time
@@ -254,7 +250,6 @@ function sendMessage() {
         showNotification('Failed to send the message. Please try again later.', true);
     });
 }
-
 
 // Function to show a notification to the user
 function showNotification(message, isError = false) {
@@ -285,6 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('user-message').addEventListener('keypress', handleKey);  // Attach keypress listener for the Enter key
 });
 </script>
+
 </body>    
 <style>
     #chatbox-container {

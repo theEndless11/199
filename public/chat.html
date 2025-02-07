@@ -107,38 +107,37 @@ const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
 const ably = new Ably.Realtime(ablyApiKey);
 
 // Unique channel name based on the user IDs
-const channelName = `chat-${userId}-${chatWith}`;
-console.log('Channel name:', channelName);
-
+const channelName = chat-${userId}-${chatWith};
 const channel = ably.channels.get(channelName);
 
-// Function to fetch and display previous messages
-async function fetchMessages() {
-    try {
-        const response = await fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`);
+// Fetch previous messages from the database
+fetch(/api/messages?userId=${userId}&chatWith=${chatWith})
+    .then(response => {
         if (!response.ok) {
             throw new Error('Failed to fetch messages: ' + response.statusText);
         }
-        const data = await response.json();  // Parse the response as JSON
+        return response.json();  // Parse the response as JSON
+    })
+    .then(data => {
         if (data.messages) {
             displayMessages(data.messages);  // Display fetched messages
         } else {
             console.error('Error fetching messages:', data.error);
         }
-    } catch (error) {
+    })
+    .catch(error => {
         console.error('Error fetching messages:', error);
         showNotification('Failed to fetch messages. Please try again later.', true);
-    }
-}
+    });
 
 // Listen for new messages on the Ably channel
 channel.subscribe('newMessage', function (message) {
-    console.log('Real-time new message received on channel:', channelName);
-    console.log('Received message:', message.data); // Log the received message
+    console.log('Real-time new message:', message.data); // Log the received message
     addMessageToChat(message.data);  // Add the new message to the chat UI
 });
 
-// Add message to the chat container
+// Function to add message to the chat UI
+// Function to add message to the chat UI
 function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
@@ -155,7 +154,7 @@ function addMessageToChat(messageData) {
     messageBubble.classList.add('msg-bubble');
     messageBubble.textContent = messageData.message;
 
-    if (messageData.userId === parseInt(userId)) {
+    if (messageData.userId === userId) {
         messageElement.classList.add('user-msg');
     } else {
         messageElement.classList.add('other-msg');
@@ -167,6 +166,8 @@ function addMessageToChat(messageData) {
     // Scroll to the bottom of the container
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+
+
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {
@@ -195,8 +196,9 @@ function displayMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Function to send a message
-async function sendMessage() {
+// Send message function
+// Send message function
+function sendMessage() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
     if (!message) {
         alert('Please type a message');
@@ -211,25 +213,23 @@ async function sendMessage() {
 
     console.log('Sending message:', messageData); // Log the message data being sent
 
-    // Add the message to the chat immediately (for the sender's side)
-    addMessageToChat(messageData);
-
-    try {
-        // Send message to the server
-        const response = await fetch('/api/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(messageData),
-        });
-
+    // Send message to the server
+    fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(messageData),
+    })
+    .then(response => {
         if (!response.ok) {
-            const text = await response.text();
-            throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`);
+            return response.text().then(text => {
+                throw new Error(Error response from server: ${response.statusText}, Details: ${text});
+            });
         }
-
-        const data = await response.json();
+        return response.json();
+    })
+    .then(data => {
         console.log('Response from server:', data); // Log the response data
 
         if (data.message === 'Message sent successfully') {
@@ -248,11 +248,14 @@ async function sendMessage() {
             console.error('Error sending message:', data.error);
             showNotification('Failed to send the message. Please try again later.', true);
         }
-    } catch (error) {
+    })
+    .catch(error => {
         console.error('Error sending message to backend:', error);
         showNotification('Failed to send the message. Please try again later.', true);
-    }
+    });
 }
+
+
 
 // Function to show a notification to the user
 function showNotification(message, isError = false) {
@@ -281,12 +284,8 @@ function handleKey(event) {
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);  // Attach click listener for the send button
     document.getElementById('user-message').addEventListener('keypress', handleKey);  // Attach keypress listener for the Enter key
-
-    // Fetch the initial set of messages on page load
-    fetchMessages();
 });
 </script>
-
 
 </body>    
 <style>

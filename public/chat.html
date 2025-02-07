@@ -198,6 +198,7 @@ function displayMessages(messages) {
   
 
 // Send message function
+// Send message function
 function sendMessage() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
     if (!message) {
@@ -224,7 +225,7 @@ function sendMessage() {
     .then(response => {
         if (!response.ok) {
             return response.text().then(text => {
-                throw new Error(Error response from server: ${response.statusText}, Details: ${text});
+                throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`);
             });
         }
         return response.json();
@@ -254,6 +255,7 @@ function sendMessage() {
         showNotification('Failed to send the message. Please try again later.', true);
     });
 }
+
 // Function to show a notification to the user
 function showNotification(message, isError = false) {
     const notification = document.createElement('div');

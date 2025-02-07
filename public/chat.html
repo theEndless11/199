@@ -106,13 +106,17 @@ const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
 // Initialize Ably connection directly using API key
 const ably = new Ably.Realtime(ablyApiKey);
 
-const channelName = `chat-${userId}-${chatWith}`;
-console.log('Channel name:', channelName);
+// Determine the correct channel name based on the userId and chatWith
+const userChannel = `chat-${userId}-${chatWith}`;  // Sender's channel
+const otherUserChannel = `chat-${chatWith}-${userId}`;  // Receiver's channel
 
-const channel = ably.channels.get(channelName);
+console.log('User Channel:', userChannel, 'Other User Channel:', otherUserChannel);
 
-// Fetch previous messages from the database
-fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
+// Subscribe to the current user's channel
+const channel = ably.channels.get(userChannel);
+
+    // Fetch previous messages from the database
+fetch(/api/messages?userId=${userId}&chatWith=${chatWith})
     .then(response => {
         if (!response.ok) {
             throw new Error('Failed to fetch messages: ' + response.statusText);
@@ -131,12 +135,11 @@ fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
         showNotification('Failed to fetch messages. Please try again later.', true);
     });
 
-// Listen for new messages on the Ably channel
-// Listen for new messages on the Ably channel
+// Listen for new messages on the current user's channel (Sender's Channel)
 channel.subscribe('newMessage', function (message) {
-    console.log('Real-time new message received on channel:', channelName);
+    console.log('Real-time new message received on channel:', userChannel);
     console.log('Received message:', message.data); // Log the received message
-    
+
     // Ensure the message is only displayed for the receiver, not the sender
     if (message.data.userId !== parseInt(userId)) {
         addMessageToChat(message.data);  // Add the new message to the chat UI
@@ -166,34 +169,6 @@ function addMessageToChat(messageData) {
     messagesContainer.appendChild(messageElement);
 
     // Scroll to the bottom of the container
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-// Function to display messages from initial fetch
-function displayMessages(messages) {
-    const messagesContainer = document.getElementById('messages-container');
-    messagesContainer.innerHTML = ''; // Clear any existing messages
-
-    messages.forEach(msg => {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
-
-        const messageBubble = document.createElement('div');
-        messageBubble.classList.add('msg-bubble');
-        messageBubble.textContent = msg.message;
-
-        // Check if the message is from the current user or the other user to position it
-        if (msg.userId === parseInt(userId)) {
-            messageElement.classList.add('user-msg');  // Right side for sender
-        } else {
-            messageElement.classList.add('other-msg');  // Left side for receiver
-        }
-
-        messageElement.appendChild(messageBubble);
-        messagesContainer.appendChild(messageElement);
-    });
-
-    // Scroll to the bottom after displaying messages
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
@@ -239,14 +214,16 @@ function sendMessage() {
             console.log('Message successfully sent');
             document.getElementById('user-message').value = ''; // Clear input field
 
-            // Publish the message to the Ably channel so the other user can see it in real-time
+            // Publish the message to the receiver's channel so the other user can see it in real-time
             const realTimeMessage = {
                 userId: userId,  // The user who sent the message
                 chatWith: chatWith,  // The other user in the chat
                 message: message  // The message content
             };
 
-            channel.publish('newMessage', realTimeMessage);  // Publish to the Ably channel
+            // Publish to the receiver's channel
+            const receiverChannel = ably.channels.get(otherUserChannel);
+            receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
         } else {
             console.error('Error sending message:', data.error);
             showNotification('Failed to send the message. Please try again later.', true);
@@ -257,6 +234,7 @@ function sendMessage() {
         showNotification('Failed to send the message. Please try again later.', true);
     });
 }
+
 
 // Function to show a notification to the user
 function showNotification(message, isError = false) {

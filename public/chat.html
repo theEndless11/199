@@ -166,7 +166,7 @@ function addMessageToChat(messageData) {
 // Function to display messages from initial fetch
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
-    messagesContainer.innerHTML = '';
+    messagesContainer.innerHTML = ''; // Clear any existing messages
 
     messages.forEach(msg => {
         const messageElement = document.createElement('div');

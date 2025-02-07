@@ -85,7 +85,8 @@
         </div>
     </div>
 </div>
-<script>
+
+    <script>
 // Get userId and chatWith from query parameters
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId');
@@ -112,7 +113,7 @@ console.log('Channel name:', channelName);
 
 const channel = ably.channels.get(channelName);
 
-// Fetch previous messages from the database using async function
+// Fetch previous messages from the database on page load
 async function fetchMessages() {
     try {
         const response = await fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`);
@@ -165,7 +166,6 @@ function addMessageToChat(messageData) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-
 // Function to display messages from initial fetch
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
@@ -191,12 +191,6 @@ function displayMessages(messages) {
 
     // Scroll to the bottom after displaying messages
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-// Function to sync messages periodically
-async function quickSyncMessages() {
-    console.log("Syncing messages...");
-    await fetchMessages();
 }
 
 // Send message function (async/await version)
@@ -287,13 +281,11 @@ function handleKey(event) {
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);  // Attach click listener for the send button
     document.getElementById('user-message').addEventListener('keypress', handleKey);  // Attach keypress listener for the Enter key
+
+    // Initial fetch on page load
+    fetchMessages();
 });
-
-// Sync every 3 seconds (adjustable time interval)
-setInterval(quickSyncMessages, 3000);
 </script>
-
-
 
 </body>    
 <style>

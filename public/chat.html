@@ -138,13 +138,14 @@ function addMessageToChat(messageData) {
     messageBubble.classList.add('msg-bubble');
     messageBubble.textContent = messageData.message;
 
-    // Get the timestamp and format it
-    const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-    const timeElement = document.createElement('span');
+    // Get the timestamp and format it correctly
+    const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const timeElement = document.createElement('div');
     timeElement.classList.add('timestamp');
     timeElement.textContent = timestamp;
 
-    // Append the time to the message bubble
+    // Append the time below the message
     messageBubble.appendChild(timeElement);
 
     // Check if the message is from the current user or the other user to position it
@@ -174,13 +175,13 @@ function displayMessages(messages) {
         messageBubble.classList.add('msg-bubble');
         messageBubble.textContent = msg.message;
 
-        // Get the timestamp and format it
-        const timestamp = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-        const timeElement = document.createElement('span');
+        // Get the timestamp and format it correctly
+        const timestamp = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const timeElement = document.createElement('div');
         timeElement.classList.add('timestamp');
         timeElement.textContent = timestamp;
 
-        // Append the time to the message bubble
+        // Append the time below the message
         messageBubble.appendChild(timeElement);
 
         // Check if the message is from the current user or the other user to position it
@@ -209,7 +210,8 @@ function sendMessage() {
     const messageData = {
         userId: userId,  // Include userId
         chatWith: chatWith,  // Include chatWith
-        message: message  // Include the actual message
+        message: message,  // Include the actual message
+        timestamp: new Date().toISOString()  // Add timestamp for current message
     };
 
     console.log('Sending message:', messageData); // Log the message data being sent
@@ -245,7 +247,7 @@ function sendMessage() {
                 userId: userId,  // The user who sent the message
                 chatWith: chatWith,  // The other user in the chat
                 message: message,  // The message content
-                timestamp: new Date().toISOString() // Add timestamp
+                timestamp: new Date().toISOString() // Add timestamp for the message
             };
 
             // Publish to the receiver's channel
@@ -278,10 +280,35 @@ function loadMessages() {
 
 // Call the function to load previous messages when the page is loaded
 loadMessages();
-</script>
+    </script>
 
+</body>    <style>/* Style for message bubbles */
+.msg-bubble {
+    max-width: 70%;
+    padding: 10px;
+    border-radius: 12px;
+    background-color: #f1f1f1;
+    position: relative;
+}
 
-</body>    
+/* Style for timestamp */
+.timestamp {
+    font-size: 12px;
+    color: #888;
+    margin-top: 5px;
+    text-align: right;
+}
+
+/* User message alignment (right side for sender) */
+.user-msg {
+    text-align: right;
+}
+
+/* Other message alignment (left side for receiver) */
+.other-msg {
+    text-align: left;
+}
+</style>
 <style>
     #chatbox-container {
         background-color: #fff;

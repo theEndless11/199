@@ -143,11 +143,7 @@ function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
-    // For real-time messages, skip adding if it's from the current user
-    if (messageData.userId === parseInt(userId) && !messageData.isSenderMessage) {
-        return;  // Skip adding the message if it's from the current user and it's a real-time message
-    }
-
+    // Ensure the message is correctly placed on the right if it's from the current user
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
 
@@ -155,18 +151,20 @@ function addMessageToChat(messageData) {
     messageBubble.classList.add('msg-bubble');
     messageBubble.textContent = messageData.message;
 
+    // Check if the message is from the current user and align accordingly
     if (messageData.userId === parseInt(userId)) {
-        messageElement.classList.add('user-msg');
+        messageElement.classList.add('user-msg');  // Align to the right (for the sender)
     } else {
-        messageElement.classList.add('other-msg');
+        messageElement.classList.add('other-msg');  // Align to the left (for the other user)
     }
 
     messageElement.appendChild(messageBubble);
     messagesContainer.appendChild(messageElement);
 
-    // Scroll to the bottom of the container
+    // Scroll to the bottom of the container to show the latest message
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {
@@ -213,7 +211,7 @@ async function sendMessage() {
         userId: userId,  // Include userId
         chatWith: chatWith,  // Include chatWith
         message: message,  // Include the actual message
-        isSenderMessage: true  // Mark the message as being from the sender
+        isSenderMessage: true  // Mark the message as being from the sender (so it appears on the right)
     };
 
     console.log('Sending message:', messageData); // Log the message data being sent

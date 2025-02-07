@@ -110,34 +110,69 @@ const ably = new Ably.Realtime(ablyApiKey);
 const channelName = `chat-${userId}-${chatWith}`; // Fixed the channel name syntax
 const channel = ably.channels.get(channelName);
 
-// Fetch previous messages from the database
-fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to fetch messages: ' + response.statusText);
-        }
-        return response.json();  // Parse the response as JSON
-    })
-    .then(data => {
-        if (data.messages) {
-            displayMessages(data.messages);  // Display fetched messages
-        } else {
-            console.error('Error fetching messages:', data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error fetching messages:', error);
-        showNotification('Failed to fetch messages. Please try again later.', true);
-    });
+// Function to validate incoming message
+function validateMessage(messageData) {
+    return messageData && messageData.userId && messageData.chatWith && messageData.message;
+}
 
-// Listen for new messages on the Ably channel
+// Real-time updates from Ably
 channel.subscribe('newMessage', function (message) {
-    console.log('Real-time new message:', message.data); // Log the received message
-    addMessageToChat(message.data);  // Add the new message to the chat UI
+    console.log('Real-time new message received:', message.data); // Log incoming new message for debugging
+
+    if (message.data && validateMessage(message.data)) {
+        const incomingMessage = message.data;
+
+        console.log('Valid new message:', incomingMessage);
+
+        // Show notification for new message arrival
+        showNotification('New message received!', false);
+
+        // Now, instead of just refreshing, we'll explicitly update the chat:
+        addMessageToChat(incomingMessage, true);  // Force add the message to chat
+    } else {
+        console.error('Invalid message data received from Ably');
+    }
 });
 
-// Function to add message to the chat UI
-function addMessageToChat(messageData) {
+// Function to fetch and refresh all messages from the backend (force refresh)
+async function fetchAndRefreshMessages() {
+    try {
+        const response = await fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`);  // Ensure this endpoint is correct
+        if (response.ok) {
+            const data = await response.json();
+            if (data.messages) {
+                console.log('Messages fetched:', data.messages);
+
+                // Clear the current chat feed
+                const messagesContainer = document.getElementById('messages-container');
+                if (messagesContainer) {
+                    messagesContainer.innerHTML = '';  // Clear the current messages
+                }
+
+                // Re-populate the chat feed with the fetched messages
+                data.messages.forEach(msg => {
+                    addMessageToChat(msg);  // Add each message to the chat
+                });
+            } else {
+                console.error('Error fetching messages:', data.error);
+            }
+        } else {
+            showNotification('Failed to fetch messages', true);
+        }
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        showNotification('Error fetching messages: ' + error.message, true);
+    }
+}
+
+// Function to manually reload the page (force refresh)
+function reloadPage() {
+    console.log('Refreshing page to show the new messages...');
+    location.reload();  // This will reload the page and refresh the entire UI
+}
+
+// Function to add a message to the chat UI
+function addMessageToChat(messageData, isRealTime = false) {
     console.log('Adding message to chat:', messageData); // Log the message being added
 
     const messagesContainer = document.getElementById('messages-container');
@@ -163,31 +198,20 @@ function addMessageToChat(messageData) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Function to display messages from initial fetch
-function displayMessages(messages) {
-    const messagesContainer = document.getElementById('messages-container');
-    messagesContainer.innerHTML = ''; // Clear any existing messages
-
-    messages.forEach(msg => {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
-
-        const messageBubble = document.createElement('div');
-        messageBubble.classList.add('msg-bubble');
-        messageBubble.textContent = msg.message;
-
-        if (msg.userId === parseInt(userId)) {
-            messageElement.classList.add('user-msg');
-        } else {
-            messageElement.classList.add('other-msg');
-        }
-
-        messageElement.appendChild(messageBubble);
-        messagesContainer.appendChild(messageElement);
-    });
-
-    // Scroll to the bottom after displaying messages
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+// Function to show a notification to the user
+function showNotification(message, isError = false) {
+    const notification = document.createElement('div');
+    notification.classList.add('notification');
+    if (isError) {
+        notification.classList.add('error');
+    } else {
+        notification.classList.add('success');
+    }
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
 }
 
 // Send message function
@@ -237,22 +261,6 @@ function sendMessage() {
     });
 }
 
-// Function to show a notification to the user
-function showNotification(message, isError = false) {
-    const notification = document.createElement('div');
-    notification.classList.add('notification');
-    if (isError) {
-        notification.classList.add('error');
-    } else {
-        notification.classList.add('success');
-    }
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
-}
-
 // Handle 'Enter' key press to send message
 function handleKey(event) {
     if (event.key === 'Enter') {
@@ -264,6 +272,9 @@ function handleKey(event) {
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);  // Attach click listener for the send button
     document.getElementById('user-message').addEventListener('keypress', handleKey);  // Attach keypress listener for the Enter key
+
+    // Fetch and display previous messages on page load
+    fetchAndRefreshMessages();
 });
 </script>
 

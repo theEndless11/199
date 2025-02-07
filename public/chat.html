@@ -142,9 +142,9 @@ function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
-    // Do not display the message if it is from the current user (we're sending it, so it shouldn't show again)
+    // Only display the message if it is from the other user
     if (messageData.userId === parseInt(userId)) {
-        return;  // Skip this message as it's from the current user
+        return;  // Skip adding the message if it is from the current user
     }
 
     const messageElement = document.createElement('div');
@@ -166,6 +166,7 @@ function addMessageToChat(messageData) {
     // Scroll to the bottom of the container
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+
 
 
 // Function to display messages from initial fetch
@@ -233,7 +234,6 @@ function sendMessage() {
 
         if (data.message === 'Message sent successfully') {
             console.log('Message successfully sent');
-            addMessageToChat(messageData); // Add message to the chat immediately
             document.getElementById('user-message').value = ''; // Clear input field
 
             // Publish the message to the Ably channel so the other user can see it in real-time
@@ -254,6 +254,7 @@ function sendMessage() {
         showNotification('Failed to send the message. Please try again later.', true);
     });
 }
+
 
 
 // Function to show a notification to the user

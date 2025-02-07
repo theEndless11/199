@@ -137,9 +137,15 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
+// Function to add message to the chat UI
 function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
+
+    // Do not display the message if it is from the current user (we're sending it, so it shouldn't show again)
+    if (messageData.userId === parseInt(userId)) {
+        return;  // Skip this message as it's from the current user
+    }
 
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');

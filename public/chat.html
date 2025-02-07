@@ -86,8 +86,6 @@
     </div>
 </div>
 
-<script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
-    
 <script>
 // Get userId and chatWith from query parameters
 const urlParams = new URLSearchParams(window.location.search);
@@ -263,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);  // Attach click listener for the send button
     document.getElementById('user-message').addEventListener('keypress', handleKey);  // Attach keypress listener for the Enter key
 });
-
+    </script>
 </body>    
 <style>
     #chatbox-container {

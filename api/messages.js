@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
     }
 
     // Handle POST request to send a message
-   if (req.method === 'POST') {
+    if (req.method === 'POST') {
       const { userId, chatWith, message } = req.body;
 
       // Validate required fields
@@ -49,9 +49,10 @@ module.exports = async (req, res) => {
 
         const messageData = { userId, chatWith, message };
 
+        // Now publish the message to Ably for real-time push
         try {
           console.log('Publishing to Ably:', messageData);
-          await publishToAbly('newMessage', messageData); // Check if this call is slow
+          await publishToAbly('newMessage', messageData); // Push to Ably
           console.log('Message published to Ably successfully');
         } catch (err) {
           console.error('Error publishing to Ably:', err);
@@ -71,3 +72,4 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Unexpected error occurred', details: err.message });
   }
 };
+

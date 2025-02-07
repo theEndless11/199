@@ -108,6 +108,8 @@ const ably = new Ably.Realtime(ablyApiKey);
 
 // Unique channel name based on the user IDs
 const channelName = `chat-${userId}-${chatWith}`;
+console.log('Channel name:', channelName);
+
 const channel = ably.channels.get(channelName);
 
 // Fetch previous messages from the database
@@ -132,7 +134,8 @@ fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
 
 // Listen for new messages on the Ably channel
 channel.subscribe('newMessage', function (message) {
-    console.log('Real-time new message:', message.data); // Log the received message
+    console.log('Real-time new message received on channel:', channelName);
+    console.log('Received message:', message.data); // Log the received message
     addMessageToChat(message.data);  // Add the new message to the chat UI
 });
 

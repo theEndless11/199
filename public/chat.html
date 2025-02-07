@@ -85,7 +85,6 @@
         </div>
     </div>
 </div>
-
 <script>
 // Get userId and chatWith from query parameters
 const urlParams = new URLSearchParams(window.location.search);
@@ -139,6 +138,8 @@ channel.subscribe('newMessage', function (message) {
 
 // Function to add message to the chat UI
 function addMessageToChat(messageData) {
+    console.log('Adding message to chat:', messageData); // Log the message being added
+
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 

@@ -257,10 +257,12 @@ function handleKey(event) {
 }
 
 // Wait for DOM to fully load before adding event listeners
+// Wait for DOM to fully load before adding event listeners
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);  // Attach click listener for the send button
     document.getElementById('user-message').addEventListener('keypress', handleKey);  // Attach keypress listener for the Enter key
 });
+
     </script>
 </body>    
 <style>

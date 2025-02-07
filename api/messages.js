@@ -49,10 +49,12 @@ module.exports = async (req, res) => {
 
         const messageData = { userId, chatWith, message };
 
-        // Now publish the message to Ably for real-time push
+        // Now publish the message to Ably for real-time push to the other user
         try {
           console.log('Publishing to Ably:', messageData);
-          await publishToAbly('newMessage', messageData); // Push to Ably
+          
+          // Publish the message to the **other user (chatWith)** channel
+          await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData); // Push to the Ably channel for the other user
           console.log('Message published to Ably successfully');
         } catch (err) {
           console.error('Error publishing to Ably:', err);
@@ -72,4 +74,5 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Unexpected error occurred', details: err.message });
   }
 };
+
 

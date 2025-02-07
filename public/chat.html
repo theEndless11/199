@@ -106,8 +106,9 @@ const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
 // Initialize Ably connection directly using API key
 const ably = new Ably.Realtime(ablyApiKey);
 
-// Unique channel name based on the user IDs
-const channelName = `chat-${userId}-${chatWith}`; // Fixed the string interpolation
+const channelName = `chat-${userId}-${chatWith}`;
+console.log('Channel name:', channelName);
+
 const channel = ably.channels.get(channelName);
 
 // Fetch previous messages from the database
@@ -132,9 +133,11 @@ fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
 
 // Listen for new messages on the Ably channel
 channel.subscribe('newMessage', function (message) {
-    console.log('Real-time new message:', message.data); // Log the received message
+    console.log('Real-time new message received on channel:', channelName);
+    console.log('Received message:', message.data); // Log the received message
     addMessageToChat(message.data);  // Add the new message to the chat UI
 });
+
 
 // Function to add message to the chat UI
 function addMessageToChat(messageData) {
@@ -192,6 +195,8 @@ function displayMessages(messages) {
     // Scroll to the bottom after displaying messages
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+  
+
 
 // Send message function
 function sendMessage() {
@@ -200,14 +205,14 @@ function sendMessage() {
         alert('Please type a message');
         return;
     }
+const realTimeMessage = {
+    userId: userId,  // The user who sent the message
+    chatWith: chatWith,  // The other user in the chat
+    message: message  // The message content
+};
+console.log('Publishing to Ably:', realTimeMessage);
+channel.publish('newMessage', realTimeMessage);  // Publish to the Ably channel
 
-    const messageData = {
-        userId: userId,  // Include userId
-        chatWith: chatWith,  // Include chatWith
-        message: message  // Include the actual message
-    };
-
-    console.log('Sending message:', messageData); // Log the message data being sent
 
     // Send message to the server
     fetch('/api/messages', {

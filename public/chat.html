@@ -196,6 +196,40 @@ function displayMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
+    
+         // Sync every 3 seconds (adjustable time interval)
+         setInterval(quickSyncMessages, 3000);
+ 
+         // Function to display messages (to be used after fetching from the database)
+         function displayMessages(messages) {
+             const messagesContainer = document.getElementById('messages-container');
+             messagesContainer.innerHTML = ''; // Clear any existing messages
+ 
+             // Iterate over the messages and display them
+             messages.forEach(msg => {
+                 const messageElement = document.createElement('div');
+                 messageElement.classList.add('message');
+                 
+                 // Create the message bubble
+                 const messageBubble = document.createElement('div');
+                 messageBubble.classList.add('msg-bubble');
+                 messageBubble.textContent = msg.message; // Display message text
+ 
+                 // Check who sent the message to align correctly
+                 if (msg.userId === parseInt(userId)) {
+                     messageElement.classList.add('user-msg'); // Apply class for right alignment
+                 } else {
+                     messageElement.classList.add('other-msg'); // Apply class for left alignment
+                 }
+ 
+                 // Append the message bubble to the message container
+                 messageElement.appendChild(messageBubble);
+                 messagesContainer.appendChild(messageElement);
+             });
+ 
+             // Scroll to the bottom to show the latest message
+             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+         }
 // Send message function
 function sendMessage() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field

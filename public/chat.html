@@ -190,6 +190,7 @@ function displayMessages(messages) {
 }
 
 // Send message function
+// Send message function
 function sendMessage() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
     if (!message) {
@@ -205,6 +206,7 @@ function sendMessage() {
 
     console.log('Sending message:', messageData); // Log the message data being sent
 
+    // Send message to the server
     fetch('/api/messages', {
         method: 'POST',
         headers: {
@@ -227,6 +229,15 @@ function sendMessage() {
             console.log('Message successfully sent');
             addMessageToChat(messageData); // Add message to the chat immediately
             document.getElementById('user-message').value = ''; // Clear input field
+
+            // Publish the message to the Ably channel so the other user can see it in real-time
+            const realTimeMessage = {
+                userId: userId,  // The user who sent the message
+                chatWith: chatWith,  // The other user in the chat
+                message: message  // The message content
+            };
+
+            channel.publish('newMessage', realTimeMessage);  // Publish to the Ably channel
         } else {
             console.error('Error sending message:', data.error);
             showNotification('Failed to send the message. Please try again later.', true);
@@ -237,6 +248,7 @@ function sendMessage() {
         showNotification('Failed to send the message. Please try again later.', true);
     });
 }
+
 
 // Function to show a notification to the user
 function showNotification(message, isError = false) {

@@ -143,9 +143,9 @@ function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
-    // Only display the message if it is from the other user
-    if (messageData.userId === parseInt(userId)) {
-        return;  // Skip adding the message if it is from the current user
+    // For real-time messages, skip adding if it's from the current user
+    if (messageData.userId === parseInt(userId) && !messageData.isSenderMessage) {
+        return;  // Skip adding the message if it's from the current user and it's a real-time message
     }
 
     const messageElement = document.createElement('div');
@@ -207,7 +207,8 @@ function sendMessage() {
     const messageData = {
         userId: userId,  // Include userId
         chatWith: chatWith,  // Include chatWith
-        message: message  // Include the actual message
+        message: message,  // Include the actual message
+        isSenderMessage: true  // Mark the message as being from the sender
     };
 
     console.log('Sending message:', messageData); // Log the message data being sent
@@ -242,7 +243,8 @@ function sendMessage() {
             const realTimeMessage = {
                 userId: userId,  // The user who sent the message
                 chatWith: chatWith,  // The other user in the chat
-                message: message  // The message content
+                message: message,  // The message content
+                isSenderMessage: true  // Indicate this message was sent by the sender
             };
 
             channel.publish('newMessage', realTimeMessage);  // Publish to the Ably channel

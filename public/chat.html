@@ -107,7 +107,9 @@ const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
 const ably = new Ably.Realtime(ablyApiKey);
 
 // Unique channel name based on the user IDs
-const channelName = chat-${userId}-${chatWith};
+const channelName = `chat-${userId}-${chatWith}`;
+console.log('Channel name:', channelName);
+
 const channel = ably.channels.get(channelName);
 
 // Fetch previous messages from the database

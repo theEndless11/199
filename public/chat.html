@@ -197,7 +197,6 @@ function displayMessages(messages) {
 }
   
 
-
 // Send message function
 function sendMessage() {
     const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
@@ -205,14 +204,14 @@ function sendMessage() {
         alert('Please type a message');
         return;
     }
-const realTimeMessage = {
-    userId: userId,  // The user who sent the message
-    chatWith: chatWith,  // The other user in the chat
-    message: message  // The message content
-};
-console.log('Publishing to Ably:', realTimeMessage);
-channel.publish('newMessage', realTimeMessage);  // Publish to the Ably channel
 
+    const messageData = {
+        userId: userId,  // Include userId
+        chatWith: chatWith,  // Include chatWith
+        message: message  // Include the actual message
+    };
+
+    console.log('Sending message:', messageData); // Log the message data being sent
 
     // Send message to the server
     fetch('/api/messages', {
@@ -225,7 +224,7 @@ channel.publish('newMessage', realTimeMessage);  // Publish to the Ably channel
     .then(response => {
         if (!response.ok) {
             return response.text().then(text => {
-                throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`); // Fixed the template string formatting
+                throw new Error(Error response from server: ${response.statusText}, Details: ${text});
             });
         }
         return response.json();
@@ -255,7 +254,6 @@ channel.publish('newMessage', realTimeMessage);  // Publish to the Ably channel
         showNotification('Failed to send the message. Please try again later.', true);
     });
 }
-
 // Function to show a notification to the user
 function showNotification(message, isError = false) {
     const notification = document.createElement('div');

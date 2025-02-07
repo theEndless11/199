@@ -138,8 +138,6 @@ channel.subscribe('newMessage', function (message) {
 
 // Function to add message to the chat UI
 function addMessageToChat(messageData) {
-    console.log('Adding message to chat:', messageData); // Log the message being added
-
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
@@ -148,7 +146,7 @@ function addMessageToChat(messageData) {
 
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('msg-bubble');
-    messageBubble.textContent = messageData.message;  // Use messageData.message
+    messageBubble.textContent = messageData.message;
 
     if (messageData.userId === userId) {
         messageElement.classList.add('user-msg');
@@ -162,6 +160,7 @@ function addMessageToChat(messageData) {
     // Scroll to the bottom of the container
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {
@@ -204,6 +203,8 @@ function sendMessage() {
         message: message  // Include the actual message
     };
 
+    console.log('Sending message:', messageData); // Log the message data being sent
+
     fetch('/api/messages', {
         method: 'POST',
         headers: {
@@ -217,11 +218,11 @@ function sendMessage() {
                 throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`);
             });
         }
-
-        // Try to parse JSON response
         return response.json();
     })
     .then(data => {
+        console.log('Response from server:', data); // Log the response data
+
         if (data.message === 'Message sent successfully') {
             console.log('Message successfully sent');
             addMessageToChat(messageData); // Add message to the chat immediately

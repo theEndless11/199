@@ -69,63 +69,25 @@
         
         </script>
   
-<div id="chatbox-container">
-   <!-- Input to select a file (image) -->
-<input type="file" id="image-upload" accept="image/*" style="display:none" />
-<!-- Button to trigger file input -->
-<button onclick="document.getElementById('image-upload').click()">Select Image</button>
-
-<!-- Preview of the selected image -->
-<div id="image-preview-container" style="display:none;">
-    <img id="image-preview" src="" alt="Selected Image" style="max-width: 200px; margin-top: 10px;" />
-</div>
-<style>/* Style for message bubbles */
-.msg-bubble {
-    max-width: 70%;
-    padding: 10px;
-    border-radius: 12px;
-    background-color: #f1f1f1;
-    position: relative;
-}
-
-/* Style for timestamp */
-.timestamp {
-    font-size: 12px;
-    color: #888;
-    margin-top: 5px;
-    text-align: right;
-}
-
-/* User message alignment (right side for sender) */
-.user-msg {
-    text-align: right;
-}
-
-/* Other message alignment (left side for receiver) */
-.other-msg {
-    text-align: left;
-}
-
-/* Style for image preview in the message */
-img {
-    border-radius: 10px;
-    margin-top: 10px;
-}
-</style><script>
-
-    <div id="chatbox">
-        <div id="messages-container">
-            <!-- Predefined questions and answers will be automatically added here -->
+    <div id="chatbox-container">
+        <div id="category-tabs">
+            <button class="tab-btn" onclick="changeCategory('support')">Support</button>
         </div>
-
-        <div id="message-input">
-            <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
-            <button onclick="sendMessage()">Send</button>
+    
+        <div id="chatbox">
+            <div id="messages-container">
+                <!-- Predefined questions and answers will be automatically added here -->
+            </div>
+    
+            <div id="message-input">
+                <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
         </div>
     </div>
-</div>
-    <script>
-// Get userId and chatWith from query parameters
+    <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
+<script>
+  // Get userId and chatWith from query parameters
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId');
 const chatWith = urlParams.get('chatWith');
@@ -175,23 +137,16 @@ function addMessageToChat(messageData) {
 
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('msg-bubble');
-
-    // If the message contains an image URL, display the image
-    if (messageData.imageUrl) {
-        const imageElement = document.createElement('img');
-        imageElement.src = messageData.imageUrl;
-        imageElement.alt = 'Image message';
-        imageElement.style.maxWidth = '100%';  // Make sure the image fits within the bubble
-        messageBubble.appendChild(imageElement);
-    } else {
-        messageBubble.textContent = messageData.message;
-    }
+    messageBubble.textContent = messageData.message;
 
     // Get the timestamp and format it correctly
     const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
     const timeElement = document.createElement('div');
     timeElement.classList.add('timestamp');
     timeElement.textContent = timestamp;
+
+    // Append the time below the message
     messageBubble.appendChild(timeElement);
 
     // Check if the message is from the current user or the other user to position it
@@ -323,101 +278,10 @@ function loadMessages() {
         console.error('Error loading messages:', error);
     });
 }
-// Function to display the selected image preview
-document.getElementById('image-upload').addEventListener('change', handleImageSelect);
-
-function handleImageSelect(event) {
-    const file = event.target.files[0];
-
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const imagePreview = document.getElementById('image-preview');
-            imagePreview.src = e.target.result;
-            document.getElementById('image-preview-container').style.display = 'block';  // Show preview
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-// Modify the sendMessage function to handle image uploads
-function sendMessage() {
-    const messageInput = document.getElementById('user-message');
-    const message = messageInput.value.trim();
-    const imageInput = document.getElementById('image-upload');
-    const imageFile = imageInput.files[0];
-
-    if (!message && !imageFile) {
-        alert('Please type a message or select an image');
-        return;
-    }
-
-    let messageData = {
-        userId: userId,
-        chatWith: chatWith,
-        message: message,
-        timestamp: new Date().toISOString()
-    };
-
-    // If there's an image, include it in the message
-    if (imageFile) {
-        const formData = new FormData();
-        formData.append('image', imageFile);
-
-        // Send the image to the server
-        fetch('/api/upload-image', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.url) {
-                messageData.imageUrl = data.url;  // Include the URL of the uploaded image
-                sendMessageToServer(messageData);  // Now send the message with the image
-            } else {
-                console.error('Error uploading image');
-            }
-        })
-        .catch(error => {
-            console.error('Error uploading image:', error);
-        });
-    } else {
-        sendMessageToServer(messageData);  // Send the message without an image
-    }
-}
-
-// Function to send the message to the server (both text and image)
-function sendMessageToServer(messageData) {
-    console.log('Sending message:', messageData);  // Log the message data
-
-    // Immediately display the sent message in the UI (on the sender's side)
-    addMessageToChat(messageData);
-
-    // Send message to the server
-    fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(messageData),
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Response from server:', data);
-        if (data.message === 'Message sent successfully') {
-            document.getElementById('user-message').value = ''; // Clear input field
-            imageInput.value = '';  // Clear file input
-            document.getElementById('image-preview-container').style.display = 'none';  // Hide preview
-        }
-    })
-    .catch(error => {
-        console.error('Error sending message to backend:', error);
-    });
-}
 
 // Call the function to load previous messages when the page is loaded
 loadMessages();
-    </script>
+
 
 </body>    <style>/* Style for message bubbles */
 .msg-bubble {

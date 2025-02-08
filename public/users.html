@@ -254,8 +254,8 @@
     let allUsers = [];
 
     async function fetchUsers() {
-        console.log(Fetching users for userId: ${userId}); // Debugging
-        const response = await fetch(/api/users?userId=${userId});
+        console.log(`Fetching users for userId: ${userId}`); // Debugging
+        const response = await fetch(`/api/users?userId=${userId}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -265,7 +265,7 @@
             console.error('Error fetching users:', data.message);
             alert(data.message);
         }
-    }
+ }
 
     // Display users in the Users section
     function displayUsers(users) {

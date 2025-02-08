@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,36 +17,49 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            background-color: #fff;
+            max-width: 400px;
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         header {
             background-color: #4CAF50;
             color: white;
-            padding: 10px;
+            padding: 15px;
             text-align: center;
+            font-size: 18px;
+            font-weight: bold;
         }
 
         .search-box {
-            width: 100%;
+            width: calc(100% - 20px);
             padding: 10px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
         }
 
         .section-toggle {
             display: flex;
             justify-content: space-around;
-            background-color: #333;
+            background-color: #f9f9f9;
             padding: 10px;
+            border-bottom: 1px solid #ddd;
         }
 
         .section-toggle button {
             background: none;
             border: none;
-            color: white;
+            color: #4CAF50;
             font-size: 24px;
             cursor: pointer;
+            padding: 10px;
+        }
+
+        .section-toggle button.active {
+            color: #333;
         }
 
         .section-content {
@@ -55,21 +69,50 @@
         }
 
         .user, .contact {
+            display: flex;
+            align-items: center;
             padding: 10px;
             margin: 5px 0;
             background-color: white;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .user:hover, .contact:hover {
+            background-color: #f1f1f1;
+        }
+
+        .user img, .contact img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-info h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .user-info p {
+            margin: 0;
+            color: #888;
+            font-size: 14px;
         }
 
         .add-friend {
-            float: right;
             background-color: #4CAF50;
             color: white;
             border: none;
             padding: 5px 10px;
-            border-radius: 5px;
+            border-radius: 15px;
             cursor: pointer;
+            font-size: 12px;
         }
 
         .hidden {
@@ -80,23 +123,26 @@
 <body>
     <div class="container">
         <header>
-            <h1>Chat App</h1>
-            <input type="text" id="search" class="search-box" placeholder="Search..." oninput="searchUsers()" />
+            Chat App
         </header>
 
+        <input type="text" id="search" class="search-box" placeholder="Search..." oninput="searchUsers()" />
+
         <div class="section-toggle">
-            <button onclick="toggleSection('users-section')">👥</button>
-            <button onclick="toggleSection('contacts-section')">📞</button>
+            <button onclick="toggleSection('users-section')" class="active"><i class="fas fa-users"></i></button>
+            <button onclick="toggleSection('contacts-section')"><i class="fas fa-address-book"></i></button>
         </div>
 
         <section id="users-section" class="section-content">
-            <h2>Users</h2>
-            <div id="users-container"></div>
+            <div id="users-container">
+                <!-- Users will be dynamically added here -->
+            </div>
         </section>
 
         <section id="contacts-section" class="section-content hidden">
-            <h2>Contacts</h2>
-            <div id="contacts-container"></div>
+            <div id="contacts-container">
+                <!-- Contacts will be dynamically added here -->
+            </div>
         </section>
     </div>
 

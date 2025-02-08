@@ -4,147 +4,220 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Global Styles */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f5f5f5;
+            background-color: #e9ecef;
+            color: #333;
         }
 
         .container {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            background-color: #fff;
-            max-width: 400px;
-            margin: 0 auto;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         header {
-            background-color: #4CAF50;
+            background-color: #343a40;
             color: white;
             padding: 15px;
             text-align: center;
-            font-size: 18px;
-            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
         }
 
         .search-box {
-            width: calc(100% - 20px);
+            width: 90%;
             padding: 10px;
-            margin: 10px;
-            border: 1px solid #ddd;
+            margin-top: 10px;
+            border: none;
             border-radius: 20px;
-            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 1rem;
         }
 
+        /* Section Toggle */
         .section-toggle {
             display: flex;
-            justify-content: space-around;
-            background-color: #f9f9f9;
+            justify-content: center;
+            background-color: #6c757d;
             padding: 10px;
-            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .section-toggle button {
             background: none;
             border: none;
-            color: #4CAF50;
-            font-size: 24px;
+            color: white;
+            font-size: 1.5rem;
             cursor: pointer;
             padding: 10px;
-        }
-
-        .section-toggle button.active {
-            color: #333;
-        }
-
-        .section-content {
-            flex: 1;
-            padding: 10px;
-            overflow-y: auto;
-        }
-
-        .user, .contact {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            margin: 5px 0;
-            background-color: white;
-            border-radius: 10px;
-            cursor: pointer;
             transition: background-color 0.3s;
         }
 
+        .section-toggle button:hover {
+            background-color: #495057;
+            border-radius: 5px;
+        }
+
+        /* Section Content */
+        .section-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: white;
+            border-top: 1px solid #ddd;
+        }
+
+        .section-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        /* User/Contact Cards */
+        .user, .contact {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin: 10px 0;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
         .user:hover, .contact:hover {
-            background-color: #f1f1f1;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
         .user img, .contact img {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 15px;
         }
 
-        .user-info {
-            flex: 1;
-        }
-
-        .user-info h3 {
+        .user p, .contact p {
+            font-size: 1.1rem;
             margin: 0;
-            font-size: 16px;
-        }
-
-        .user-info p {
-            margin: 0;
-            color: #888;
-            font-size: 14px;
         }
 
         .add-friend {
-            background-color: #4CAF50;
+            background-color: #28a745;
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 15px;
+            padding: 8px 15px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 12px;
+            transition: background-color 0.3s;
         }
 
+        .add-friend:hover {
+            background-color: #218838;
+        }
+
+        /* Hidden Section */
         .hidden {
             display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .search-box {
+                width: 80%;
+            }
+
+            .section-toggle button {
+                font-size: 1.2rem;
+            }
+
+            .user, .contact {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .user img, .contact img {
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            Chat App
+            <h1>Chat App</h1>
+            <input type="text" id="search" class="search-box" placeholder="Search..." oninput="searchUsers()" />
         </header>
 
-        <input type="text" id="search" class="search-box" placeholder="Search..." oninput="searchUsers()" />
-
         <div class="section-toggle">
-            <button onclick="toggleSection('users-section')" class="active"><i class="fas fa-users"></i></button>
-            <button onclick="toggleSection('contacts-section')"><i class="fas fa-address-book"></i></button>
+            <button onclick="toggleSection('users-section')">👥</button>
+            <button onclick="toggleSection('contacts-section')">📞</button>
         </div>
 
         <section id="users-section" class="section-content">
+            <h2>Users</h2>
             <div id="users-container">
-                <!-- Users will be dynamically added here -->
+                <!-- User Cards will go here -->
+                <div class="user">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User 1">
+                    <p>User 1</p>
+                    <button class="add-friend">Add Friend</button>
+                </div>
+                <div class="user">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User 2">
+                    <p>User 2</p>
+                    <button class="add-friend">Add Friend</button>
+                </div>
+                <!-- Add more user cards here -->
             </div>
         </section>
 
         <section id="contacts-section" class="section-content hidden">
+            <h2>Contacts</h2>
             <div id="contacts-container">
-                <!-- Contacts will be dynamically added here -->
+                <!-- Contact Cards will go here -->
+                <div class="contact">
+                    <img src="https://randomuser.me/api/portraits/men/50.jpg" alt="Contact 1">
+                    <p>Contact 1</p>
+                </div>
+                <div class="contact">
+                    <img src="https://randomuser.me/api/portraits/women/60.jpg" alt="Contact 2">
+                    <p>Contact 2</p>
+                </div>
+                <!-- Add more contact cards here -->
             </div>
         </section>
     </div>
+
+    <script>
+        function toggleSection(sectionId) {
+            document.querySelectorAll('.section-content').forEach((section) => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        function searchUsers() {
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const userElements = document.querySelectorAll('.user');
+            userElements.forEach((user) => {
+                const userName = user.querySelector('p').textContent.toLowerCase();
+                user.style.display = userName.includes(searchTerm) ? 'flex' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
+
 
 <script>
     // Get the logged-in user's ID from the query parameter

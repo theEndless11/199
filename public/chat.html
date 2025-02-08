@@ -126,6 +126,7 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
+// Function to add message to the chat UI
 function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;  // Ensure the container exists
@@ -157,8 +158,11 @@ function addMessageToChat(messageData) {
     messageElement.appendChild(messageBubble);
     messagesContainer.appendChild(messageElement);
 
-    // Scroll to the bottom of the container
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    // Force the layout to update before scrolling
+    setTimeout(() => {
+        // Scroll to the bottom of the container
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }, 0); // Small delay to ensure DOM is updated
 }
 
 // Function to display messages from initial fetch
@@ -194,9 +198,13 @@ function displayMessages(messages) {
         messagesContainer.appendChild(messageElement);
     });
 
-    // Scroll to the bottom after displaying messages
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    // Force the layout to update before scrolling
+    setTimeout(() => {
+        // Scroll to the bottom after displaying messages
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }, 0); // Small delay to ensure DOM is updated
 }
+
 
 // Send message function
 function sendMessage() {

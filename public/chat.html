@@ -92,10 +92,9 @@ const userId = urlParams.get('userId');
 const chatWith = urlParams.get('chatWith');
 
 // Log the query parameters to check if they are correctly passed
-console.log('userId:', userId, 'chatWith:', chatWith);
-
-// Ensure userId and chatWith are valid
-if (!userId || !chatWith) {
+if (userId && chatWith) {
+    console.log('userId:', userId, 'chatWith:', chatWith);
+} else {
     alert('Missing userId or chatWith in the URL parameters');
     window.location.href = '/'; // Redirect to homepage or login
 }
@@ -129,7 +128,7 @@ channel.subscribe('newMessage', function (message) {
 // Function to add message to the chat UI
 function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
-    if (!messagesContainer) return;
+    if (!messagesContainer) return;  // Ensure the container exists
 
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
@@ -280,8 +279,8 @@ function loadMessages() {
 
 // Call the function to load previous messages when the page is loaded
 loadMessages();
-
-</script>    <style>/* Style for message bubbles */
+</script>
+   <style>/* Style for message bubbles */
 .msg-bubble {
     max-width: 70%;
     padding: 10px;

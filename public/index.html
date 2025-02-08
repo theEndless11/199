@@ -90,6 +90,26 @@
             color: #5b4eb1;
         }
 
+        .welcome-text {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .feature-text {
+            font-size: 18px;
+            color: #444;
+            margin: 20px 0;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .feature-text span {
+            font-weight: bold;
+            color: #6a5acd;
+        }
+
         @media (max-width: 500px) {
             h1 {
                 font-size: 28px;
@@ -106,6 +126,11 @@
     </style>
 </head>
 <body>
+    <div class="welcome-text">
+        <h1>Welcome to ChatVerse</h1>
+        <p>Your go-to space for seamless conversations. Let's connect, chat, and share moments with friends, family, and new people!</p>
+    </div>
+
     <div id="login-form" class="form-container">
         <h2>Login</h2>
         <form id="login">
@@ -129,6 +154,15 @@
             <p>Already have an account? <a href="javascript:void(0)" onclick="showLogin()">Login</a></p>
         </div>
     </div>
+
+    <div class="feature-text">
+        <h3>Why ChatVerse?</h3>
+        <p><span>Instant messaging</span> for quick, fun, and secure conversations.</p>
+        <p><span>Group chats</span> to bring everyone together and stay connected.</p>
+        <p><span>End-to-end encryption</span> for the privacy you deserve in every chat.</p>
+    </div>
+
+    
 
 
 <script>

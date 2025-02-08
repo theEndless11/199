@@ -17,12 +17,11 @@ module.exports = async (req, res) => {
         console.error('Missing query parameters');
         return res.status(400).json({ error: 'Missing required query parameters: userId, chatWith' });
       }
-const sql = 'SELECT * FROM messages WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) ORDER BY timestamp';
-const [messages] = await pool.query(sql, [userId, chatWith, chatWith, userId]);
 
-// Ensure messages include timestamps when sent to the frontend
-return res.status(200).json({ messages });
+      const sql = 'SELECT * FROM messages WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) ORDER BY timestamp';
+      const [messages] = await pool.query(sql, [userId, chatWith, chatWith, userId]);
 
+      // Ensure messages include timestamps when sent to the frontend
       if (messages.length > 0) {
         console.log('Fetched messages:', messages);
         return res.status(200).json({ messages });  // Return messages in the response
@@ -56,7 +55,7 @@ return res.status(200).json({ messages });
           console.log('Publishing to Ably:', messageData);
           
           // Publish the message to the **other user (chatWith)** channel
-          await publishToAbly(chat-${chatWith}-${userId}, 'newMessage', messageData); // Push to the Ably channel for the other user
+          await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData); // Fixed template string syntax
           console.log('Message published to Ably successfully');
         } catch (err) {
           console.error('Error publishing to Ably:', err);

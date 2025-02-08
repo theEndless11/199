@@ -7,68 +7,7 @@
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
 </head>
 <body>
-    <div class="wrapper">
-        <!-- 3 Dots Button for Options -->
-        <div class="three-dots-menu">
-          <button class="dots-btn" onclick="toggleMenu()">︙ </button>
-          <div class="menu-options" id="menu-options">
-            <ul>
-              <li onclick="toggleDarkMode()">Dark Mode</li>
-              <li onclick="deleteChat()">Delete Chat</li>
-              <li onclick="shareChat()">Share</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      
-      <script>// Toggle the visibility of the dropdown menu
-        function toggleMenu() {
-          const menu = document.getElementById('menu-options');
-          menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-        }
-        
-        // Function for Dark Mode (you can add actual functionality here)
-        function toggleDarkMode() {
-          document.body.classList.toggle('dark-mode');
-          console.log('Dark Mode Toggled');
-          toggleMenu(); // Close menu after selecting an option
-        }
-        
-        // Function to delete chat (you can replace with actual delete functionality)
-        function deleteChat() {
-          if (confirm('Are you sure you want to delete the chat?')) {
-            console.log('Chat Deleted');
-          }
-          toggleMenu(); // Close menu after selecting an option
-        }
-        
-        // Function to share the chat (you can implement actual share functionality here)
-        function shareChat() {
-          const shareText = "Check out this chat!";
-          const shareUrl = window.location.href;
-        
-          if (navigator.share) {
-            // If the Web Share API is supported
-            navigator.share({
-              title: 'Chat Share',
-              text: shareText,
-              url: shareUrl
-            }).then(() => {
-              console.log('Successfully shared the chat');
-            }).catch(err => {
-              console.error('Error sharing:', err);
-            });
-          } else {
-            // Fallback if Web Share API is not supported
-            const shareLink = `mailto:?subject=Check out this chat&body=Here's a link to the chat: ${shareUrl}`;
-            window.location.href = shareLink;
-            console.log('Share failed, fallback using email.');
-          }
-          toggleMenu(); // Close menu after selecting an option
-        }
-        
-        </script>
-  
+ 
     <div id="chatbox-container">
         <div id="category-tabs">
             <button class="tab-btn" onclick="changeCategory('support')">Support</button>

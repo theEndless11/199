@@ -158,11 +158,11 @@ function addMessageToChat(messageData) {
     messageElement.appendChild(messageBubble);
     messagesContainer.appendChild(messageElement);
 
-    // Force the layout to update before scrolling
+    // Ensure that the DOM has been updated before scrolling
     setTimeout(() => {
-        // Scroll to the bottom of the container
+        // Force the browser to recalculate styles and layout
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }, 0); // Small delay to ensure DOM is updated
+    }, 0);
 }
 
 // Function to display messages from initial fetch
@@ -198,12 +198,13 @@ function displayMessages(messages) {
         messagesContainer.appendChild(messageElement);
     });
 
-    // Force the layout to update before scrolling
+    // Ensure that the DOM has been updated before scrolling
     setTimeout(() => {
         // Scroll to the bottom after displaying messages
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }, 0); // Small delay to ensure DOM is updated
+    }, 0);
 }
+
 
 
 // Send message function
@@ -289,31 +290,40 @@ function loadMessages() {
 loadMessages();
 </script>
    <style>/* Style for message bubbles */
-.msg-bubble {
-    max-width: 70%;
-    padding: 10px;
-    border-radius: 12px;
-    background-color: #f1f1f1;
-    position: relative;
+#messages-container {
+    overflow-y: auto;
+    max-height: 500px; /* Adjust as needed */
 }
 
-/* Style for timestamp */
+.message {
+    margin: 10px 0;
+}
+
+.msg-bubble {
+    display: inline-block;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    max-width: 60%;
+    word-wrap: break-word;
+}
+
 .timestamp {
-    font-size: 12px;
+    font-size: 0.8em;
     color: #888;
     margin-top: 5px;
+}
+
+.user-msg .msg-bubble {
+    background-color: #d1f7d1; /* Light green for the current user's message */
     text-align: right;
 }
 
-/* User message alignment (right side for sender) */
-.user-msg {
-    text-align: right;
-}
-
-/* Other message alignment (left side for receiver) */
-.other-msg {
+.other-msg .msg-bubble {
+    background-color: #f0f0f0; /* Light grey for the receiver's message */
     text-align: left;
 }
+
 </style>
 <style>
     #chatbox-container {

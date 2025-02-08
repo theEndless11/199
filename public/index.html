@@ -7,123 +7,100 @@
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #f7b42c, #fc575e);
-            color: #333;
+            background: linear-gradient(135deg, #7a78d2, #8c94e1, #6fbf91); /* Sky purple, blue, green gradient */
+            color: #fff;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            text-align: center;
+            animation: fadeIn 2s ease-out;
         }
+
+        h1 {
+            font-size: 36px;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
         .form-container {
-            background: #fff;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
             width: 100%;
             max-width: 400px;
             transition: all 0.3s ease-in-out;
+            backdrop-filter: blur(10px); /* Adding a blurred effect for a modern touch */
         }
+
         .form-container h2 {
-            font-size: 24px;
-            text-align: center;
+            font-size: 28px;
             margin-bottom: 20px;
-            color: #333;
+            color: #6fbf91;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.5); /* Adding a subtle shadow effect */
         }
+
         input {
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             margin: 10px 0;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 18px;
             outline: none;
             transition: border-color 0.3s;
+            background-color: #fff;
         }
+
         input:focus {
-            border-color: #4CAF50;
+            border-color: #6fbf91;
         }
+
         button {
             width: 100%;
-            padding: 14px;
-            background-color: #4CAF50;
+            padding: 15px;
+            background-color: #6fbf91;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 18px;
             transition: background-color 0.3s ease;
         }
+
         button:hover {
-            background-color: #45a049;
+            background-color: #58a576;
         }
+
         .toggle-link {
             display: block;
             text-align: center;
             margin-top: 20px;
         }
+
         .toggle-link a {
-            color: #4CAF50;
+            color: #6fbf91;
             font-weight: bold;
             text-decoration: none;
             transition: color 0.3s;
         }
+
         .toggle-link a:hover {
-            color: #45a049;
+            color: #58a576;
         }
-        .chatbox {
-            display: none;
-            width: 100%;
-            max-width: 400px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-            transition: all 0.3s ease-in-out;
-        }
-        .chatbox input {
-            width: calc(100% - 20px);
-            margin-bottom: 15px;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            outline: none;
-        }
-        .chatbox button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        .chatbox button:hover {
-            background-color: #45a049;
-        }
-        #messages-container {
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #f4f4f4;
-            border-radius: 5px;
-        }
-        .message {
-            background: #e0e0e0;
-            border-radius: 5px;
-            padding: 8px;
-            margin-bottom: 8px;
-            max-width: 80%;
-        }
-        .message.user {
-            background: #4CAF50;
-            color: white;
-            margin-left: auto;
-            text-align: right;
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -152,11 +129,6 @@
         </div>
     </div>
 
-    <div id="chatbox" class="chatbox">
-        <div id="messages-container"></div> <!-- Display messages here -->
-        <input type="text" id="message-input" placeholder="Type a message...">
-        <button onclick="sendMessage()">Send</button>
-    </div>
 <script>
 // Show the login form
 function showLogin() {

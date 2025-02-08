@@ -6,9 +6,9 @@
     <title>Sign Up / Login</title>
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #7a78d2, #8c94e1, #6fbf91); /* Sky purple, blue, green gradient */
-            color: #fff;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #d8c4e6, #b3d9f7); /* Soft pastel gradient */
+            color: #333;
             margin: 0;
             padding: 0;
             display: flex;
@@ -16,53 +16,51 @@
             align-items: center;
             height: 100vh;
             text-align: center;
-            animation: fadeIn 2s ease-out;
         }
 
         h1 {
-            font-size: 36px;
-            color: #fff;
-            margin-bottom: 20px;
+            font-size: 32px;
+            color: #6a5acd;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
         }
 
         .form-container {
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 15px;
+            background: white;
+            border-radius: 10px;
             padding: 40px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             transition: all 0.3s ease-in-out;
-            backdrop-filter: blur(10px); /* Adding a blurred effect for a modern touch */
         }
 
         .form-container h2 {
             font-size: 28px;
             margin-bottom: 20px;
-            color: #6fbf91;
-            text-shadow: 1px 1px 4px rgba(0,0,0,0.5); /* Adding a subtle shadow effect */
+            color: #6a5acd;
         }
 
         input {
             width: 100%;
             padding: 15px;
             margin: 10px 0;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             border-radius: 8px;
-            font-size: 18px;
+            font-size: 16px;
             outline: none;
             transition: border-color 0.3s;
-            background-color: #fff;
+            background-color: #f8f8f8;
         }
 
         input:focus {
-            border-color: #6fbf91;
+            border-color: #6a5acd;
         }
 
         button {
             width: 100%;
             padding: 15px;
-            background-color: #6fbf91;
+            background-color: #6a5acd;
             color: white;
             border: none;
             border-radius: 8px;
@@ -72,34 +70,37 @@
         }
 
         button:hover {
-            background-color: #58a576;
+            background-color: #5b4eb1;
         }
 
         .toggle-link {
             display: block;
             text-align: center;
             margin-top: 20px;
+            color: #6a5acd;
         }
 
         .toggle-link a {
-            color: #6fbf91;
             font-weight: bold;
             text-decoration: none;
             transition: color 0.3s;
         }
 
         .toggle-link a:hover {
-            color: #58a576;
+            color: #5b4eb1;
         }
 
-        @keyframes fadeIn {
-            0% {
-                opacity: 0;
-                transform: translateY(50px);
+        @media (max-width: 500px) {
+            h1 {
+                font-size: 28px;
             }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
+
+            .form-container {
+                padding: 30px;
+            }
+
+            input, button {
+                padding: 12px;
             }
         }
     </style>
@@ -128,6 +129,7 @@
             <p>Already have an account? <a href="javascript:void(0)" onclick="showLogin()">Login</a></p>
         </div>
     </div>
+
 
 <script>
 // Show the login form

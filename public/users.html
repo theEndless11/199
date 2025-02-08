@@ -119,7 +119,7 @@
             gap: 10px;
         }
 
-        .add-friend, .save-profile {
+        .add-friend, .save-profile, .settings {
             background-color: #28a745;
             color: white;
             border: none;
@@ -129,7 +129,7 @@
             transition: background-color 0.3s;
         }
 
-        .add-friend:hover, .save-profile:hover {
+        .add-friend:hover, .save-profile:hover, .settings:hover {
             background-color: #218838;
         }
 
@@ -173,6 +173,9 @@
             <button onclick="toggleSection('contacts-section')" title="Contacts">
                 <span class="material-icons">contacts</span>
             </button>
+            <button onclick="toggleSection('settings-section')" title="Settings">
+                <span class="material-icons">settings</span>
+            </button>
         </div>
 
         <section id="users-section" class="section-content">
@@ -183,16 +186,14 @@
                     <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User 1">
                     <p>User 1</p>
                     <div class="action-buttons">
-                        <button class="add-friend">Add Friend</button>
-                        <button class="save-profile">Save Profile</button>
+                        <button class="add-friend" onclick="addFriend('User 1')">Add Friend</button>
                     </div>
                 </div>
                 <div class="user">
                     <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User 2">
                     <p>User 2</p>
                     <div class="action-buttons">
-                        <button class="add-friend">Add Friend</button>
-                        <button class="save-profile">Save Profile</button>
+                        <button class="add-friend" onclick="addFriend('User 2')">Add Friend</button>
                     </div>
                 </div>
                 <!-- Add more user cards here -->
@@ -206,24 +207,57 @@
                 <div class="contact">
                     <img src="https://randomuser.me/api/portraits/men/50.jpg" alt="Contact 1">
                     <p>Contact 1</p>
-                    <button class="save-profile">Save Profile</button>
                 </div>
                 <div class="contact">
                     <img src="https://randomuser.me/api/portraits/women/60.jpg" alt="Contact 2">
                     <p>Contact 2</p>
-                    <button class="save-profile">Save Profile</button>
                 </div>
                 <!-- Add more contact cards here -->
+            </div>
+        </section>
+
+        <section id="settings-section" class="section-content hidden">
+            <h2>Settings</h2>
+            <div>
+                <label for="username">Username: </label>
+                <input type="text" id="username" placeholder="Enter new username">
+                <button class="settings">Save Username</button>
+            </div>
+            <div>
+                <label for="profile-img">Profile Image: </label>
+                <input type="file" id="profile-img">
+                <button class="settings">Save Profile</button>
             </div>
         </section>
     </div>
 
     <script>
+        let contacts = [];
+
         function toggleSection(sectionId) {
             document.querySelectorAll('.section-content').forEach((section) => {
                 section.classList.add('hidden');
             });
             document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        function addFriend(userName) {
+            contacts.push(userName);
+            alert(`${userName} has been added to your contacts.`);
+            displayContacts();
+        }
+
+        function displayContacts() {
+            const contactsContainer = document.getElementById('contacts-container');
+            contactsContainer.innerHTML = ''; // Clear previous data
+
+            contacts.forEach(contact => {
+                const contactElement = document.createElement('div');
+                contactElement.classList.add('contact');
+                contactElement.textContent = contact;
+
+                contactsContainer.appendChild(contactElement);
+            });
         }
 
         function searchUsers() {
@@ -234,9 +268,13 @@
                 user.style.display = userName.includes(searchTerm) ? 'flex' : 'none';
             });
         }
+
+        // Initial load
+        displayContacts();
     </script>
 </body>
 </html>
+
 
 
 <script>

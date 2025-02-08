@@ -319,6 +319,7 @@ try {
 
 
 // Handle signup
+// Handle signup
 document.getElementById('signup').addEventListener('submit', async function(e) {
     e.preventDefault();
     const username = document.getElementById('signup-username').value;
@@ -336,52 +337,59 @@ document.getElementById('signup').addEventListener('submit', async function(e) {
                 action: 'signup',
             })
         });
-const responseText = await response.text(); // Get raw response text
+        const responseText = await response.text(); // Get raw response text
 
-try {
-    const data = JSON.parse(responseText); // Try parsing JSON
-    const messageContainer = document.createElement('div'); // Create message container
+        try {
+            const data = JSON.parse(responseText); // Try parsing JSON
+            const messageContainer = document.createElement('div'); // Create message container
 
-    if (response.ok) {
-        // Create success message for signup
-        messageContainer.classList.add('message-container', 'success');
-        messageContainer.textContent = 'Signup successful! Please login.';
-        document.body.appendChild(messageContainer); // Append to the body
+            if (response.ok) {
+                // Create success message for signup
+                messageContainer.classList.add('message-container', 'success');
+                messageContainer.textContent = 'Signup successful! Please login.';
+                document.body.appendChild(messageContainer); // Append to the body
 
-        // Show login form or trigger the function to show login form
-        showLogin();
+                // Show login form or trigger the function to show login form
+                showLogin();
 
-        // Hide the message after 3 seconds
-        setTimeout(() => {
-            messageContainer.remove();
-        }, 3000);
-    } else {
-        // Create error message
-        messageContainer.classList.add('message-container', 'error');
-        messageContainer.textContent = data.message || 'An error occurred during signup.';
-        document.body.appendChild(messageContainer); // Append to the body
+                // Hide the message after 3 seconds
+                setTimeout(() => {
+                    messageContainer.remove();
+                }, 3000);
+            } else {
+                // Create error message
+                messageContainer.classList.add('message-container', 'error');
+                messageContainer.textContent = data.message || 'An error occurred during signup.';
+                document.body.appendChild(messageContainer); // Append to the body
 
-        // Hide the message after 3 seconds
-        setTimeout(() => {
-            messageContainer.remove();
-        }, 3000);
+                // Hide the message after 3 seconds
+                setTimeout(() => {
+                    messageContainer.remove();
+                }, 3000);
+            }
+        } catch (error) {
+            // Log the error for debugging and show a system error message
+            console.error('Error during fetch or JSON parsing:', error);
+            
+            const messageContainer = document.createElement('div'); // Create message container
+            messageContainer.classList.add('message-container', 'error');
+            messageContainer.textContent = 'System Error: We are unable to process your request at this time. Please try again later.';
+            document.body.appendChild(messageContainer); // Append to the body
+
+            // Hide the message after 3 seconds
+            setTimeout(() => {
+                messageContainer.remove();
+            }, 3000);
+        }
+    } catch (error) {
+        // Log any other errors that may occur
+        console.error('Unexpected error:', error);
     }
-} catch (error) {
-    // Log the error for debugging and show a system error message
-    console.error('Error during fetch or JSON parsing:', error);
-    
-    const messageContainer = document.createElement('div'); // Create message container
-    messageContainer.classList.add('message-container', 'error');
-    messageContainer.textContent = 'System Error: We are unable to process your request at this time. Please try again later.';
-    document.body.appendChild(messageContainer); // Append to the body
+}); // <- Added the missing closing parenthesis for the event listener
 
-    // Hide the message after 3 seconds
-    setTimeout(() => {
-        messageContainer.remove();
-    }, 3000);
-}
+</script> <!-- Make sure you close your <script> tag properly -->
 
-</script>
+
 <style>.message-container {
     position: fixed;
     top: 20px;

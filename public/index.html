@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #a8c0ff, #3f72b5); /* Soft and cool gradient */
+            background: linear-gradient(135deg, #a8c0ff, #3f72b5); /* Soft gradient */
             color: #333;
             margin: 0;
             padding: 0;
@@ -21,18 +21,18 @@
 
         .container {
             width: 100%;
-            max-width: 480px; /* Increased max width */
-            padding: 40px;
+            max-width: 420px; /* Smaller container */
+            padding: 30px;
             background-color: #fff;
             border-radius: 20px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
-            font-size: 36px;
+            font-size: 32px;
             color: #3f72b5;
-            margin-bottom: 30px;
-            letter-spacing: 2px;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
         }
 
         .form-container {
@@ -45,14 +45,14 @@
         }
 
         .form-container h2 {
-            font-size: 28px;
-            margin-bottom: 20px;
+            font-size: 22px;
+            margin-bottom: 15px;
             color: #3f72b5;
         }
 
         input {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 10px;
@@ -68,13 +68,13 @@
 
         button {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             background-color: #3f72b5;
             color: white;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 16px;
             transition: background-color 0.3s ease;
         }
 
@@ -100,19 +100,20 @@
         }
 
         .welcome-text {
-            font-size: 22px;
+            font-size: 18px;
             color: #333;
-            margin-bottom: 30px;
-            font-weight: 500;
+            margin-bottom: 25px;
+            font-weight: 400;
             line-height: 1.6;
         }
 
         .feature-text {
-            font-size: 18px;
+            font-size: 16px;
             color: #444;
-            margin: 20px 0;
+            margin: 15px 0;
             line-height: 1.8;
             font-weight: 400;
+            text-align: left;
         }
 
         .feature-text span {
@@ -120,9 +121,20 @@
             color: #3f72b5;
         }
 
+        .feature-text a {
+            text-decoration: none;
+            color: #3f72b5;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .feature-text a:hover {
+            color: #2e5a8c;
+        }
+
         @media (max-width: 500px) {
             h1 {
-                font-size: 30px;
+                font-size: 28px;
             }
 
             .form-container {
@@ -139,8 +151,8 @@
     <div class="container">
         <div class="welcome-text">
             <h1>Welcome to ChatVerse</h1>
-            <p>ChatVerse is not just a messaging app. It’s a place where you can build meaningful connections, share your moments, and communicate effortlessly. Whether you're chatting with old friends, making new ones, or having a deep conversation, ChatVerse is the perfect space for you.</p>
-            <p>Get ready to experience conversations like never before! Our platform is designed with simplicity, security, and speed in mind. It's time to connect with the people that matter most, in a way that feels natural, secure, and fast.</p>
+            <p>ChatVerse is your go-to place for seamless conversations, whether it's with old friends or new ones. It’s not just a chatting app—it's a social space where you can connect, share, and grow.</p>
+            <p>Stay connected, share memories, and chat with loved ones anytime. With <strong>ChatVerse</strong>, it’s all about making your connections stronger, faster, and more meaningful.</p>
         </div>
 
         <div id="login-form" class="form-container">
@@ -168,16 +180,15 @@
         </div>
 
         <div class="feature-text">
-            <h3>Why Choose ChatVerse?</h3>
-            <p><span>Instant Messaging</span> – Experience real-time communication with friends and family. Share your thoughts, photos, and videos instantly with one tap!</p>
-            <p><span>Group Chats</span> – Join groups to keep in touch with your friends, coworkers, or interest groups. Share ideas, discuss your passions, and more!</p>
-            <p><span>End-to-End Encryption</span> – Your privacy matters to us. All your messages are encrypted, ensuring that your conversations are safe and secure from unauthorized access.</p>
-            <p><span>Customizable Profiles</span> – Personalize your profile to reflect your unique style. Share a profile picture, bio, and other details to express who you are.</p>
-            <p><span>Seamless Experience</span> – Whether you're using ChatVerse on mobile or desktop, your experience remains fluid and consistent across all platforms.</p>
+            <h3>Features of ChatVerse</h3>
+            <p><span>Instant Messaging</span> – Chat in real-time with your friends and family. Share moments, ideas, and have meaningful conversations wherever you are.</p>
+            <p><span>Group Chats</span> – Connect with multiple people instantly. Discuss, share files, and more with your community.</p>
+            <p><span>Security First</span> – End-to-end encryption ensures your conversations remain private and secure.</p>
+            <p><span>Customize Your Profile</span> – Express yourself with a profile that shows who you truly are. Add your bio, photo, and contact details.</p>
+            <p><span>Multi-Device Support</span> – Stay connected across devices: mobile, tablet, or desktop. It’s seamless and flexible!</p>
+            <p><a href="javascript:void(0)" onclick="showSignup()">Join now</a> and start chatting today!</p>
         </div>
     </div>
-
-
 
 
 <script>

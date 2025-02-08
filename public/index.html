@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #d8c4e6, #b3d9f7); /* Soft pastel gradient */
+            background: linear-gradient(135deg, #a8c0ff, #3f72b5); /* Soft and cool gradient */
             color: #333;
             margin: 0;
             padding: 0;
@@ -16,37 +16,38 @@
             align-items: center;
             height: 100vh;
             text-align: center;
-            overflow: hidden; /* Prevents overflow */
+            overflow: hidden;
         }
 
         .container {
             width: 100%;
-            max-width: 450px; /* Adjusted max-width */
-            padding: 20px;
+            max-width: 480px; /* Increased max width */
+            padding: 40px;
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
-            font-size: 32px;
-            color: #6a5acd;
+            font-size: 36px;
+            color: #3f72b5;
             margin-bottom: 30px;
             letter-spacing: 2px;
         }
 
         .form-container {
-            background: white;
-            border-radius: 10px;
-            padding: 40px;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 15px;
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 420px;
-            transition: all 0.3s ease-in-out;
-            margin: 0 auto; /* Ensures the form is centered */
+            margin-bottom: 20px;
         }
 
         .form-container h2 {
             font-size: 28px;
             margin-bottom: 20px;
-            color: #6a5acd;
+            color: #3f72b5;
         }
 
         input {
@@ -54,7 +55,7 @@
             padding: 15px;
             margin: 10px 0;
             border: 1px solid #ccc;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
             outline: none;
             transition: border-color 0.3s;
@@ -62,30 +63,30 @@
         }
 
         input:focus {
-            border-color: #6a5acd;
+            border-color: #3f72b5;
         }
 
         button {
             width: 100%;
             padding: 15px;
-            background-color: #6a5acd;
+            background-color: #3f72b5;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 18px;
             transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background-color: #5b4eb1;
+            background-color: #2e5a8c;
         }
 
         .toggle-link {
             display: block;
             text-align: center;
             margin-top: 20px;
-            color: #6a5acd;
+            color: #3f72b5;
         }
 
         .toggle-link a {
@@ -95,7 +96,7 @@
         }
 
         .toggle-link a:hover {
-            color: #5b4eb1;
+            color: #2e5a8c;
         }
 
         .welcome-text {
@@ -103,28 +104,29 @@
             color: #333;
             margin-bottom: 30px;
             font-weight: 500;
+            line-height: 1.6;
         }
 
         .feature-text {
             font-size: 18px;
             color: #444;
             margin: 20px 0;
-            line-height: 1.6;
+            line-height: 1.8;
             font-weight: 400;
         }
 
         .feature-text span {
             font-weight: bold;
-            color: #6a5acd;
+            color: #3f72b5;
         }
 
         @media (max-width: 500px) {
             h1 {
-                font-size: 28px;
+                font-size: 30px;
             }
 
             .form-container {
-                padding: 30px;
+                padding: 20px;
             }
 
             input, button {
@@ -137,7 +139,8 @@
     <div class="container">
         <div class="welcome-text">
             <h1>Welcome to ChatVerse</h1>
-            <p>Your go-to space for seamless conversations. Let's connect, chat, and share moments with friends, family, and new people!</p>
+            <p>ChatVerse is not just a messaging app. It’s a place where you can build meaningful connections, share your moments, and communicate effortlessly. Whether you're chatting with old friends, making new ones, or having a deep conversation, ChatVerse is the perfect space for you.</p>
+            <p>Get ready to experience conversations like never before! Our platform is designed with simplicity, security, and speed in mind. It's time to connect with the people that matter most, in a way that feels natural, secure, and fast.</p>
         </div>
 
         <div id="login-form" class="form-container">
@@ -165,12 +168,15 @@
         </div>
 
         <div class="feature-text">
-            <h3>Why ChatVerse?</h3>
-            <p><span>Instant messaging</span> for quick, fun, and secure conversations.</p>
-            <p><span>Group chats</span> to bring everyone together and stay connected.</p>
-            <p><span>End-to-end encryption</span> for the privacy you deserve in every chat.</p>
+            <h3>Why Choose ChatVerse?</h3>
+            <p><span>Instant Messaging</span> – Experience real-time communication with friends and family. Share your thoughts, photos, and videos instantly with one tap!</p>
+            <p><span>Group Chats</span> – Join groups to keep in touch with your friends, coworkers, or interest groups. Share ideas, discuss your passions, and more!</p>
+            <p><span>End-to-End Encryption</span> – Your privacy matters to us. All your messages are encrypted, ensuring that your conversations are safe and secure from unauthorized access.</p>
+            <p><span>Customizable Profiles</span> – Personalize your profile to reflect your unique style. Share a profile picture, bio, and other details to express who you are.</p>
+            <p><span>Seamless Experience</span> – Whether you're using ChatVerse on mobile or desktop, your experience remains fluid and consistent across all platforms.</p>
         </div>
     </div>
+
 
 
 

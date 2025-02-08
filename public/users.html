@@ -1,31 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .section-toggle {
+            display: flex;
+            justify-content: space-around;
+            background-color: #333;
+            padding: 10px;
+        }
+
+        .section-toggle button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .section-content {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .user, .contact {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .add-friend {
+            float: right;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
 <body>
-    <!-- Main container -->
     <div class="container">
-    
-        <!-- Header -->
         <header>
-            <h1>Users</h1>
-            <input type="text" id="search" class="search-box" placeholder="Search users..." oninput="searchUsers()" />
+            <h1>Chat App</h1>
+            <input type="text" id="search" class="search-box" placeholder="Search..." oninput="searchUsers()" />
         </header>
 
-        <!-- Users Section -->
-        <section id="users-section">
+        <div class="section-toggle">
+            <button onclick="toggleSection('users-section')">👥</button>
+            <button onclick="toggleSection('contacts-section')">📞</button>
+        </div>
+
+        <section id="users-section" class="section-content">
             <h2>Users</h2>
-            <div id="users-container" class="section-content"></div>
+            <div id="users-container"></div>
         </section>
 
-        <!-- Friends Section -->
-        <section id="friends-section">
-            <h2>Friends</h2>
-            <div id="friends-container" class="section-content"></div>
+        <section id="contacts-section" class="section-content hidden">
+            <h2>Contacts</h2>
+            <div id="contacts-container"></div>
         </section>
-
-        <!-- X Section (Empty for now, to be modified later) -->
-        <section id="x-section">
-            <h2>X Section</h2>
-            <div id="x-container" class="section-content"></div>
-        </section>
-        
     </div>
 
 <script>

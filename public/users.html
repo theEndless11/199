@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         /* Global Styles */
         body {
@@ -84,9 +85,10 @@
         /* User/Contact Cards */
         .user, .contact {
             display: flex;
+            justify-content: space-between;
             align-items: center;
             padding: 12px;
-            margin: 10px 0;
+            margin: 20px 0;
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -100,8 +102,8 @@
         }
 
         .user img, .contact img {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             margin-right: 15px;
         }
@@ -109,9 +111,15 @@
         .user p, .contact p {
             font-size: 1.1rem;
             margin: 0;
+            flex-grow: 1;
         }
 
-        .add-friend {
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-friend, .save-profile {
             background-color: #28a745;
             color: white;
             border: none;
@@ -121,7 +129,7 @@
             transition: background-color 0.3s;
         }
 
-        .add-friend:hover {
+        .add-friend:hover, .save-profile:hover {
             background-color: #218838;
         }
 
@@ -159,8 +167,12 @@
         </header>
 
         <div class="section-toggle">
-            <button onclick="toggleSection('users-section')">👥</button>
-            <button onclick="toggleSection('contacts-section')">📞</button>
+            <button onclick="toggleSection('users-section')" title="Users">
+                <span class="material-icons">people</span>
+            </button>
+            <button onclick="toggleSection('contacts-section')" title="Contacts">
+                <span class="material-icons">contacts</span>
+            </button>
         </div>
 
         <section id="users-section" class="section-content">
@@ -170,12 +182,18 @@
                 <div class="user">
                     <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User 1">
                     <p>User 1</p>
-                    <button class="add-friend">Add Friend</button>
+                    <div class="action-buttons">
+                        <button class="add-friend">Add Friend</button>
+                        <button class="save-profile">Save Profile</button>
+                    </div>
                 </div>
                 <div class="user">
                     <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User 2">
                     <p>User 2</p>
-                    <button class="add-friend">Add Friend</button>
+                    <div class="action-buttons">
+                        <button class="add-friend">Add Friend</button>
+                        <button class="save-profile">Save Profile</button>
+                    </div>
                 </div>
                 <!-- Add more user cards here -->
             </div>
@@ -188,10 +206,12 @@
                 <div class="contact">
                     <img src="https://randomuser.me/api/portraits/men/50.jpg" alt="Contact 1">
                     <p>Contact 1</p>
+                    <button class="save-profile">Save Profile</button>
                 </div>
                 <div class="contact">
                     <img src="https://randomuser.me/api/portraits/women/60.jpg" alt="Contact 2">
                     <p>Contact 2</p>
+                    <button class="save-profile">Save Profile</button>
                 </div>
                 <!-- Add more contact cards here -->
             </div>

@@ -283,19 +283,6 @@ channel.subscribe('newMessage', function (message) {
         addMessageToChat(message.data);  // Add the new message to the chat UI
     }
 });
-    // Function to scroll the messages container to the bottom
-function scrollToBottom() {
-    const messagesContainer = document.getElementById('messages-container');
-    if (messagesContainer) {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-}
-
-// Check if user is at the bottom, then auto-scroll
-function isScrolledToBottom() {
-    const messagesContainer = document.getElementById('messages-container');
-    return messagesContainer.scrollHeight - messagesContainer.scrollTop === messagesContainer.clientHeight;
-}
 
 // Function to add message to the chat UI
 function addMessageToChat(messageData) {
@@ -336,9 +323,10 @@ function addMessageToChat(messageData) {
     messageElement.appendChild(timeElement); // Append time below message bubble
     messagesContainer.appendChild(messageElement);
 
-    // If user is at the bottom, scroll automatically
-    if (isScrolledToBottom()) {
-        scrollToBottom();
+    // Scroll to the bottom only if the user is already at the bottom
+    const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop === messagesContainer.clientHeight;
+    if (isAtBottom) {
+        scrollToBottom(); // Scroll to bottom if the user is at the bottom
     }
 }
 
@@ -384,8 +372,9 @@ function displayMessages(messages) {
         messagesContainer.appendChild(messageElement);
     });
 
-    // After loading, if the user is at the bottom, scroll to the bottom
-    if (isScrolledToBottom()) {
+    // After loading messages, scroll to bottom only if the user is at the bottom
+    const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop === messagesContainer.clientHeight;
+    if (isAtBottom) {
         scrollToBottom();
     }
 }

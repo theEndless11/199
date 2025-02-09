@@ -1,7 +1,24 @@
-const pool = require('../utils/db'); // This must be promisePool from db.js
+const pool = require('../utils/db');
+const multer = require('multer');
 const { publishToAbly } = require('../utils/ably');
-console.log('publishToAbly function:', publishToAbly);  // Log the imported function
+const path = require('path');
+const fs = require('fs');
 
+// Set up storage for photo uploads (e.g., store in 'uploads' folder)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './uploads/');  // Folder where photos will be saved
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));  // Unique file name
+  }
+});
+const upload = multer({ storage: storage });
+
+// Middleware for handling photo uploads in POST request
+module.exports.uploadPhoto = upload.single('photo');
+
+// Handle requests
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
 
@@ -12,7 +29,6 @@ module.exports = async (req, res) => {
     if (req.method === 'GET') {
       const { userId, chatWith } = req.query;
 
-      // Validate required query parameters
       if (!userId || !chatWith) {
         console.error('Missing query parameters');
         return res.status(400).json({ error: 'Missing required query parameters: userId, chatWith' });
@@ -21,41 +37,44 @@ module.exports = async (req, res) => {
       const sql = 'SELECT * FROM messages WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) ORDER BY timestamp';
       const [messages] = await pool.query(sql, [userId, chatWith, chatWith, userId]);
 
-      // Ensure messages include timestamps when sent to the frontend
       if (messages.length > 0) {
         console.log('Fetched messages:', messages);
-        return res.status(200).json({ messages });  // Return messages in the response
+        return res.status(200).json({ messages });
       } else {
         console.log('No messages found');
         return res.status(404).json({ error: 'No messages found for this chat' });
       }
     }
 
-    // Handle POST request to send a message
+    // Handle POST request to send a message (with optional photo)
     if (req.method === 'POST') {
       const { userId, chatWith, message } = req.body;
 
-      // Validate required fields
       if (!userId || !chatWith || !message) {
         console.error('Missing fields in POST request');
         return res.status(400).json({ error: 'Missing required fields: userId, chatWith, message' });
       }
 
-      const sql = 'INSERT INTO messages (userId, chatWith, message, timestamp) VALUES (?, ?, ?, NOW())';
-      console.log('Inserting message:', message);
-      const [result] = await pool.query(sql, [userId, chatWith, message]);
+      // If a photo is uploaded, we'll get its path
+      let photoPath = null;
+      if (req.file) {
+        photoPath = req.file.path;  // The path where the photo is stored
+      }
+
+      // Insert the message into the database
+      const sql = 'INSERT INTO messages (userId, chatWith, message, photo, timestamp) VALUES (?, ?, ?, ?, NOW())';
+      console.log('Inserting message:', message, 'Photo:', photoPath);
+      const [result] = await pool.query(sql, [userId, chatWith, message, photoPath]);
 
       if (result.affectedRows > 0) {
         console.log('Message inserted successfully');
 
-        const messageData = { userId, chatWith, message };
+        const messageData = { userId, chatWith, message, photo: photoPath };
 
-        // Now publish the message to Ably for real-time push to the other user
+        // Publish to Ably (so other user can see it in real-time)
         try {
           console.log('Publishing to Ably:', messageData);
-          
-          // Publish the message to the **other user (chatWith)** channel
-          await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData); // Fixed template string syntax
+          await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData);
           console.log('Message published to Ably successfully');
         } catch (err) {
           console.error('Error publishing to Ably:', err);

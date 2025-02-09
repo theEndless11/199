@@ -246,43 +246,6 @@
             }
         }
 
-        // Function to send message
-        function sendMessage() {
-            const message = document.getElementById('user-message').value;
-            const imagePreview = document.getElementById('image-preview');
-
-            if (message.trim() !== "" || imagePreview.src !== "") {
-                const messageContainer = document.getElementById('messages-container');
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('message', 'user-msg');
-
-                const messageBubble = document.createElement('div');
-                messageBubble.classList.add('msg-bubble');
-                messageBubble.textContent = message;
-
-                // Add the image if selected
-                if (imagePreview.src !== "") {
-                    const imageElement = document.createElement('img');
-                    imageElement.src = imagePreview.src;
-                    imageElement.classList.add('image-preview');
-                    messageBubble.appendChild(imageElement);
-                }
-
-                const timestamp = document.createElement('div');
-                timestamp.classList.add('timestamp');
-                timestamp.textContent = new Date().toLocaleTimeString();
-
-                messageElement.appendChild(messageBubble);
-                messageElement.appendChild(timestamp);
-                messageContainer.appendChild(messageElement);
-
-                // Clear inputs after sending
-                document.getElementById('user-message').value = ''; 
-                imagePreview.style.display = 'none'; // Hide image preview
-                messageContainer.scrollTop = messageContainer.scrollHeight; // Scroll to the bottom
-            }
-        }
-
         // Function to preview selected photo
         function previewPhoto() {
             const fileInput = document.getElementById('file-input');
@@ -303,7 +266,7 @@
 
 
 
-    <script>
+<script>
 // Get userId and chatWith from query parameters
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId');
@@ -344,7 +307,6 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
-// Function to add message to the chat UI
 function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;  // Ensure the container exists
@@ -354,7 +316,18 @@ function addMessageToChat(messageData) {
 
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('msg-bubble');
-    messageBubble.textContent = messageData.message;
+
+    // Check if message is text or image
+    if (messageData.messageType === 'text') {
+        messageBubble.textContent = messageData.message;
+    } else if (messageData.messageType === 'photo') {
+        const imgElement = document.createElement('img');
+        imgElement.src = messageData.message;  // URL of the image
+        imgElement.alt = "User's photo";
+        imgElement.style.maxWidth = '200px';
+        imgElement.style.maxHeight = '200px';
+        messageBubble.appendChild(imgElement);
+    }
 
     // Get the timestamp and format it correctly
     const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -391,7 +364,18 @@ function displayMessages(messages) {
 
         const messageBubble = document.createElement('div');
         messageBubble.classList.add('msg-bubble');
-        messageBubble.textContent = msg.message;
+        
+        // Display text or photo based on message type
+        if (msg.messageType === 'text') {
+            messageBubble.textContent = msg.message;
+        } else if (msg.messageType === 'photo') {
+            const imgElement = document.createElement('img');
+            imgElement.src = msg.message;
+            imgElement.alt = "User's photo";
+            imgElement.style.maxWidth = '200px';
+            imgElement.style.maxHeight = '200px';
+            messageBubble.appendChild(imgElement);
+        }
 
         // Get the timestamp and format it correctly
         const timestamp = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -417,26 +401,45 @@ function displayMessages(messages) {
     }, 0);
 }
 
+// Handle photo selection
+function pickPhoto() {
+    const photoInput = document.createElement('input');
+    photoInput.type = 'file';
+    photoInput.accept = 'image/*';
+    photoInput.onchange = function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(fileEvent) {
+                const photoUrl = fileEvent.target.result;
+                // Show the photo preview in the input area
+                const imgPreview = document.createElement('img');
+                imgPreview.src = photoUrl;
+                imgPreview.style.maxWidth = '100px';
+                imgPreview.style.maxHeight = '100px';
+                document.getElementById('photo-preview').innerHTML = ''; // Clear previous preview
+                document.getElementById('photo-preview').appendChild(imgPreview);
+                sendPhoto(photoUrl);
+            };
+            reader.readAsDataURL(file);  // Convert image to base64
+        }
+    };
+    photoInput.click();  // Trigger the file input dialog
+}
 
-
-// Send message function
-function sendMessage() {
-    const message = document.getElementById('user-message').value.trim(); // Get the message from the input field
-    if (!message) {
-        alert('Please type a message');
-        return;
-    }
-
+// Function to send the photo
+function sendPhoto(photoUrl) {
     const messageData = {
-        userId: userId,  // Include userId
-        chatWith: chatWith,  // Include chatWith
-        message: message,  // Include the actual message
-        timestamp: new Date().toISOString()  // Add timestamp for current message
+        userId: userId,
+        chatWith: chatWith,
+        message: photoUrl,  // The image URL (base64 or uploaded URL)
+        messageType: 'photo',
+        timestamp: new Date().toISOString()
     };
 
-    console.log('Sending message:', messageData); // Log the message data being sent
+    console.log('Sending photo:', messageData);
 
-    // Immediately display the sent message in the UI (on the sender's side)
+    // Immediately display the photo in the UI (on the sender's side)
     addMessageToChat(messageData);
 
     // Send message to the server
@@ -456,31 +459,87 @@ function sendMessage() {
         return response.json();
     })
     .then(data => {
-        console.log('Response from server:', data); // Log the response data
-
+        console.log('Response from server:', data);
         if (data.message === 'Message sent successfully') {
-            console.log('Message successfully sent');
-            document.getElementById('user-message').value = ''; // Clear input field
-
-            // Publish the message to the receiver's channel so the other user can see it in real-time
-            const realTimeMessage = {
-                userId: userId,  // The user who sent the message
-                chatWith: chatWith,  // The other user in the chat
-                message: message,  // The message content
-                timestamp: new Date().toISOString() // Add timestamp for the message
-            };
-
+            console.log('Photo message successfully sent');
             // Publish to the receiver's channel
+            const realTimeMessage = {
+                userId: userId,
+                chatWith: chatWith,
+                message: photoUrl,  // The photo URL
+                messageType: 'photo',
+                timestamp: new Date().toISOString()
+            };
             const receiverChannel = ably.channels.get(otherUserChannel);
             receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
         } else {
-            console.error('Error sending message:', data.error);
-            showNotification('Failed to send the message. Please try again later.', true);
+            console.error('Error sending photo message:', data.error);
         }
     })
     .catch(error => {
         console.error('Error sending message to backend:', error);
-        showNotification('Failed to send the message. Please try again later.', true);
+    });
+}
+
+// Send text message
+function sendMessage() {
+    const message = document.getElementById('user-message').value.trim();
+    if (!message) {
+        alert('Please type a message');
+        return;
+    }
+
+    const messageData = {
+        userId: userId,
+        chatWith: chatWith,
+        message: message,
+        messageType: 'text',
+        timestamp: new Date().toISOString()
+    };
+
+    console.log('Sending message:', messageData);
+
+    // Immediately display the sent message in the UI
+    addMessageToChat(messageData);
+
+    // Send message to the server
+    fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(messageData),
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response from server:', data);
+        if (data.message === 'Message sent successfully') {
+            console.log('Message successfully sent');
+            document.getElementById('user-message').value = '';  // Clear input field
+
+            // Publish the message to the receiver's channel
+            const realTimeMessage = {
+                userId: userId,
+                chatWith: chatWith,
+                message: message,
+                messageType: 'text',
+                timestamp: new Date().toISOString()
+            };
+            const receiverChannel = ably.channels.get(otherUserChannel);
+            receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
+        } else {
+            console.error('Error sending message:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message to backend:', error);
     });
 }
 
@@ -490,7 +549,7 @@ function loadMessages() {
     .then(response => response.json())
     .then(data => {
         if (data.messages) {
-            displayMessages(data.messages);  // Display messages from the server
+            displayMessages(data.messages);
         }
     })
     .catch(error => {

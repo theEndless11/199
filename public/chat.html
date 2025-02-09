@@ -391,6 +391,7 @@ function addMessageToChat(messageData) {
 }
 
 // Function to display messages from initial fetch
+// Function to display messages from initial fetch
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
     messagesContainer.innerHTML = ''; // Clear any existing messages
@@ -407,10 +408,8 @@ function displayMessages(messages) {
             messageBubble.textContent = msg.message;
         } else if (msg.messageType === 'photo') {
             const imgElement = document.createElement('img');
-            imgElement.src = msg.message;
+            imgElement.src = msg.message; // The message contains the photo URL (base64 or uploaded URL)
             imgElement.alt = "User's photo";
-            imgElement.style.maxWidth = '200px';
-            imgElement.style.maxHeight = '200px';
             messageBubble.appendChild(imgElement);
         }
 
@@ -432,13 +431,11 @@ function displayMessages(messages) {
         messagesContainer.appendChild(messageElement);
     });
 
-    // After loading, if the user is at the bottom, scroll to the bottom
-    if (isScrolledToBottom()) {
-        scrollToBottom();
-    }
+    // Ensure that the DOM has been updated before scrolling
+    setTimeout(() => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }, 0);
 }
-
-
 
 // Handle photo selection
 function pickPhoto() {

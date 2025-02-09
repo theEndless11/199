@@ -361,13 +361,14 @@ function addMessageToChat(messageData) {
 }
 
 // Function to display messages from initial fetch
+// Function to display messages from initial fetch
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
     messagesContainer.innerHTML = ''; // Clear any existing messages
 
     messages.forEach(msg => {
-        // Only display valid messages with content
-        if (msg && msg.message && msg.message.trim() !== '') {
+        // Ensure the message contains necessary properties
+        if (msg && msg.message && msg.messageType && msg.timestamp) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message');
 
@@ -377,7 +378,7 @@ function displayMessages(messages) {
             // Display text or photo based on message type
             if (msg.messageType === 'text') {
                 messageBubble.textContent = msg.message;
-            } else if (msg.messageType === 'photo') {
+            } else if (msg.messageType === 'photo' && msg.message) {
                 const imgElement = document.createElement('img');
                 imgElement.src = msg.message;
                 imgElement.alt = "User's photo";
@@ -386,25 +387,28 @@ function displayMessages(messages) {
                 messageBubble.appendChild(imgElement);
             }
 
-            // Get the timestamp and format it correctly
+            // Format timestamp
             const timestamp = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const timeElement = document.createElement('div');
             timeElement.classList.add('timestamp');
             timeElement.textContent = timestamp;
 
-            // Check if the message is from the current user or the other user to position it
+            // Position messages based on sender
             if (msg.userId === parseInt(userId)) {
-                messageElement.classList.add('user-msg');  // Right side for sender
+                messageElement.classList.add('user-msg');
             } else {
-                messageElement.classList.add('other-msg');  // Left side for receiver
+                messageElement.classList.add('other-msg');
             }
 
             messageElement.appendChild(messageBubble);
             messageElement.appendChild(timeElement); // Append time below message bubble
             messagesContainer.appendChild(messageElement);
+        } else {
+            console.warn('Skipping invalid message:', msg);
         }
     });
 }
+
 
 // Handle photo selection
 function pickPhoto() {
@@ -547,12 +551,22 @@ function sendMessage() {
 }
 
 // Fetch and display previous messages from the database (initial load)
+// Fetch and display previous messages from the database (initial load)
 function loadMessages() {
     fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`Failed to load messages. Server responded with: ${text}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
-        if (data.messages) {
+        if (data.messages && Array.isArray(data.messages)) {
             displayMessages(data.messages);
+        } else {
+            console.error('Invalid message data received:', data);
         }
     })
     .catch(error => {

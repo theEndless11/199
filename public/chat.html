@@ -517,7 +517,7 @@ function pickPhoto() {
             formData.append('photo', file);  // Attach the selected file to the FormData object
 
             // Upload the photo to the backend
-            fetch('/api/messages', {
+            fetch('/api/upload', {
                 method: 'POST',
                 body: formData,
             })
@@ -536,80 +536,8 @@ function pickPhoto() {
     photoInput.click();  // Trigger the file input dialog
 }
 
-// Send text message or photo URL to the server
-function sendMessage() {
-    const message = document.getElementById('user-message').value.trim();
-    const imagePreview = document.getElementById('image-preview');
-
-    if (!message && !imagePreview.src) {
-        alert('Please type a message or select an image');
-        return;
-    }
-
-    // Define the messageData object
-    const messageData = {
-        userId: userId,
-        chatWith: chatWith,
-        message: message, // Only the text message
-        messageType: message ? 'text' : 'photo', // Determine the message type (text or photo)
-        timestamp: new Date().toISOString()
-    };
-
-    // If there is a preview image, upload it first
-    if (imagePreview.src && imagePreview.src.startsWith('data:image/')) {
-        uploadImage(imagePreview.src).then(imageUrl => {
-            // Update the message data with the uploaded image URL
-            messageData.message = imageUrl; // The URL of the uploaded image
-            messageData.messageType = 'photo'; // Indicate this is a photo message
-
-            // Immediately display the sent message in the UI
-            addMessageToChat(messageData);
-
-            // Send the message to the server with the image URL
-            sendMessageToServer(messageData);
-
-            // Hide the image preview after sending
-            document.getElementById('image-preview').style.display = 'none'; 
-        }).catch(error => {
-            console.error('Error uploading image:', error);
-        });
-    } else {
-        // If there is no preview image, simply send the text message
-        addMessageToChat(messageData);
-        sendMessageToServer(messageData);
-    }
-
-    // Clear the input field after sending
-    document.getElementById('user-message').value = '';
-}
-
-// Function to upload the image to the server and get the URL
-function uploadImage(base64Image) {
-    return new Promise((resolve, reject) => {
-        // Send the base64 image to the server as part of JSON data (not FormData)
-        fetch('/api/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ photo: base64Image }),  // Send base64 directly
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.photoUrl) {
-                resolve(data.photoUrl); // Resolve with the URL of the uploaded image
-            } else {
-                reject('Failed to upload the image');
-            }
-        })
-        .catch(error => {
-            reject(error);
-        });
-    });
-}
-
-
-// Function to send the message data to the server
+// Function to send the photo URL to the server
+// Send the message data to the server
 function sendMessageToServer(messageData) {
     fetch('/api/messages', {
         method: 'POST',
@@ -622,6 +550,65 @@ function sendMessageToServer(messageData) {
     .then(data => {
         if (data.message === 'Message sent successfully') {
             console.log('Message successfully sent');
+        } else {
+            console.error('Error sending message:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message to backend:', error);
+    });
+}
+
+// Send text message
+function sendMessage() {
+    const message = document.getElementById('user-message').value.trim();
+    const imagePreview = document.getElementById('image-preview');
+    
+    if (!message && !imagePreview.src) {
+        alert('Please type a message or select an image');
+        return;
+    }
+
+    const messageData = {
+        userId: userId,
+        chatWith: chatWith,
+        message: message || imagePreview.src, // Send message text or image base64
+        messageType: message ? 'text' : 'photo',
+        timestamp: new Date().toISOString()
+    };
+
+    // Immediately display the sent message in the UI without logging the URL in the console
+    addMessageToChat(messageData);
+
+    // Send message to the server
+    fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(messageData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === 'Message sent successfully') {
+            // Hide image preview after sending
+            document.getElementById('image-preview').style.display = 'none'; 
+
+            // Publish the message to the receiver's channel
+            const realTimeMessage = {
+                userId: userId,
+                chatWith: chatWith,
+                message: message || imagePreview.src,
+                messageType: message ? 'text' : 'photo',
+                timestamp: new Date().toISOString()
+            };
+
+            // Publish to the other user's channel without printing the URL
+            const receiverChannel = ably.channels.get(otherUserChannel);
+            receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
+
+            // Clear the input field after message is sent
+            document.getElementById('user-message').value = '';
         } else {
             console.error('Error sending message:', data.error);
         }
@@ -649,7 +636,7 @@ function loadMessages() {
                 msg && (msg.message || msg.photo) && msg.timestamp
             );
             if (validMessages.length > 0) {
-                displayMessages(validMessages); // This is where displayMessages() is called
+                displayMessages(validMessages);
             } else {
                 console.warn('No valid messages found.');
             }

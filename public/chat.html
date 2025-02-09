@@ -457,7 +457,14 @@ function addMessageToChat(messageData) {
     messageElement.appendChild(messageBubble);
     messageElement.appendChild(timeElement);
     messagesContainer.appendChild(messageElement);
+
+    // Force a reflow/repaint to ensure the correct layout
+    messagesContainer.offsetHeight;  // This triggers a reflow
+
+    // Scroll to the bottom to show the latest message
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {

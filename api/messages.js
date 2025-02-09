@@ -91,7 +91,7 @@ module.exports = async (req, res) => {
       // If the message contains base64 image data, it's assumed to be a photo message
       else if (message.startsWith('data:image')) {
         photoPath = message; // Store the base64 string in the photo column
-        console.log('Photo is base64 encoded:', photoPath);
+        // Do not log base64 string or photo URL to avoid unnecessary exposure
       }
 
       // Insert the message into the database

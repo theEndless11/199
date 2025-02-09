@@ -298,9 +298,6 @@ function addMessageToChat(messageData) {
     timeElement.classList.add('timestamp');
     timeElement.textContent = timestamp;
 
-    // Append the time below the message
-    messageBubble.appendChild(timeElement);
-
     // Check if the message is from the current user or the other user to position it
     if (messageData.userId === parseInt(userId)) {
         messageElement.classList.add('user-msg');  // Right side for sender
@@ -309,11 +306,11 @@ function addMessageToChat(messageData) {
     }
 
     messageElement.appendChild(messageBubble);
+    messageElement.appendChild(timeElement); // Append time below message bubble
     messagesContainer.appendChild(messageElement);
 
     // Ensure that the DOM has been updated before scrolling
     setTimeout(() => {
-        // Force the browser to recalculate styles and layout
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }, 0);
 }
@@ -337,9 +334,6 @@ function displayMessages(messages) {
         timeElement.classList.add('timestamp');
         timeElement.textContent = timestamp;
 
-        // Append the time below the message
-        messageBubble.appendChild(timeElement);
-
         // Check if the message is from the current user or the other user to position it
         if (msg.userId === parseInt(userId)) {
             messageElement.classList.add('user-msg');  // Right side for sender
@@ -348,12 +342,12 @@ function displayMessages(messages) {
         }
 
         messageElement.appendChild(messageBubble);
+        messageElement.appendChild(timeElement); // Append time below message bubble
         messagesContainer.appendChild(messageElement);
     });
 
     // Ensure that the DOM has been updated before scrolling
     setTimeout(() => {
-        // Scroll to the bottom after displaying messages
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }, 0);
 }

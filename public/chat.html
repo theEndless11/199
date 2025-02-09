@@ -127,7 +127,7 @@
         }
 
         #user-message {
-            width: 75%;
+            width: 65%;
             padding: 10px;
             border-radius: 20px;
             border: 1px solid #ddd;
@@ -168,6 +168,14 @@
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Cloudflare_logo_2018.svg/1200px-Cloudflare_logo_2018.svg.png');
             background-size: cover;
             margin-right: 10px;
+        }
+
+        /* Preview for the selected image */
+        .image-preview {
+            max-width: 100px;
+            max-height: 100px;
+            margin-left: 10px;
+            border-radius: 10px;
         }
 
         /* Animations */
@@ -214,10 +222,17 @@
             </div>
 
             <div id="message-input">
-                <div class="icon-container">
-                    <div class="cloudflare-icon" title="Pick a photo" onclick="pickPhoto()"></div>
-                </div>
                 <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
+                
+                <!-- Photo picker between the input field and send button -->
+                <div class="icon-container">
+                    <input type="file" id="file-input" accept="image/*" onchange="previewPhoto()" style="display: none;" />
+                    <div class="cloudflare-icon" title="Pick a photo" onclick="document.getElementById('file-input').click()"></div>
+                </div>
+
+                <!-- Preview of selected image -->
+                <img id="image-preview" class="image-preview" style="display:none;" />
+
                 <button onclick="sendMessage()">Send</button>
             </div>
         </div>
@@ -231,12 +246,62 @@
             }
         }
 
-        // Placeholder for picking photo
-        function pickPhoto() {
-            alert("Pick photo functionality (this can be integrated with your file picker)");
+        // Function to send message
+        function sendMessage() {
+            const message = document.getElementById('user-message').value;
+            const imagePreview = document.getElementById('image-preview');
+
+            if (message.trim() !== "" || imagePreview.src !== "") {
+                const messageContainer = document.getElementById('messages-container');
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', 'user-msg');
+
+                const messageBubble = document.createElement('div');
+                messageBubble.classList.add('msg-bubble');
+                messageBubble.textContent = message;
+
+                // Add the image if selected
+                if (imagePreview.src !== "") {
+                    const imageElement = document.createElement('img');
+                    imageElement.src = imagePreview.src;
+                    imageElement.classList.add('image-preview');
+                    messageBubble.appendChild(imageElement);
+                }
+
+                const timestamp = document.createElement('div');
+                timestamp.classList.add('timestamp');
+                timestamp.textContent = new Date().toLocaleTimeString();
+
+                messageElement.appendChild(messageBubble);
+                messageElement.appendChild(timestamp);
+                messageContainer.appendChild(messageElement);
+
+                // Clear inputs after sending
+                document.getElementById('user-message').value = ''; 
+                imagePreview.style.display = 'none'; // Hide image preview
+                messageContainer.scrollTop = messageContainer.scrollHeight; // Scroll to the bottom
+            }
+        }
+
+        // Function to preview selected photo
+        function previewPhoto() {
+            const fileInput = document.getElementById('file-input');
+            const imagePreview = document.getElementById('image-preview');
+
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block'; // Show image preview
+                };
+                reader.readAsDataURL(file);
+            }
         }
     </script>
 </body>
+
+
 
     <script>
 // Get userId and chatWith from query parameters

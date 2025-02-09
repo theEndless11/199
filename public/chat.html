@@ -415,6 +415,7 @@ function displayMessages(messages) {
 
 
 // Handle photo selection
+// Handle photo selection
 function pickPhoto() {
     const photoInput = document.createElement('input');
     photoInput.type = 'file';
@@ -433,14 +434,8 @@ function pickPhoto() {
             .then(response => response.json())
             .then(data => {
                 if (data.photoUrl) {
-                    // Show the photo preview in the input area
-                    const imgPreview = document.createElement('img');
-                    imgPreview.src = data.photoUrl;  // Use the returned URL from the server
-                    imgPreview.style.maxWidth = '100px';
-                    imgPreview.style.maxHeight = '100px';
-                    document.getElementById('photo-preview').innerHTML = ''; // Clear previous preview
-                    document.getElementById('photo-preview').appendChild(imgPreview);
-                    sendPhoto(data.photoUrl);  // Send the image URL to the backend instead of base64
+                    // Send the image URL to the backend instead of base64
+                    sendPhoto(data.photoUrl);  // We will now only send the URL
                 }
             })
             .catch(error => {
@@ -464,7 +459,7 @@ function sendPhoto(photoUrl) {
         timestamp: new Date().toISOString()
     };
 
-    console.log('Sending photo:', messageData);
+    console.log('Sending photo message:', messageData);
 
     // Immediately display the photo in the UI (on the sender's side)
     addMessageToChat(messageData);
@@ -486,7 +481,6 @@ function sendPhoto(photoUrl) {
         return response.json();
     })
     .then(data => {
-        console.log('Response from server:', data);
         if (data.message === 'Message sent successfully') {
             console.log('Photo message successfully sent');
             // Publish to the receiver's channel
@@ -507,6 +501,7 @@ function sendPhoto(photoUrl) {
         console.error('Error sending message to backend:', error);
     });
 }
+
 
 
 // Send text message

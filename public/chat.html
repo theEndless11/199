@@ -470,6 +470,7 @@ function sendPhoto(photoUrl) {
 }
 
 // Send text message
+// Send text message
 function sendMessage() {
     const message = document.getElementById('user-message').value.trim();
     if (!message && !document.getElementById('image-preview').src) {  // Check if there's no message and no image
@@ -510,7 +511,6 @@ function sendMessage() {
         console.log('Response from server:', data);
         if (data.message === 'Message sent successfully') {
             console.log('Message successfully sent');
-            document.getElementById('user-message').value = '';  // Clear input field
             document.getElementById('image-preview').style.display = 'none';  // Hide image preview after sending
 
             // Publish the message to the receiver's channel
@@ -523,6 +523,9 @@ function sendMessage() {
             };
             const receiverChannel = ably.channels.get(otherUserChannel);
             receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
+
+            // Clear the input field only after confirming the message is sent
+            document.getElementById('user-message').value = '';  
         } else {
             console.error('Error sending message:', data.error);
         }

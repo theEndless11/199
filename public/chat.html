@@ -62,13 +62,15 @@
 }
 
 /* Messages Container */
+/* Make sure the messages container is scrollable */
 #messages-container {
-    flex-grow: 1;
-    overflow-y: auto;
+    flex-grow: 1;         /* Take up available space */
+    overflow-y: auto;     /* Enable vertical scrolling */
     padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    max-height: calc(100% - 120px); /* Adjust based on header/footer height, e.g. 120px */
 }
 
 /* Message Bubbles */
@@ -329,6 +331,19 @@ channel.subscribe('newMessage', function (message) {
         addMessageToChat(message.data);  // Add the new message to the chat UI
     }
 });
+// Function to scroll the messages container to the bottom
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('messages-container');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+}
+
+// Check if user is at the bottom, then auto-scroll
+function isScrolledToBottom() {
+    const messagesContainer = document.getElementById('messages-container');
+    return messagesContainer.scrollHeight - messagesContainer.scrollTop === messagesContainer.clientHeight;
+}
 
 // Function to add message to the chat UI
 function addMessageToChat(messageData) {
@@ -348,7 +363,6 @@ function addMessageToChat(messageData) {
         const imgElement = document.createElement('img');
         imgElement.src = messageData.message;  // URL of the image
         imgElement.alt = "User's photo";
-        // Ensuring the image will be handled by CSS styles
         messageBubble.appendChild(imgElement);
     }
 
@@ -370,10 +384,10 @@ function addMessageToChat(messageData) {
     messageElement.appendChild(timeElement); // Append time below message bubble
     messagesContainer.appendChild(messageElement);
 
-    // Ensure that the DOM has been updated before scrolling
-    setTimeout(() => {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }, 0);
+    // If user is at the bottom, scroll automatically
+    if (isScrolledToBottom()) {
+        scrollToBottom();
+    }
 }
 
 // Function to display messages from initial fetch
@@ -418,11 +432,13 @@ function displayMessages(messages) {
         messagesContainer.appendChild(messageElement);
     });
 
-    // Ensure that the DOM has been updated before scrolling
-    setTimeout(() => {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }, 0);
+    // After loading, if the user is at the bottom, scroll to the bottom
+    if (isScrolledToBottom()) {
+        scrollToBottom();
+    }
 }
+
+
 
 // Handle photo selection
 function pickPhoto() {

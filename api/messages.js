@@ -27,78 +27,82 @@ module.exports = async (req, res) => {
     console.log('Request Method: ', req.method);
 
     // Handle GET request to fetch messages
-    if (req.method === 'GET') {
-      const { userId, chatWith } = req.query;
+   if (req.method === 'GET') {
+  const { userId, chatWith } = req.query;
 
-      if (!userId || !chatWith) {
-        console.error('Missing query parameters: userId or chatWith');
-        return res.status(400).json({ error: 'Missing required query parameters: userId, chatWith' });
-      }
+  if (!userId || !chatWith) {
+    console.error('Missing query parameters: userId or chatWith');
+    return res.status(400).json({ error: 'Missing required query parameters: userId, chatWith' });
+  }
 
-      console.log('Fetching messages for userId:', userId, 'chatWith:', chatWith);
-      const sql = 'SELECT * FROM messages WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) ORDER BY timestamp';
-      const [messages] = await pool.query(sql, [userId, chatWith, chatWith, userId]);
+  console.log('Fetching messages for userId:', userId, 'chatWith:', chatWith);
+  const sql = 'SELECT * FROM messages WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) ORDER BY timestamp';
+  const [messages] = await pool.query(sql, [userId, chatWith, chatWith, userId]);
 
-      if (messages.length > 0) {
-        console.log('Fetched messages:', messages);
-        return res.status(200).json({ messages });
-      } else {
-        console.log('No messages found for this chat');
-        return res.status(404).json({ error: 'No messages found for this chat' });
-      }
+  if (messages.length > 0) {
+    console.log('Fetched messages:', messages);
+    return res.status(200).json({ messages });
+  } else {
+    console.log('No messages found for this chat');
+    return res.status(404).json({ error: 'No messages found for this chat' });
+  }
+}
+// Handle POST request to send a message (with optional photo)
+if (req.method === 'POST') {
+  const { userId, chatWith, message } = req.body;
+
+  console.log('POST request received with userId:', userId, 'chatWith:', chatWith, 'message:', message);
+
+  if (!userId || !chatWith || !message) {
+    console.error('Missing fields in POST request: userId, chatWith, message');
+    return res.status(400).json({ error: 'Missing required fields: userId, chatWith, message' });
+  }
+
+  // Check if message is empty
+  if (message.trim() === '') {
+    console.error('Message is empty');
+    return res.status(400).json({ error: 'Message cannot be empty' });
+  }
+
+  // If a photo is uploaded, we'll get its path (or base64 data)
+  let photoPath = null;
+  if (req.file) {
+    photoPath = req.file.path;  // The path where the photo is stored (if a file is uploaded)
+    console.log('Photo uploaded, path:', photoPath);
+  } else if (message.startsWith('data:image')) {
+    // Handle base64 image data in message
+    photoPath = message;
+    console.log('Photo is base64 encoded:', photoPath);
+  }
+
+  // Insert the message into the database
+  const sql = 'INSERT INTO messages (userId, chatWith, message, photo, timestamp) VALUES (?, ?, ?, ?, NOW())';
+  console.log('Inserting message into database:', message, 'Photo:', photoPath);
+
+  // If there's a photo, insert it into the photo column; otherwise, store message text
+  const [result] = await pool.query(sql, [userId, chatWith, message, photoPath]);
+
+  if (result.affectedRows > 0) {
+    console.log('Message inserted successfully');
+
+    const messageData = { userId, chatWith, message, photo: photoPath };
+
+    // Publish to Ably (so other user can see it in real-time)
+    try {
+      console.log('Publishing to Ably with data:', messageData);
+      await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData);
+      console.log('Message published to Ably successfully');
+    } catch (err) {
+      console.error('Error publishing to Ably:', err);
+      return res.status(500).json({ error: 'Failed to publish message to Ably' });
     }
 
-    // Handle POST request to send a message (with optional photo)
-    if (req.method === 'POST') {
-      const { userId, chatWith, message } = req.body;
+    return res.status(200).json({ message: 'Message sent successfully' });
+  } else {
+    console.error('Message insertion failed');
+    return res.status(500).json({ error: 'Failed to insert message into the database' });
+  }
 
-      console.log('POST request received with userId:', userId, 'chatWith:', chatWith, 'message:', message);
-
-      // Check if userId, chatWith, or message are missing
-      if (!userId || !chatWith || !message) {
-        console.error('Missing fields in POST request: userId, chatWith, message');
-        return res.status(400).json({ error: 'Missing required fields: userId, chatWith, message' });
-      }
-
-      // Check if message is empty (after trimming whitespace)
-      if (message.trim() === '') {
-        console.error('Message is empty');
-        return res.status(400).json({ error: 'Message cannot be empty' });
-      }
-
-      // If a photo is uploaded, get its path
-      let photoPath = null;
-      if (req.file) {
-        photoPath = req.file.path;  // The path where the photo is stored
-        console.log('Photo uploaded, path:', photoPath);
-      }
-
-      // Insert the message into the database
-      const sql = 'INSERT INTO messages (userId, chatWith, message, photo, timestamp) VALUES (?, ?, ?, ?, NOW())';
-      console.log('Inserting message into database:', message, 'Photo:', photoPath);
-      const [result] = await pool.query(sql, [userId, chatWith, message, photoPath]);
-
-      if (result.affectedRows > 0) {
-        console.log('Message inserted successfully');
-
-        const messageData = { userId, chatWith, message, photo: photoPath };
-
-        // Publish to Ably (so other user can see it in real-time)
-        try {
-          console.log('Publishing to Ably with data:', messageData);
-          await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData);
-          console.log('Message published to Ably successfully');
-        } catch (err) {
-          console.error('Error publishing to Ably:', err);
-          return res.status(500).json({ error: 'Failed to publish message to Ably' });
-        }
-
-        return res.status(200).json({ message: 'Message sent successfully' });
-      } else {
-        console.error('Message insertion failed');
-        return res.status(500).json({ error: 'Failed to insert message into the database' });
-      }
-    }
 
     return res.status(405).json({ error: 'Method Not Allowed' });
   } catch (err) {

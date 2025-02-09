@@ -322,8 +322,9 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
+// Function to add message to the chat UI
 function addMessageToChat(messageData) {
-    if (!messageData || !messageData.message) return; // Ensure message exists
+    if (!messageData || (!messageData.message && !messageData.photo)) return; // Ensure message or photo exists
 
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
@@ -334,13 +335,15 @@ function addMessageToChat(messageData) {
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('msg-bubble');
 
-    // Check if message is a valid type and display accordingly
-    if (messageData.messageType === 'text' && messageData.message.trim() !== '') {
-        messageBubble.textContent = messageData.message;
-    } else if (messageData.messageType === 'photo' && messageData.message) {
+    // Check if the message is text or photo
+    if (messageData.message) {
+        messageBubble.textContent = messageData.message; // Display text message
+    } else if (messageData.photo) {
         const imgElement = document.createElement('img');
-        imgElement.src = messageData.message;
+        imgElement.src = messageData.photo;  // This can be the file path or base64 string
         imgElement.alt = "User's photo";
+        imgElement.style.maxWidth = '200px';  // Optionally control image size
+        imgElement.style.maxHeight = '200px';
         messageBubble.appendChild(imgElement);
     }
 
@@ -359,6 +362,7 @@ function addMessageToChat(messageData) {
     messageElement.appendChild(timeElement);
     messagesContainer.appendChild(messageElement);
 }
+
 
 // Function to display messages from initial fetch
 // Function to display messages from initial fetch

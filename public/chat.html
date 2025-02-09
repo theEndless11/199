@@ -80,12 +80,15 @@
     animation: fadeIn 0.5s ease-out;
 }
 
+/* User message and Other message alignment */
 .user-msg {
     margin-left: auto;
+    align-self: flex-end; /* Align the user message to the right */
 }
 
 .other-msg {
     margin-right: auto;
+    align-self: flex-start; /* Align the other message to the left */
 }
 
 .msg-bubble {
@@ -95,7 +98,8 @@
     font-size: 14px;
     line-height: 1.4;
     transition: all 0.3s ease-in-out;
-    max-width: 100%;  /* Ensure max-width is 100% */
+    max-width: 80%;  /* Ensure that bubbles are not too wide */
+    margin-bottom: 5px; /* Prevent messages from overlapping */
 }
 
 /* Styling for images in message bubbles */
@@ -108,17 +112,18 @@
 
 /* Styling for photo messages */
 .user-msg .msg-bubble img {
-    background-color: #4CAF50;
+    background-color: #4CAF50;  /* Same as the background color for text */
     padding: 10px;
     border-radius: 15px;
 }
 
 .other-msg .msg-bubble img {
-    background-color: #f0f0f0;
+    background-color: #f0f0f0;  /* Same as the background for text */
     padding: 10px;
     border-radius: 15px;
 }
 
+/* Color and border-radius for text messages */
 .user-msg .msg-bubble {
     background-color: #4CAF50;
     color: white;
@@ -129,12 +134,6 @@
     background-color: #f0f0f0;
     color: #333;
     border-bottom-left-radius: 5px;
-}
-
-/* Optional: Add a max-width to prevent overly large images */
-.user-msg .msg-bubble, .other-msg .msg-bubble {
-    max-width: 90%;
-    margin-bottom: 5px;
 }
 
 /* Timestamp */
@@ -238,6 +237,7 @@ button:hover {
         padding: 8px 15px;
     }
 }
+
 
 </style>
 </head>

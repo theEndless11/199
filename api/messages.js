@@ -135,4 +135,3 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Unexpected error occurred', details: err.message });
   }
 };
-

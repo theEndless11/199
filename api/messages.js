@@ -54,18 +54,19 @@ module.exports = async (req, res) => {
 
       console.log('POST request received with userId:', userId, 'chatWith:', chatWith, 'message:', message);
 
+      // Check if userId, chatWith, or message are missing
       if (!userId || !chatWith || !message) {
         console.error('Missing fields in POST request: userId, chatWith, message');
         return res.status(400).json({ error: 'Missing required fields: userId, chatWith, message' });
       }
 
-      // Check if message is empty
+      // Check if message is empty (after trimming whitespace)
       if (message.trim() === '') {
         console.error('Message is empty');
         return res.status(400).json({ error: 'Message cannot be empty' });
       }
 
-      // If a photo is uploaded, we'll get its path
+      // If a photo is uploaded, get its path
       let photoPath = null;
       if (req.file) {
         photoPath = req.file.path;  // The path where the photo is stored

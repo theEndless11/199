@@ -586,12 +586,13 @@ function sendMessage() {
 // Function to upload the image to the server and get the URL
 function uploadImage(base64Image) {
     return new Promise((resolve, reject) => {
-        const formData = new FormData();
-        formData.append('photo', base64Image);  // Send the base64 image to the server
-
+        // Send the base64 image to the server as part of JSON data (not FormData)
         fetch('/api/messages', {
             method: 'POST',
-            body: formData,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ photo: base64Image }),  // Send base64 directly
         })
         .then(response => response.json())
         .then(data => {
@@ -606,6 +607,7 @@ function uploadImage(base64Image) {
         });
     });
 }
+
 
 // Function to send the message data to the server
 function sendMessageToServer(messageData) {

@@ -1,195 +1,187 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
-    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
-             <style>
-        /* General Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+    /* General Reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        /* Chatbox Container */
-       #chatbox-container {
-    background-color: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    height: 600px; /* Fixed height to prevent issues */
-    display: flex;
-    flex-direction: column;
-    font-family: 'Arial', sans-serif;
-    overflow: hidden;
-    margin: 0 auto;
-}
-        /* Category Tabs */
-        #category-tabs {
-            display: flex;
-            justify-content: space-around;
-            background-color: #4CAF50;
-            padding: 10px;
-            border-radius: 15px 15px 0 0;
-        }
+    /* Chatbox Container */
+    #chatbox-container {
+        background-color: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+        font-family: 'Arial', sans-serif;
+        overflow: hidden;
+        margin: 0 auto;
+    }
 
-        .tab-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 20px;
-            transition: background-color 0.3s ease;
-        }
+    /* Category Tabs */
+    #category-tabs {
+        display: flex;
+        justify-content: space-around;
+        background-color: #4CAF50;
+        padding: 10px;
+        border-radius: 15px 15px 0 0;
+    }
 
-        .tab-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
+    .tab-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 20px;
+        transition: background-color 0.3s ease;
+    }
 
-        /* Chatbox */
-        #chatbox {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            position: relative;
-        }
+    .tab-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
 
-        /* Messages Container */
-      #messages-container {
-    flex-grow: 1;  /* This allows the messages to grow and fill the space */
-    overflow-y: auto;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: calc(100% - 100px); /* Preventing overlap with input section */
-}
+    /* Chatbox */
+    #chatbox {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 15px;
+        position: relative;
+    }
 
-        /* Message Bubbles */
-        .message {
-            display: flex;
-            align-items: flex-end;
-            max-width: 80%;
-            animation: fadeIn 0.5s ease-out;
-        }
+    /* Messages Container */
+    #messages-container {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: calc(100% - 100px);
+    }
 
-        .user-msg {
-            margin-left: auto;
-        }
+    /* Message Bubbles */
+    .message {
+        display: flex;
+        align-items: flex-end;
+        max-width: 80%;
+        animation: fadeIn 0.5s ease-out;
+    }
 
-        .other-msg {
-            margin-right: auto;
+    .user-msg {
+        margin-left: auto;
+    }
+
+    .other-msg {
+        margin-right: auto;
+    }
+
+    .msg-bubble {
+        padding: 12px 16px;
+        border-radius: 20px;
+        word-wrap: break-word;
+        font-size: 14px;
+        line-height: 1.4;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .user-msg .msg-bubble {
+        background-color: #4CAF50;
+        color: white;
+        border-bottom-right-radius: 5px;
+    }
+
+    .other-msg .msg-bubble {
+        background-color: #f0f0f0;
+        color: #333;
+        border-bottom-left-radius: 5px;
+    }
+
+    /* Styling for images in message bubbles */
+    .msg-bubble img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        display: block;
+    }
+
+    .timestamp {
+        font-size: 0.75em;
+        color: #888;
+        margin-top: 5px;
+        text-align: right;
+    }
+
+    /* Message Input Area */
+    #message-input {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-top: 1px solid #eee;
+        position: relative;
+        z-index: 1;
+    }
+
+    #user-message {
+        width: 65%;
+        padding: 10px;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        outline: none;
+    }
+
+    #user-message:focus {
+        border-color: #4CAF50;
+    }
+
+    /* Preview for the selected image */
+    #image-preview {
+        display: none;
+        max-width: 100px;
+        max-height: 100px;
+        border-radius: 10px;
+        margin-left: 10px;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive Design */
+    @media screen and (max-width: 480px) {
+        #chatbox-container {
+            height: 100vh;
+            border-radius: 0;
+            max-width: 100%;
         }
 
         .msg-bubble {
-            padding: 12px 16px;
-            border-radius: 20px;
-            word-wrap: break-word;
-            font-size: 14px;
-            line-height: 1.4;
-            transition: all 0.3s ease-in-out;
+            max-width: 90%;
         }
 
-        /* Styling for images in message bubbles */
-        .msg-bubble img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 10px;
-            display: block;
+        #message-input {
+            padding: 8px;
         }
 
-        .user-msg .msg-bubble {
-            background-color: #4CAF50;
-            color: white;
-            border-bottom-right-radius: 5px;
+        #user-message {
+            width: 70%;
         }
 
-        .other-msg .msg-bubble {
-            background-color: #f0f0f0;
-            color: #333;
-            border-bottom-left-radius: 5px;
+        button {
+            padding: 8px 15px;
         }
-
-        .timestamp {
-            font-size: 0.75em;
-            color: #888;
-            margin-top: 5px;
-            text-align: right;
-        }
-
-        /* Message Input Area */
-     #message-input {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-top: 1px solid #eee;
-    position: relative;
-    z-index: 1; /* Ensure input stays on top */
-}
-
-#user-message {
-    width: 65%;
-    padding: 10px;
-    border-radius: 20px;
-    border: 1px solid #ddd;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-
-#user-message:focus {
-    border-color: #4CAF50;
-}
-        /* Preview for the selected image */
-    /* Preventing Overflow of the Image Preview */
-#image-preview {
-    display: none;
-    max-width: 100px;
-    max-height: 100px;
-    border-radius: 10px;
-    margin-left: 10px;
-}
-
-        /* Animations */
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Responsive Design */
-        @media screen and (max-width: 480px) {
-            #chatbox-container {
-                height: 100vh;
-                border-radius: 0;
-                max-width: 100%;
-            }
-
-            .msg-bubble {
-                max-width: 90%;
-            }
-
-            #message-input {
-                padding: 8px;
-            }
-
-            #user-message {
-                width: 70%;
-            }
-
-            button {
-                padding: 8px 15px;
-            }
-        }
-    </style>
-</head>
+    }
+</style>
 <body>
     <div id="chatbox-container">
         <div id="category-tabs">
@@ -203,78 +195,25 @@
 
             <div id="message-input">
                 <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
-
-                <!-- Photo picker between the input field and send button -->
-                <div class="icon-container">
-                    <input type="file" id="file-input" accept="image/*" onchange="previewPhoto()" style="display: none;" />
-                    <div class="cloudflare-icon" title="Pick a photo" onclick="document.getElementById('file-input').click()"></div>
+                <input type="file" id="file-input" accept="image/*" onchange="previewPhoto()" style="display: none;" />
+                <div class="icon-container" title="Pick a photo" onclick="document.getElementById('file-input').click()">
+                    <div class="cloudflare-icon"></div>
                 </div>
-<style>#message-input {
-    position: sticky;
-    bottom: 0;
-    background-color: white; /* Change to desired background */
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-top: 1px solid #ccc;
-    z-index: 1000;
-    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
-    width: 100%;
-}
-
-#user-message {
-    flex-grow: 1;
-    padding: 8px;
-    margin-right: 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-.icon-container {
-    display: flex;
-    align-items: center;
-    margin-right: 10px;
-}
-
-.cloudflare-icon {
-    width: 24px;
-    height: 24px;
-    background-image: url('path/to/cloudflare-icon.svg'); /* Replace with actual icon */
-    background-size: contain;
-    cursor: pointer;
-}
-
-button {
-    padding: 8px 12px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-</style>
-                <!-- Preview of selected image -->
                 <img id="image-preview" class="image-preview" style="display:none;" />
-
                 <button onclick="sendMessage()">Send</button>
             </div>
         </div>
     </div>
 
     <script>
+        <script>
         // Function to handle key event (Enter key sends the message)
         function handleKey(event) {
             if (event.key === "Enter") {
                 sendMessage();
             }
         }
-
-        // Function to preview selected photo
+             // Function to preview selected photo
         function previewPhoto() {
             const fileInput = document.getElementById('file-input');
             const imagePreview = document.getElementById('image-preview');
@@ -290,7 +229,7 @@ button:hover {
             } else {
                 imagePreview.style.display = 'none'; // Hide image preview if no file is selected
             }
-        }</script>
+        } </script>
 </body>
 <script>
 // Get userId and chatWith from query parameters
@@ -333,45 +272,41 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
-function addMessageToChat(messageData) {
-    const messagesContainer = document.getElementById('messages-container');
-    if (!messagesContainer) return;  // Ensure the container exists
+// Function to add message to the chat UI
+        function addMessageToChat(messageData) {
+            const messagesContainer = document.getElementById('messages-container');
+            if (!messagesContainer) return;
 
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
 
-    const messageBubble = document.createElement('div');
-    messageBubble.classList.add('msg-bubble');
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('msg-bubble');
 
-    // Check if message is text or image
-    if (messageData.messageType === 'text') {
-        messageBubble.textContent = messageData.message;
-    } else if (messageData.messageType === 'photo') {
-        const imgElement = document.createElement('img');
-        imgElement.src = messageData.message;  // URL of the image
-        imgElement.alt = "User's photo";
-        messageBubble.appendChild(imgElement);
-    }
+            if (messageData.messageType === 'text') {
+                messageBubble.textContent = messageData.message;
+            } else if (messageData.messageType === 'photo') {
+                const imgElement = document.createElement('img');
+                imgElement.src = messageData.message;
+                imgElement.alt = "User's photo";
+                messageBubble.appendChild(imgElement);
+            }
 
-    // Get the timestamp and format it correctly
-    const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timeElement = document.createElement('div');
+            timeElement.classList.add('timestamp');
+            timeElement.textContent = timestamp;
 
-    const timeElement = document.createElement('div');
-    timeElement.classList.add('timestamp');
-    timeElement.textContent = timestamp;
+            if (messageData.userId === parseInt(userId)) {
+                messageElement.classList.add('user-msg');
+            } else {
+                messageElement.classList.add('other-msg');
+            }
 
-    // Check if the message is from the current user or the other user to position it
-    if (messageData.userId === parseInt(userId)) {
-        messageElement.classList.add('user-msg');  // Right side for sender
-    } else {
-        messageElement.classList.add('other-msg');  // Left side for receiver
-    }
-
-    messageElement.appendChild(messageBubble);
-    messageElement.appendChild(timeElement); // Append time below message bubble
-    messagesContainer.appendChild(messageElement);
-
-}
+            messageElement.appendChild(messageBubble);
+            messageElement.appendChild(timeElement);
+            messagesContainer.appendChild(messageElement);
+        }
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {
@@ -501,69 +436,63 @@ function sendPhoto(photoUrl) {
 
 // Send text message
 // Send text message
-function sendMessage() {
-    const message = document.getElementById('user-message').value.trim();
-    if (!message && !document.getElementById('image-preview').src) {  // Check if there's no message and no image
-        alert('Please type a message');
-        return;
-    }
+        function sendMessage() {
+            const message = document.getElementById('user-message').value.trim();
+            const imagePreview = document.getElementById('image-preview');
+            if (!message && !imagePreview.src) {
+                alert('Please type a message or select an image');
+                return;
+            }
 
-    const messageData = {
-        userId: userId,
-        chatWith: chatWith,
-        message: message || document.getElementById('image-preview').src, // Send message text or image base64
-        messageType: message ? 'text' : 'photo',  // Determine message type (text or photo)
-        timestamp: new Date().toISOString()
-    };
-
-    console.log('Sending message:', messageData);
-
-    // Immediately display the sent message in the UI
-    addMessageToChat(messageData);
-
-    // Send message to the server
-    fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(messageData),
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`);
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Response from server:', data);
-        if (data.message === 'Message sent successfully') {
-            console.log('Message successfully sent');
-            document.getElementById('image-preview').style.display = 'none';  // Hide image preview after sending
-
-            // Publish the message to the receiver's channel
-            const realTimeMessage = {
+            const messageData = {
                 userId: userId,
                 chatWith: chatWith,
-                message: message || document.getElementById('image-preview').src,
+                message: message || imagePreview.src, // Send message text or image base64
                 messageType: message ? 'text' : 'photo',
                 timestamp: new Date().toISOString()
             };
-            const receiverChannel = ably.channels.get(otherUserChannel);
-            receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
 
-            // Clear the input field only after confirming the message is sent
-            document.getElementById('user-message').value = '';  
-        } else {
-            console.error('Error sending message:', data.error);
+            console.log('Sending message:', messageData);
+
+            // Immediately display the sent message in the UI
+            addMessageToChat(messageData);
+
+            // Send message to the server
+            fetch('/api/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(messageData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Message sent successfully') {
+                    console.log('Message successfully sent');
+                    document.getElementById('image-preview').style.display = 'none'; // Hide image preview after sending
+
+                    // Publish the message to the receiver's channel
+                    const realTimeMessage = {
+                        userId: userId,
+                        chatWith: chatWith,
+                        message: message || imagePreview.src,
+                        messageType: message ? 'text' : 'photo',
+                        timestamp: new Date().toISOString()
+                    };
+                    const receiverChannel = ably.channels.get(otherUserChannel);
+                    receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
+
+                    // Clear the input field after message is sent
+                    document.getElementById('user-message').value = '';
+                } else {
+                    console.error('Error sending message:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message to backend:', error);
+            });
         }
-    })
-    .catch(error => {
-        console.error('Error sending message to backend:', error);
-    });
-}
+
 
 // Fetch and display previous messages from the database (initial load)
 function loadMessages() {

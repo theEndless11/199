@@ -4,193 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
-    <script src="https://cdn.ably.io/lib/ably.min.js"></script></head>
-<style>
-    /* General Reset */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+    <script src="https://cdn.ably.io/lib/ably.min.js"></script>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    /* Chatbox Container */
-    #chatbox-container {
-        background-color: #ffffff;
-        border-radius: 15px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        max-width: 400px;
-        height: 600px;
-        display: flex;
-        flex-direction: column;
-        font-family: 'Arial', sans-serif;
-        overflow: hidden;
-        margin: 0 auto;
-    }
-
-    /* Category Tabs */
-    #category-tabs {
-        display: flex;
-        justify-content: space-around;
-        background-color: #4CAF50;
-        padding: 10px;
-        border-radius: 15px 15px 0 0;
-    }
-
-    .tab-btn {
-        background: none;
-        border: none;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        padding: 5px 10px;
-        border-radius: 20px;
-        transition: background-color 0.3s ease;
-    }
-
-    .tab-btn:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Chatbox */
-    #chatbox {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        padding: 15px;
-        position: relative;
-        overflow-y: auto; /* Ensures scrolling when the messages grow */
-    }
-
-    /* Messages Container */
-    #messages-container {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        max-height: calc(100% - 100px); /* To ensure the messages don't push the input off the screen */
-    }
-
-    /* Message Bubbles */
-    .message {
-        display: flex;
-        align-items: flex-end;
-        max-width: 80%;
-        animation: fadeIn 0.5s ease-out;
-    }
-
-    .user-msg {
-        margin-left: auto;
-    }
-
-    .other-msg {
-        margin-right: auto;
-    }
-
-    .msg-bubble {
-        padding: 12px 16px;
-        border-radius: 20px;
-        word-wrap: break-word;
-        font-size: 14px;
-        line-height: 1.4;
-        transition: all 0.3s ease-in-out;
-    }
-
-    .user-msg .msg-bubble {
-        background-color: #4CAF50;
-        color: white;
-        border-bottom-right-radius: 5px;
-    }
-
-    .other-msg .msg-bubble {
-        background-color: #f0f0f0;
-        color: #333;
-        border-bottom-left-radius: 5px;
-    }
-
-    /* Styling for images in message bubbles */
-    .msg-bubble img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 10px;
-        display: block;
-    }
-
-    .timestamp {
-        font-size: 0.75em;
-        color: #888;
-        margin-top: 5px;
-        text-align: right;
-    }
-
-    /* Message Input Area */
-    #message-input {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px;
-        background-color: #f9f9f9;
-        border-top: 1px solid #eee;
-        position: relative;
-        z-index: 1;
-        flex-shrink: 0; /* Prevent shrinking */
-    }
-
-    #user-message {
-        width: 65%;
-        padding: 10px;
-        border-radius: 20px;
-        border: 1px solid #ddd;
-        font-size: 14px;
-        outline: none;
-    }
-
-    #user-message:focus {
-        border-color: #4CAF50;
-    }
-
-    /* Preview for the selected image */
-    #image-preview {
-        display: none;
-        max-width: 100px;
-        max-height: 100px;
-        border-radius: 10px;
-        margin-left: 10px;
-    }
-
-    /* Animations */
-    @keyframes fadeIn {
-        0% { opacity: 0; transform: translateY(10px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Responsive Design */
-    @media screen and (max-width: 480px) {
+        /* Chatbox Container */
         #chatbox-container {
-            height: 100vh;
-            border-radius: 0;
-            max-width: 100%;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            margin: 0 auto;
         }
 
-        .msg-bubble {
-            max-width: 90%;
-        }
-
+        /* Message Input Area */
         #message-input {
-            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #eee;
+            position: relative;
+            flex-shrink: 0; /* Prevent shrinking */
         }
 
         #user-message {
-            width: 70%;
+            width: 65%;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            outline: none;
+        }
+
+        #user-message:focus {
+            border-color: #4CAF50;
+        }
+
+        /* Preview for the selected image */
+        #image-preview {
+            display: none;
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+
+        /* Photo Picker Icon */
+        .icon-container {
+            margin-right: 10px; /* Space between photo picker and send button */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+        }
+
+        .cloudflare-icon {
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
         }
 
         button {
-            padding: 8px 15px;
+            padding: 10px 20px;
         }
-    }
-</style>
+
+    </style>
+</head>
 <body>
     <div id="chatbox-container">
         <div id="category-tabs">
@@ -201,47 +98,26 @@
             <div id="messages-container">
                 <!-- Messages will be dynamically added here -->
             </div>
-<div id="message-input">
-    <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
-    
-    <!-- Photo picker button -->
-    <input type="file" id="file-input" accept="image/*" onchange="previewPhoto()" style="display: none;" />
-    <div class="icon-container" title="Pick a photo" onclick="document.getElementById('file-input').click()">
-        <div class="cloudflare-icon"></div>
+
+            <div id="message-input">
+                <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
+
+                <!-- Photo picker button -->
+                <input type="file" id="file-input" accept="image/*" onchange="previewPhoto()" style="display: none;" />
+                <div class="icon-container" title="Pick a photo" onclick="document.getElementById('file-input').click()">
+                    <div class="cloudflare-icon"></div>
+                </div>
+
+                <!-- Image preview -->
+                <img id="image-preview" class="image-preview" style="display: none;" />
+
+                <!-- Send button -->
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
     </div>
-    
-    <!-- Image preview -->
-    <img id="image-preview" class="image-preview" style="display: none;" />
-    
-    <!-- Send button -->
-    <button onclick="sendMessage()">Send</button>
-</div>
-<style>#message-input {
-    display: flex;
-    align-items: center;
-}
 
-#user-message {
-    flex-grow: 1; /* Let the message input take as much space as possible */
-    margin-right: 10px; /* Space between input and photo picker */
-}
 
-.icon-container {
-    margin-right: 10px; /* Space between photo picker and send button */
-    cursor: pointer;
-}
-
-button {
-    padding: 10px 20px;
-}
-
-.image-preview {
-    margin-left: 10px;
-    max-width: 100px;
-    max-height: 100px;
-}
-</style>
-    </div>
 <script src="https://cdn.ably.io/lib/ably.min.js"></script>
         <script>
         // Function to handle key event (Enter key sends the message)

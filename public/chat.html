@@ -414,7 +414,6 @@ function displayMessages(messages) {
 
 
 // Handle photo selection
-// Handle photo selection
 function pickPhoto() {
     const photoInput = document.createElement('input');
     photoInput.type = 'file';
@@ -433,8 +432,8 @@ function pickPhoto() {
             .then(response => response.json())
             .then(data => {
                 if (data.photoUrl) {
-                    // Send the image URL to the backend instead of base64
-                    sendPhoto(data.photoUrl);  // We will now only send the URL
+                    // Use the photo URL provided by the backend and send it to the backend
+                    sendPhoto(data.photoUrl);  // Only send URL here, not base64
                 }
             })
             .catch(error => {
@@ -445,15 +444,14 @@ function pickPhoto() {
     photoInput.click();  // Trigger the file input dialog
 }
 
-
-// Function to send the photo
+// Function to send the photo URL to the server
 function sendPhoto(photoUrl) {
-    if (!photoUrl) return; // Ensure there is a photo
+    if (!photoUrl) return; // Ensure there is a photo URL
 
     const messageData = {
         userId: userId,
         chatWith: chatWith,
-        message: photoUrl,  // Send image URL instead of base64 string
+        message: photoUrl,  // Send the image URL (no base64 string)
         messageType: 'photo',
         timestamp: new Date().toISOString()
     };
@@ -503,7 +501,6 @@ function sendPhoto(photoUrl) {
 
 
 
-// Send text message
 // Send text message
 function sendMessage() {
     const message = document.getElementById('user-message').value.trim();

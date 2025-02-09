@@ -263,22 +263,119 @@
             }
         }
              // Function to preview selected photo
-        function previewPhoto() {
-            const fileInput = document.getElementById('file-input');
-            const imagePreview = document.getElementById('image-preview');
+      // Function to preview selected photo (unchanged, still uses base64 for preview)
+function previewPhoto() {
+    const fileInput = document.getElementById('file-input');
+    const imagePreview = document.getElementById('image-preview');
 
-            const file = fileInput.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block'; // Show image preview
-                };
-                reader.readAsDataURL(file);
-            } else {
-                imagePreview.style.display = 'none'; // Hide image preview if no file is selected
-            }
-        } </script>
+    const file = fileInput.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block'; // Show image preview
+        };
+        reader.readAsDataURL(file);
+    } else {
+        imagePreview.style.display = 'none'; // Hide image preview if no file is selected
+    }
+}
+
+// Function to send a photo message
+function sendMessage() {
+    const message = document.getElementById('user-message').value.trim();
+    const imagePreview = document.getElementById('image-preview');
+
+    // Check if message is empty and no image is selected
+    if (!message && !imagePreview.src) {
+        alert('Please type a message or select an image');
+        return;
+    }
+
+    let messageData = {};
+
+    // If there is an image preview (base64), upload it
+    if (imagePreview.src && imagePreview.src.startsWith('data:image/')) {
+        // First, upload the image to the server
+        const imageUrl = imagePreview.src; // This is the base64 string currently
+        uploadImage(imageUrl);
+    } else {
+        // Send the text message
+        messageData = {
+            userId: userId,
+            chatWith: chatWith,
+            message: message, // Text message
+            messageType: 'text',
+            timestamp: new Date().toISOString()
+        };
+
+        // Immediately display the text message in the UI
+        addMessageToChat(messageData);
+
+        // Send message to the server
+        sendMessageToServer(messageData);
+    }
+}
+
+// Upload the image to the server
+function uploadImage(base64Image) {
+    // Here, instead of sending base64 directly, you'd upload to the server
+    const formData = new FormData();
+    formData.append('photo', base64Image); // This would be the base64 data of the image
+
+    // Send base64 data to the server to store it
+    fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.photoUrl) {
+            // Once uploaded, send the URL (not the base64 string) in the message
+            const messageData = {
+                userId: userId,
+                chatWith: chatWith,
+                message: data.photoUrl, // The URL of the uploaded image
+                messageType: 'photo',
+                timestamp: new Date().toISOString()
+            };
+
+            // Display the photo in the UI immediately
+            addMessageToChat(messageData);
+
+            // Send the message to the server with the image URL
+            sendMessageToServer(messageData);
+        } else {
+            console.error('Failed to upload the image');
+        }
+    })
+    .catch(error => {
+        console.error('Error uploading the image:', error);
+    });
+}
+
+// Send the message data to the server
+function sendMessageToServer(messageData) {
+    fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(messageData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === 'Message sent successfully') {
+            console.log('Message successfully sent');
+        } else {
+            console.error('Error sending message:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message to backend:', error);
+    });
+}
+</script>
 </body>
 
 <script>

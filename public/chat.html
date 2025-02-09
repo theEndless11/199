@@ -371,22 +371,21 @@ function displayMessages(messages) {
     messagesContainer.innerHTML = ''; // Clear any existing messages
 
     messages.forEach(msg => {
-        // Ensure the message contains necessary properties
         if (msg && (msg.message || msg.photo) && msg.timestamp) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message');
 
             const messageBubble = document.createElement('div');
             messageBubble.classList.add('msg-bubble');
-            
+
             // Check if it's a text message
             if (msg.message && !msg.photo) {
                 messageBubble.textContent = msg.message;
-            } 
+            }
             // Check if it's a photo message
             else if (msg.photo) {
                 const imgElement = document.createElement('img');
-                imgElement.src = msg.photo;  // This can be the file path or base64 string
+                imgElement.src = msg.photo;  // Use the URL from the database or file system
                 imgElement.alt = "User's photo";
                 imgElement.style.maxWidth = '200px';  // Optionally control image size
                 imgElement.style.maxHeight = '200px';
@@ -399,7 +398,6 @@ function displayMessages(messages) {
             timeElement.classList.add('timestamp');
             timeElement.textContent = timestamp;
 
-            // Position messages based on sender
             if (msg.userId === parseInt(userId)) {
                 messageElement.classList.add('user-msg');
             } else {
@@ -409,11 +407,10 @@ function displayMessages(messages) {
             messageElement.appendChild(messageBubble);
             messageElement.appendChild(timeElement); // Append time below message bubble
             messagesContainer.appendChild(messageElement);
-        } else {
-            console.warn('Skipping invalid message:', msg);
         }
     });
 }
+
 
 
 
@@ -425,23 +422,35 @@ function pickPhoto() {
     photoInput.onchange = function(event) {
         const file = event.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = function(fileEvent) {
-                const photoUrl = fileEvent.target.result;
-                // Show the photo preview in the input area
-                const imgPreview = document.createElement('img');
-                imgPreview.src = photoUrl;
-                imgPreview.style.maxWidth = '100px';
-                imgPreview.style.maxHeight = '100px';
-                document.getElementById('photo-preview').innerHTML = ''; // Clear previous preview
-                document.getElementById('photo-preview').appendChild(imgPreview);
-                sendPhoto(photoUrl);
-            };
-            reader.readAsDataURL(file);  // Convert image to base64
+            const formData = new FormData();
+            formData.append('photo', file);  // Attach the selected file to the FormData object
+
+            // Upload the photo to the backend
+            fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.photoUrl) {
+                    // Show the photo preview in the input area
+                    const imgPreview = document.createElement('img');
+                    imgPreview.src = data.photoUrl;  // Use the returned URL from the server
+                    imgPreview.style.maxWidth = '100px';
+                    imgPreview.style.maxHeight = '100px';
+                    document.getElementById('photo-preview').innerHTML = ''; // Clear previous preview
+                    document.getElementById('photo-preview').appendChild(imgPreview);
+                    sendPhoto(data.photoUrl);  // Send the image URL to the backend instead of base64
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading photo:', error);
+            });
         }
     };
     photoInput.click();  // Trigger the file input dialog
 }
+
 
 // Function to send the photo
 function sendPhoto(photoUrl) {
@@ -450,7 +459,7 @@ function sendPhoto(photoUrl) {
     const messageData = {
         userId: userId,
         chatWith: chatWith,
-        message: photoUrl,  // The image URL (base64 or uploaded URL)
+        message: photoUrl,  // Send image URL instead of base64 string
         messageType: 'photo',
         timestamp: new Date().toISOString()
     };
@@ -498,6 +507,7 @@ function sendPhoto(photoUrl) {
         console.error('Error sending message to backend:', error);
     });
 }
+
 
 // Send text message
 function sendMessage() {

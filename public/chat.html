@@ -391,12 +391,12 @@ function addMessageToChat(messageData) {
 }
 
 // Function to display messages from initial fetch
-// Function to display messages from initial fetch
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
     messagesContainer.innerHTML = ''; // Clear any existing messages
 
     messages.forEach(msg => {
+        console.log('Displaying message:', msg);  // Log each message before displaying it
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
 
@@ -436,6 +436,53 @@ function displayMessages(messages) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }, 0);
 }
+
+// Add debug logs in addMessageToChat to check if data is coming as expected
+function addMessageToChat(messageData) {
+    console.log('Adding message to chat:', messageData); // Log the message data
+    const messagesContainer = document.getElementById('messages-container');
+    if (!messagesContainer) return;  // Ensure the container exists
+
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+
+    const messageBubble = document.createElement('div');
+    messageBubble.classList.add('msg-bubble');
+
+    // Check if message is text or image
+    if (messageData.messageType === 'text') {
+        messageBubble.textContent = messageData.message;
+    } else if (messageData.messageType === 'photo') {
+        const imgElement = document.createElement('img');
+        imgElement.src = messageData.message;  // URL of the image
+        imgElement.alt = "User's photo";
+        messageBubble.appendChild(imgElement);
+    }
+
+    // Get the timestamp and format it correctly
+    const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const timeElement = document.createElement('div');
+    timeElement.classList.add('timestamp');
+    timeElement.textContent = timestamp;
+
+    // Check if the message is from the current user or the other user to position it
+    if (messageData.userId === parseInt(userId)) {
+        messageElement.classList.add('user-msg');  // Right side for sender
+    } else {
+        messageElement.classList.add('other-msg');  // Left side for receiver
+    }
+
+    messageElement.appendChild(messageBubble);
+    messageElement.appendChild(timeElement); // Append time below message bubble
+    messagesContainer.appendChild(messageElement);
+
+    // If user is at the bottom, scroll automatically
+    if (isScrolledToBottom()) {
+        scrollToBottom();
+    }
+}
+
 
 // Handle photo selection
 function pickPhoto() {

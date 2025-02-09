@@ -323,11 +323,6 @@ function addMessageToChat(messageData) {
     messageElement.appendChild(timeElement); // Append time below message bubble
     messagesContainer.appendChild(messageElement);
 
-    // Scroll to the bottom only if the user is already at the bottom
-    const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop === messagesContainer.clientHeight;
-    if (isAtBottom) {
-        scrollToBottom(); // Scroll to bottom if the user is at the bottom
-    }
 }
 
 // Function to display messages from initial fetch
@@ -372,11 +367,6 @@ function displayMessages(messages) {
         messagesContainer.appendChild(messageElement);
     });
 
-    // After loading messages, scroll to bottom only if the user is at the bottom
-    const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop === messagesContainer.clientHeight;
-    if (isAtBottom) {
-        scrollToBottom();
-    }
 }
 
 // Handle photo selection

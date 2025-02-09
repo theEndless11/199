@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
-    <style>
-/* General Reset */
+ 
+<style>
+   /* General Reset */
 * {
     margin: 0;
     padding: 0;
@@ -62,33 +63,31 @@
 }
 
 /* Messages Container */
+/* Make sure the messages container is scrollable */
 #messages-container {
-    flex-grow: 1;
-    overflow-y: auto;
+    flex-grow: 1;         /* Take up available space */
+    overflow-y: auto;     /* Enable vertical scrolling */
     padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-height: calc(100% - 120px); /* Adjust based on header/footer height */
+    max-height: calc(100% - 120px); /* Adjust based on header/footer height, e.g. 120px */
 }
 
 /* Message Bubbles */
 .message {
     display: flex;
     align-items: flex-end;
-    width: 100%;
+    max-width: 80%;
     animation: fadeIn 0.5s ease-out;
 }
 
-/* User message and Other message alignment */
 .user-msg {
     margin-left: auto;
-    align-self: flex-end; /* Align the user message to the right */
 }
 
 .other-msg {
     margin-right: auto;
-    align-self: flex-start; /* Align the other message to the left */
 }
 
 .msg-bubble {
@@ -98,8 +97,6 @@
     font-size: 14px;
     line-height: 1.4;
     transition: all 0.3s ease-in-out;
-    max-width: 80%;  /* Ensure that bubbles are not too wide */
-    margin-bottom: 5px; /* Prevent messages from overlapping */
 }
 
 /* Styling for images in message bubbles */
@@ -123,7 +120,6 @@
     border-radius: 15px;
 }
 
-/* Color and border-radius for text messages */
 .user-msg .msg-bubble {
     background-color: #4CAF50;
     color: white;
@@ -134,6 +130,12 @@
     background-color: #f0f0f0;
     color: #333;
     border-bottom-left-radius: 5px;
+}
+
+/* Optional: Add a max-width to prevent overly large images */
+.user-msg .msg-bubble, .other-msg .msg-bubble {
+    max-width: 80%;
+    margin-bottom: 5px;
 }
 
 /* Timestamp */
@@ -237,9 +239,8 @@ button:hover {
         padding: 8px 15px;
     }
 }
-
-
 </style>
+
 </head>
 <body>
     <div id="chatbox-container">

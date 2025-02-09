@@ -322,7 +322,6 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
-// Function to add message to the chat UI
 function addMessageToChat(messageData) {
     if (!messageData || (!messageData.message && !messageData.photo)) return; // Ensure message or photo exists
 
@@ -340,7 +339,7 @@ function addMessageToChat(messageData) {
         messageBubble.textContent = messageData.message; // Display text message
     } else if (messageData.photo) {
         const imgElement = document.createElement('img');
-        imgElement.src = messageData.photo;  // This can be the file path or base64 string
+        imgElement.src = messageData.photo;  // This is the URL from the backend
         imgElement.alt = "User's photo";
         imgElement.style.maxWidth = '200px';  // Optionally control image size
         imgElement.style.maxHeight = '200px';

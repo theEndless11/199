@@ -587,7 +587,8 @@ function sendMessage() {
     // Clear the input field after sending
     document.getElementById('user-message').value = '';
 }
-    // Function to upload the image to the server and get the URL
+
+// Function to upload the image to the server and get the URL
 function uploadImage(base64Image) {
     return new Promise((resolve, reject) => {
         const formData = new FormData();
@@ -610,7 +611,8 @@ function uploadImage(base64Image) {
         });
     });
 }
-    // Function to send the message data to the server
+
+// Function to send the message data to the server
 function sendMessageToServer(messageData) {
     fetch('/api/messages', {
         method: 'POST',
@@ -631,6 +633,7 @@ function sendMessageToServer(messageData) {
         console.error('Error sending message to backend:', error);
     });
 }
+
 
 // Fetch and display previous messages from the database (initial load)
 // Fetch and display previous messages from the database (initial load)

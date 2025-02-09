@@ -542,23 +542,8 @@ function pickPhoto() {
 }
 
 // Function to send the photo URL to the server
-function sendPhoto(photoUrl) {
-    if (!photoUrl) return; // Ensure there is a photo URL
-
-    const messageData = {
-        userId: userId,
-        chatWith: chatWith,
-        message: photoUrl,  // Send the image URL (no base64 string)
-        messageType: 'photo',
-        timestamp: new Date().toISOString()
-    };
-
-    console.log('Sending photo message:', messageData);
-
-    // Immediately display the photo in the UI (on the sender's side)
-    addMessageToChat(messageData);
-
-    // Send message to the server
+// Send the message data to the server
+function sendMessageToServer(messageData) {
     fetch('/api/messages', {
         method: 'POST',
         headers: {
@@ -566,29 +551,12 @@ function sendPhoto(photoUrl) {
         },
         body: JSON.stringify(messageData),
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`);
-            });
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         if (data.message === 'Message sent successfully') {
-            console.log('Photo message successfully sent');
-            // Publish to the receiver's channel
-            const realTimeMessage = {
-                userId: userId,
-                chatWith: chatWith,
-                message: photoUrl,  // The photo URL
-                messageType: 'photo',
-                timestamp: new Date().toISOString()
-            };
-            const receiverChannel = ably.channels.get(otherUserChannel);
-            receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
+            console.log('Message successfully sent');
         } else {
-            console.error('Error sending photo message:', data.error);
+            console.error('Error sending message:', data.error);
         }
     })
     .catch(error => {

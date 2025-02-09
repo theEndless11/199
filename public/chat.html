@@ -362,7 +362,7 @@ function isScrolledToBottom() {
     return messagesContainer.scrollHeight - messagesContainer.scrollTop === messagesContainer.clientHeight;
 }
 
-// Function to add message to the chat UI
+/ Function to add message to the chat UI
 function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;  // Ensure the container exists
@@ -380,6 +380,7 @@ function addMessageToChat(messageData) {
         const imgElement = document.createElement('img');
         imgElement.src = messageData.message;  // URL of the image
         imgElement.alt = "User's photo";
+        // Ensuring the image will be handled by CSS styles
         messageBubble.appendChild(imgElement);
     }
 
@@ -401,10 +402,27 @@ function addMessageToChat(messageData) {
     messageElement.appendChild(timeElement); // Append time below message bubble
     messagesContainer.appendChild(messageElement);
 
-    // If user is at the bottom, scroll automatically
-    if (isScrolledToBottom()) {
-        scrollToBottom();
+    // Ensure that the DOM has been updated before scrolling
+    setTimeout(() => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }, 0);
+}
+
+// Function to display messages from initial fetch
+// Function to scroll the messages container to the bottom
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('messages-container');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
+}
+
+// Example usage after adding a new message
+function addMessageToChat(messageData) {
+    // ... your existing code for adding the message ...
+
+    // Ensure the chat container scrolls to the bottom after the new message is added
+    scrollToBottom();
 }
 
 // Function to display messages from initial fetch
@@ -413,7 +431,6 @@ function displayMessages(messages) {
     messagesContainer.innerHTML = ''; // Clear any existing messages
 
     messages.forEach(msg => {
-        console.log('Displaying message:', msg);  // Log each message before displaying it
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
 
@@ -425,7 +442,7 @@ function displayMessages(messages) {
             messageBubble.textContent = msg.message;
         } else if (msg.messageType === 'photo') {
             const imgElement = document.createElement('img');
-            imgElement.src = msg.message; // The message contains the photo URL (base64 or uploaded URL)
+            imgElement.src = msg.message;  // The message contains the photo URL (base64 or uploaded URL)
             imgElement.alt = "User's photo";
             messageBubble.appendChild(imgElement);
         }
@@ -450,54 +467,8 @@ function displayMessages(messages) {
 
     // Ensure that the DOM has been updated before scrolling
     setTimeout(() => {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        scrollToBottom();  // Scroll to bottom after loading messages
     }, 0);
-}
-
-// Add debug logs in addMessageToChat to check if data is coming as expected
-function addMessageToChat(messageData) {
-    console.log('Adding message to chat:', messageData); // Log the message data
-    const messagesContainer = document.getElementById('messages-container');
-    if (!messagesContainer) return;  // Ensure the container exists
-
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message');
-
-    const messageBubble = document.createElement('div');
-    messageBubble.classList.add('msg-bubble');
-
-    // Check if message is text or image
-    if (messageData.messageType === 'text') {
-        messageBubble.textContent = messageData.message;
-    } else if (messageData.messageType === 'photo') {
-        const imgElement = document.createElement('img');
-        imgElement.src = messageData.message;  // URL of the image
-        imgElement.alt = "User's photo";
-        messageBubble.appendChild(imgElement);
-    }
-
-    // Get the timestamp and format it correctly
-    const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    const timeElement = document.createElement('div');
-    timeElement.classList.add('timestamp');
-    timeElement.textContent = timestamp;
-
-    // Check if the message is from the current user or the other user to position it
-    if (messageData.userId === parseInt(userId)) {
-        messageElement.classList.add('user-msg');  // Right side for sender
-    } else {
-        messageElement.classList.add('other-msg');  // Left side for receiver
-    }
-
-    messageElement.appendChild(messageBubble);
-    messageElement.appendChild(timeElement); // Append time below message bubble
-    messagesContainer.appendChild(messageElement);
-
-    // If user is at the bottom, scroll automatically
-    if (isScrolledToBottom()) {
-        scrollToBottom();
-    }
 }
 
 
@@ -555,7 +526,7 @@ function sendPhoto(photoUrl) {
     .then(response => {
         if (!response.ok) {
             return response.text().then(text => {
-                throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`);
+                throw new Error(Error response from server: ${response.statusText}, Details: ${text});
             });
         }
         return response.json();
@@ -615,7 +586,7 @@ function sendMessage() {
     .then(response => {
         if (!response.ok) {
             return response.text().then(text => {
-                throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`);
+                throw new Error(Error response from server: ${response.statusText}, Details: ${text});
             });
         }
         return response.json();
@@ -648,7 +619,7 @@ function sendMessage() {
 
 // Fetch and display previous messages from the database (initial load)
 function loadMessages() {
-    fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
+    fetch(/api/messages?userId=${userId}&chatWith=${chatWith})
     .then(response => response.json())
     .then(data => {
         if (data.messages) {
@@ -659,6 +630,10 @@ function loadMessages() {
         console.error('Error loading messages:', error);
     });
 }
+
+// Call the function to load previous messages when the page is loaded
+loadMessages(); 
+</script>
 
 // Call the function to load previous messages when the page is loaded
 loadMessages(); 

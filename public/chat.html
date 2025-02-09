@@ -209,7 +209,55 @@
                     <input type="file" id="file-input" accept="image/*" onchange="previewPhoto()" style="display: none;" />
                     <div class="cloudflare-icon" title="Pick a photo" onclick="document.getElementById('file-input').click()"></div>
                 </div>
+<style>#message-input {
+    position: sticky;
+    bottom: 0;
+    background-color: white; /* Change to desired background */
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #ccc;
+    z-index: 1000;
+    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
 
+#user-message {
+    flex-grow: 1;
+    padding: 8px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.icon-container {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.cloudflare-icon {
+    width: 24px;
+    height: 24px;
+    background-image: url('path/to/cloudflare-icon.svg'); /* Replace with actual icon */
+    background-size: contain;
+    cursor: pointer;
+}
+
+button {
+    padding: 8px 12px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+</style>
                 <!-- Preview of selected image -->
                 <img id="image-preview" class="image-preview" style="display:none;" />
 

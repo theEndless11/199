@@ -510,9 +510,11 @@ function sendPhoto(photoUrl) {
 
 
 // Send text message
+// Send text message
 function sendMessage() {
     const message = document.getElementById('user-message').value.trim();
     const imagePreview = document.getElementById('image-preview');
+    
     if (!message && !imagePreview.src) {
         alert('Please type a message or select an image');
         return;
@@ -526,9 +528,7 @@ function sendMessage() {
         timestamp: new Date().toISOString()
     };
 
-    console.log('Sending message:', messageData);
-
-    // Immediately display the sent message in the UI
+    // Immediately display the sent message in the UI without logging the URL in the console
     addMessageToChat(messageData);
 
     // Send message to the server
@@ -542,8 +542,8 @@ function sendMessage() {
     .then(response => response.json())
     .then(data => {
         if (data.message === 'Message sent successfully') {
-            console.log('Message successfully sent');
-            document.getElementById('image-preview').style.display = 'none'; // Hide image preview after sending
+            // Hide image preview after sending
+            document.getElementById('image-preview').style.display = 'none'; 
 
             // Publish the message to the receiver's channel
             const realTimeMessage = {
@@ -553,6 +553,8 @@ function sendMessage() {
                 messageType: message ? 'text' : 'photo',
                 timestamp: new Date().toISOString()
             };
+
+            // Publish to the other user's channel without printing the URL
             const receiverChannel = ably.channels.get(otherUserChannel);
             receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
 
@@ -566,6 +568,7 @@ function sendMessage() {
         console.error('Error sending message to backend:', error);
     });
 }
+
 
 // Fetch and display previous messages from the database (initial load)
 // Fetch and display previous messages from the database (initial load)

@@ -24,16 +24,18 @@ module.exports = async (req, res) => {
 
   try {
     console.log('Request received at: ', new Date().toISOString());
+    console.log('Request Method: ', req.method);
 
     // Handle GET request to fetch messages
     if (req.method === 'GET') {
       const { userId, chatWith } = req.query;
 
       if (!userId || !chatWith) {
-        console.error('Missing query parameters');
+        console.error('Missing query parameters: userId or chatWith');
         return res.status(400).json({ error: 'Missing required query parameters: userId, chatWith' });
       }
 
+      console.log('Fetching messages for userId:', userId, 'chatWith:', chatWith);
       const sql = 'SELECT * FROM messages WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) ORDER BY timestamp';
       const [messages] = await pool.query(sql, [userId, chatWith, chatWith, userId]);
 
@@ -41,7 +43,7 @@ module.exports = async (req, res) => {
         console.log('Fetched messages:', messages);
         return res.status(200).json({ messages });
       } else {
-        console.log('No messages found');
+        console.log('No messages found for this chat');
         return res.status(404).json({ error: 'No messages found for this chat' });
       }
     }
@@ -50,20 +52,29 @@ module.exports = async (req, res) => {
     if (req.method === 'POST') {
       const { userId, chatWith, message } = req.body;
 
+      console.log('POST request received with userId:', userId, 'chatWith:', chatWith, 'message:', message);
+
       if (!userId || !chatWith || !message) {
-        console.error('Missing fields in POST request');
+        console.error('Missing fields in POST request: userId, chatWith, message');
         return res.status(400).json({ error: 'Missing required fields: userId, chatWith, message' });
+      }
+
+      // Check if message is empty
+      if (message.trim() === '') {
+        console.error('Message is empty');
+        return res.status(400).json({ error: 'Message cannot be empty' });
       }
 
       // If a photo is uploaded, we'll get its path
       let photoPath = null;
       if (req.file) {
         photoPath = req.file.path;  // The path where the photo is stored
+        console.log('Photo uploaded, path:', photoPath);
       }
 
       // Insert the message into the database
       const sql = 'INSERT INTO messages (userId, chatWith, message, photo, timestamp) VALUES (?, ?, ?, ?, NOW())';
-      console.log('Inserting message:', message, 'Photo:', photoPath);
+      console.log('Inserting message into database:', message, 'Photo:', photoPath);
       const [result] = await pool.query(sql, [userId, chatWith, message, photoPath]);
 
       if (result.affectedRows > 0) {
@@ -73,7 +84,7 @@ module.exports = async (req, res) => {
 
         // Publish to Ably (so other user can see it in real-time)
         try {
-          console.log('Publishing to Ably:', messageData);
+          console.log('Publishing to Ably with data:', messageData);
           await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData);
           console.log('Message published to Ably successfully');
         } catch (err) {
@@ -94,3 +105,4 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Unexpected error occurred', details: err.message });
   }
 };
+

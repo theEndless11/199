@@ -459,6 +459,52 @@ function addMessageToChat(messageData) {
     messagesContainer.appendChild(messageElement);
 }
 
+// Function to display messages from initial fetch
+function displayMessages(messages) {
+    const messagesContainer = document.getElementById('messages-container');
+    messagesContainer.innerHTML = ''; // Clear any existing messages
+
+    messages.forEach(msg => {
+        if (msg && (msg.message || msg.photo) && msg.timestamp) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('msg-bubble');
+
+            // Check if it's a text message
+            if (msg.message && !msg.photo) {
+                messageBubble.textContent = msg.message;
+            }
+            // Check if it's a photo message
+            else if (msg.photo) {
+                const imgElement = document.createElement('img');
+                imgElement.src = msg.photo;  // Use the URL from the database or file system
+                imgElement.alt = "User's photo";
+                imgElement.style.maxWidth = '200px';  // Optionally control image size
+                imgElement.style.maxHeight = '200px';
+                messageBubble.appendChild(imgElement);
+            }
+
+            // Format timestamp
+            const timestamp = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timeElement = document.createElement('div');
+            timeElement.classList.add('timestamp');
+            timeElement.textContent = timestamp;
+
+            if (msg.userId === parseInt(userId)) {
+                messageElement.classList.add('user-msg');
+            } else {
+                messageElement.classList.add('other-msg');
+            }
+
+            messageElement.appendChild(messageBubble);
+            messageElement.appendChild(timeElement); // Append time below message bubble
+            messagesContainer.appendChild(messageElement);
+        }
+    });
+}
+
 // Handle photo selection
 function pickPhoto() {
     const photoInput = document.createElement('input');
@@ -601,7 +647,7 @@ function loadMessages() {
                 msg && (msg.message || msg.photo) && msg.timestamp
             );
             if (validMessages.length > 0) {
-                displayMessages(validMessages);
+                displayMessages(validMessages); // This is where displayMessages() is called
             } else {
                 console.warn('No valid messages found.');
             }

@@ -564,7 +564,15 @@ function loadMessages() {
     })
     .then(data => {
         if (data.messages && Array.isArray(data.messages)) {
-            displayMessages(data.messages);
+            // Only display valid messages
+            const validMessages = data.messages.filter(msg => 
+                msg && msg.message && msg.messageType && msg.timestamp
+            );
+            if (validMessages.length > 0) {
+                displayMessages(validMessages);
+            } else {
+                console.warn('No valid messages found.');
+            }
         } else {
             console.error('Invalid message data received:', data);
         }

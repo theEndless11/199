@@ -6,7 +6,7 @@
     <title>Chat</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
-   /* General Reset */
+/* General Reset */
 * {
     margin: 0;
     padding: 0;
@@ -62,22 +62,21 @@
 }
 
 /* Messages Container */
-/* Make sure the messages container is scrollable */
 #messages-container {
-    flex-grow: 1;         /* Take up available space */
-    overflow-y: auto;     /* Enable vertical scrolling */
+    flex-grow: 1;
+    overflow-y: auto;
     padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-height: calc(100% - 120px); /* Adjust based on header/footer height, e.g. 120px */
+    max-height: calc(100% - 120px); /* Adjust based on header/footer height */
 }
 
 /* Message Bubbles */
 .message {
     display: flex;
     align-items: flex-end;
-    max-width: 80%;
+    width: 100%;
     animation: fadeIn 0.5s ease-out;
 }
 
@@ -96,6 +95,7 @@
     font-size: 14px;
     line-height: 1.4;
     transition: all 0.3s ease-in-out;
+    max-width: 100%;  /* Ensure max-width is 100% */
 }
 
 /* Styling for images in message bubbles */
@@ -108,13 +108,13 @@
 
 /* Styling for photo messages */
 .user-msg .msg-bubble img {
-    background-color: #4CAF50;  /* Same as the background color for text */
+    background-color: #4CAF50;
     padding: 10px;
     border-radius: 15px;
 }
 
 .other-msg .msg-bubble img {
-    background-color: #f0f0f0;  /* Same as the background for text */
+    background-color: #f0f0f0;
     padding: 10px;
     border-radius: 15px;
 }
@@ -133,7 +133,7 @@
 
 /* Optional: Add a max-width to prevent overly large images */
 .user-msg .msg-bubble, .other-msg .msg-bubble {
-    max-width: 80%;
+    max-width: 90%;
     margin-bottom: 5px;
 }
 
@@ -238,6 +238,7 @@ button:hover {
         padding: 8px 15px;
     }
 }
+
 </style>
 </head>
 <body>

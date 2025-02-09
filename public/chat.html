@@ -5,57 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
-</head>
-<body>
- 
-    <div id="chatbox-container">
-        <div id="category-tabs">
-            <button class="tab-btn" onclick="changeCategory('support')">Support</button>
-        </div>
-    
-        <div id="chatbox">
-            <div id="messages-container">
-                <!-- Predefined questions and answers will be automatically added here -->
-            </div>
-    
-             <style>
-        #message-input {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: #fff;
-            padding: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Chatbox Container */
+        #chatbox-container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            height: 600px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 100;
+            flex-direction: column;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            margin: 0 auto;
         }
-        #user-message {
-            width: 80%;
+
+        /* Category Tabs */
+        #category-tabs {
+            display: flex;
+            justify-content: space-around;
+            background-color: #4CAF50;
             padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+            border-radius: 15px 15px 0 0;
         }
-        button {
-            padding: 10px 15px;
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Chatbox */
+        #chatbox {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            position: relative;
+        }
+
+        /* Messages Container */
+        #messages-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Message Bubbles */
+        .message {
+            display: flex;
+            align-items: flex-end;
+            max-width: 80%;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .user-msg {
+            margin-left: auto;
+        }
+
+        .other-msg {
+            margin-right: auto;
+        }
+
+        .msg-bubble {
+            padding: 12px 16px;
+            border-radius: 20px;
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.4;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .user-msg .msg-bubble {
             background-color: #4CAF50;
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            border-bottom-right-radius: 5px;
         }
+
+        .other-msg .msg-bubble {
+            background-color: #f0f0f0;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        /* Timestamp */
+        .timestamp {
+            font-size: 0.75em;
+            color: #888;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        /* Message Input Area */
+        #message-input {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #eee;
+        }
+
+        #user-message {
+            width: 75%;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        #user-message:focus {
+            border-color: #4CAF50;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
         button:hover {
             background-color: #45a049;
         }
+
+        /* Icon for photo pick button */
         .icon-container {
             display: flex;
             align-items: center;
             cursor: pointer;
         }
+
         .cloudflare-icon {
             width: 30px;
             height: 30px;
@@ -63,14 +169,58 @@
             background-size: cover;
             margin-right: 10px;
         }
-    </style>
 
-    <div id="message-input">
-        <div class="icon-container">
-            <div class="cloudflare-icon" title="Pick a photo" onclick="pickPhoto()"></div>
+        /* Animations */
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 480px) {
+            #chatbox-container {
+                height: 100vh;
+                border-radius: 0;
+                max-width: 100%;
+            }
+
+            .msg-bubble {
+                max-width: 90%;
+            }
+
+            #message-input {
+                padding: 8px;
+            }
+
+            #user-message {
+                width: 70%;
+            }
+
+            button {
+                padding: 8px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="chatbox-container">
+        <div id="category-tabs">
+            <button class="tab-btn" onclick="changeCategory('support')">Support</button>
         </div>
-        <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
-        <button onclick="sendMessage()">Send</button>
+    
+        <div id="chatbox">
+            <div id="messages-container">
+                <!-- Messages will be dynamically added here -->
+            </div>
+
+            <div id="message-input">
+                <div class="icon-container">
+                    <div class="cloudflare-icon" title="Pick a photo" onclick="pickPhoto()"></div>
+                </div>
+                <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -81,24 +231,14 @@
             }
         }
 
-        // Function to send message
-        function sendMessage() {
-            const message = document.getElementById('user-message').value;
-            if (message.trim() !== "") {
-                alert("Message Sent: " + message); // You can replace this with actual sending functionality
-                document.getElementById('user-message').value = ''; // Clear input
-            }
-        }
-
         // Placeholder for picking photo
         function pickPhoto() {
             alert("Pick photo functionality (this can be integrated with your file picker)");
         }
     </script>
+</body>
 
-        </div>
-    </div>
-<script>
+    <script>
 // Get userId and chatWith from query parameters
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId');
@@ -302,222 +442,3 @@ function loadMessages() {
 // Call the function to load previous messages when the page is loaded
 loadMessages();
 </script>
- <style>
-/* General Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Chatbox Container */
-#chatbox-container {
-    background-color: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    height: 600px;
-    display: flex;
-    flex-direction: column;
-    font-family: 'Arial', sans-serif;
-    overflow: hidden;
-    margin: 0 auto;
-}
-
-/* Category Tabs */
-#category-tabs {
-    display: flex;
-    justify-content: space-around;
-    background-color: #4CAF50;
-    padding: 10px;
-    border-radius: 15px 15px 0 0;
-}
-
-.tab-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 20px;
-    transition: background-color 0.3s ease;
-}
-
-.tab-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Chatbox */
-#chatbox {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 15px;
-    position: relative;
-}
-
-/* Messages Container */
-#messages-container {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* Message Bubbles */
-.message {
-    display: flex;
-    align-items: flex-end;
-    max-width: 80%;
-    animation: fadeIn 0.5s ease-out;
-}
-
-.user-msg {
-    margin-left: auto;
-}
-
-.other-msg {
-    margin-right: auto;
-}
-
-.msg-bubble {
-    padding: 12px 16px;
-    border-radius: 20px;
-    word-wrap: break-word;
-    font-size: 14px;
-    line-height: 1.4;
-    transition: all 0.3s ease-in-out;
-}
-
-.user-msg .msg-bubble {
-    background-color: #4CAF50;
-    color: white;
-    border-bottom-right-radius: 5px;
-}
-
-.other-msg .msg-bubble {
-    background-color: #f0f0f0;
-    color: #333;
-    border-bottom-left-radius: 5px;
-}
-
-/* Timestamp */
-.timestamp {
-    font-size: 0.75em;
-    color: #888;
-    margin-top: 5px;
-    text-align: right;
-}
-
-/* Message Input Area */
-#message-input {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-top: 1px solid #eee;
-}
-
-#user-message {
-    width: 75%;
-    padding: 10px;
-    border-radius: 20px;
-    border: 1px solid #ddd;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-
-#user-message:focus {
-    border-color: #4CAF50;
-}
-
-button {
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-/* Animations */
-@keyframes fadeIn {
-    0% { opacity: 0; transform: translateY(10px); }
-    100% { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsive Design */
-@media screen and (max-width: 480px) {
-    #chatbox-container {
-        height: 100vh;
-        border-radius: 0;
-        max-width: 100%;
-    }
-
-    .msg-bubble {
-        max-width: 90%;
-    }
-
-    #message-input {
-        padding: 8px;
-    }
-
-    #user-message {
-        width: 70%;
-    }
-
-    button {
-        padding: 8px 15px;
-    }
-}
-
-/* Dark Mode */
-.dark-mode #chatbox-container {
-    background-color: #333;
-    color: #fff;
-}
-
-.dark-mode #category-tabs {
-    background-color: #555;
-}
-
-.dark-mode .msg-bubble {
-    color: #fff;
-}
-
-.dark-mode .other-msg .msg-bubble {
-    background-color: #444;
-    color: #fff;
-}
-
-.dark-mode #message-input {
-    background-color: #444;
-    border-top-color: #555;
-}
-
-.dark-mode #user-message {
-    background-color: #555;
-    border-color: #666;
-    color: #fff;
-}
-
-.dark-mode button {
-    background-color: #666;
-}
-
-.dark-mode button:hover {
-    background-color: #777;
-}
-</style>

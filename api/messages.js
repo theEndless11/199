@@ -4,7 +4,7 @@ const { publishToAbly } = require('../utils/ably');
 const path = require('path');
 const fs = require('fs');
 
-// Set up storage for photo uploads (e.g., store in 'uploads' folder)
+// Set up storage for photo uploads (store in 'uploads' folder)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, './uploads/');  // Folder where photos will be saved
@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
             userId: message.userId,
             chatWith: message.chatWith,
             message: message.message,
-            photo: message.photo, // This will be either base64 or file path
+            photo: message.photo, // This will be either the base64 string or file path
             timestamp: message.timestamp
           };
         });
@@ -85,7 +85,7 @@ module.exports = async (req, res) => {
       
       // If a photo is uploaded (via multer), get its path
       if (req.file) {
-        photoPath = req.file.path;  // The path where the photo is stored (if a file is uploaded)
+        photoPath = `/uploads/${req.file.filename}`;  // The URL path of the uploaded image
         console.log('Photo uploaded, path:', photoPath);
       } 
       // If the message contains base64 image data, it's assumed to be a photo message
@@ -103,7 +103,7 @@ module.exports = async (req, res) => {
         userId,
         chatWith,
         message,     // Text message (can be empty if photo is present)
-        photoPath    // Photo data (Base64 or file path)
+        photoPath    // Photo URL (base64 or file path)
       ]);
 
       if (result.affectedRows > 0) {

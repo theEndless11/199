@@ -258,8 +258,8 @@ const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
 const ably = new Ably.Realtime(ablyApiKey);
 
 // Determine the correct channel name based on the userId and chatWith
-const userChannel = chat-${userId}-${chatWith};  // Sender's channel
-const otherUserChannel = chat-${chatWith}-${userId};  // Receiver's channel
+const userChannel = `chat-${userId}-${chatWith}`;  // Sender's channel
+const otherUserChannel = `chat-${chatWith}-${userId}`;  // Receiver's channel
 
 console.log('User Channel:', userChannel, 'Other User Channel:', otherUserChannel);
 
@@ -276,6 +276,7 @@ channel.subscribe('newMessage', function (message) {
         addMessageToChat(message.data);  // Add the new message to the chat UI
     }
 });
+
 // Function to add message to the chat UI
 // Function to add message to the chat UI
         function addMessageToChat(messageData) {

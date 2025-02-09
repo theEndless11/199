@@ -347,8 +347,7 @@ channel.subscribe('newMessage', function (message) {
     if (message.data.userId !== parseInt(userId)) {
         addMessageToChat(message.data);  // Add the new message to the chat UI
     }
-});
-// Function to scroll the messages container to the bottom
+});// Function to scroll the messages container to the bottom
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages-container');
     if (messagesContainer) {
@@ -362,7 +361,7 @@ function isScrolledToBottom() {
     return messagesContainer.scrollHeight - messagesContainer.scrollTop === messagesContainer.clientHeight;
 }
 
-/ Function to add message to the chat UI
+// Function to add message to the chat UI
 function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;  // Ensure the container exists
@@ -406,23 +405,6 @@ function addMessageToChat(messageData) {
     setTimeout(() => {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }, 0);
-}
-
-// Function to display messages from initial fetch
-// Function to scroll the messages container to the bottom
-function scrollToBottom() {
-    const messagesContainer = document.getElementById('messages-container');
-    if (messagesContainer) {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-}
-
-// Example usage after adding a new message
-function addMessageToChat(messageData) {
-    // ... your existing code for adding the message ...
-
-    // Ensure the chat container scrolls to the bottom after the new message is added
-    scrollToBottom();
 }
 
 // Function to display messages from initial fetch
@@ -470,7 +452,6 @@ function displayMessages(messages) {
         scrollToBottom();  // Scroll to bottom after loading messages
     }, 0);
 }
-
 
 // Handle photo selection
 function pickPhoto() {
@@ -526,7 +507,7 @@ function sendPhoto(photoUrl) {
     .then(response => {
         if (!response.ok) {
             return response.text().then(text => {
-                throw new Error(Error response from server: ${response.statusText}, Details: ${text});
+                throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`);
             });
         }
         return response.json();
@@ -586,7 +567,7 @@ function sendMessage() {
     .then(response => {
         if (!response.ok) {
             return response.text().then(text => {
-                throw new Error(Error response from server: ${response.statusText}, Details: ${text});
+                throw new Error(`Error response from server: ${response.statusText}, Details: ${text}`);
             });
         }
         return response.json();
@@ -619,7 +600,7 @@ function sendMessage() {
 
 // Fetch and display previous messages from the database (initial load)
 function loadMessages() {
-    fetch(/api/messages?userId=${userId}&chatWith=${chatWith})
+    fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
     .then(response => response.json())
     .then(data => {
         if (data.messages) {
@@ -632,9 +613,5 @@ function loadMessages() {
 }
 
 // Call the function to load previous messages when the page is loaded
-loadMessages(); 
-</script>
-
-// Call the function to load previous messages when the page is loaded
-loadMessages(); 
+loadMessages();
 </script>

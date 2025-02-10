@@ -157,6 +157,12 @@
                 margin-bottom: 10px;
             }
         }
+        .profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px; /* Spacing between image and username */
+}
     </style>
 </head>
 <body>
@@ -266,7 +272,15 @@
         }
     }
 
-    // Display users in the Users section
+    // Display sers in the Users section
+
+    // Function to fetch a random profile image (using a placeholder image API)
+    function getRandomProfilePicture() {
+        const randomNumber = Math.floor(Math.random() * 100); // Generate random number for uniqueness
+        return `https://latestnewsandaffairs.site/public/pfp.jpg`; // Random male profile image URL
+    }
+
+    // Display users in the Users section with random profile image
     function displayUsers(users) {
         const usersContainer = document.getElementById('users-container');
         usersContainer.innerHTML = ''; // Clear previous data
@@ -274,7 +288,16 @@
         users.forEach(user => {
             const userElement = document.createElement('div');
             userElement.classList.add('user');
-            userElement.textContent = user.username;
+
+            // Create a profile picture element
+            const profileImage = document.createElement('img');
+            profileImage.classList.add('profile-img');
+            profileImage.src = getRandomProfilePicture(); // Assign a random image to each user
+            profileImage.alt = 'User Profile Picture';
+
+            // Create a user name element
+            const userName = document.createElement('p');
+            userName.textContent = user.username;
 
             // Add "Add to Friends" icon
             const addButton = document.createElement('button');
@@ -289,8 +312,12 @@
                 }
             };
 
-            // Append user element with button to the container
+            // Append the profile image and user name to the user element
+            userElement.appendChild(profileImage);
+            userElement.appendChild(userName);
             userElement.appendChild(addButton);
+
+            // Append user element to the container
             usersContainer.appendChild(userElement);
         });
     }

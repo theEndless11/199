@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatVerse | Sign Up / Login</title>
     <style>
+           html {
+    scroll-behavior: smooth;
+}
     .message-container {
     position: fixed;
     top: 20px;
@@ -219,35 +222,18 @@
                 font-size: 13px;
             }
         }
-        html {
-    scroll-behavior: smooth;
-}
 
     </style>
 </head>
 <body> <script>
-    // Scroll to the top of the page smoothly
-    function scrollToTop() {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    }
-
-    // Scroll to the bottom of the page smoothly
-    function scrollToBottom() {
-        window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: 'smooth'
-        });
-    }
-
-    // Trigger scroll to top (Example Usage: Automatically scroll to top after loading)
-    scrollToTop();
-    
-    // Trigger scroll to bottom (Example Usage: Automatically scroll to bottom after loading)
-    scrollToBottom();
-</script>
+        // Example of automatically scrolling to the bottom after 2 seconds
+        setTimeout(() => {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 2000);
+    </script>
 
 
     <div class="container">

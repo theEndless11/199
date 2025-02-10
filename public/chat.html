@@ -235,35 +235,31 @@
                 <!-- Messages will be dynamically added here -->
             </div>
 
-            <div id="message-input">
-                <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
+           <div id="message-input">
+    <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
 
-                <!-- Photo picker button -->
-                <input type="file" id="file-input" accept="image/*" onchange="previewPhoto()" style="display: none;" />
-                <div class="icon-container" title="Pick a photo" onclick="document.getElementById('file-input').click()">
-                    <div class="cloudflare-icon"></div>
-                </div>
-
-                <!-- Image preview -->
-                <img id="image-preview" class="image-preview" style="display: none;" />
-
-                <!-- Send button -->
-                <button onclick="sendMessage()">Send</button>
-            </div>
-        </div>
+    <!-- Photo picker button -->
+    <input type="file" id="file-input" accept="image/*" onchange="previewPhoto()" style="display: none;" />
+    <div class="icon-container" title="Pick a photo" onclick="document.getElementById('file-input').click()">
+        <div class="cloudflare-icon"></div>
     </div>
 
+    <!-- Image preview -->
+    <img id="image-preview" class="image-preview" style="display: none;" />
 
-<script src="https://cdn.ably.io/lib/ably.min.js"></script>
-        <script>
-        // Function to handle key event (Enter key sends the message)
-        function handleKey(event) {
-            if (event.key === "Enter") {
-                sendMessage();
-            }
-        }
-             // Function to preview selected photo
-      // Function to preview selected photo (unchanged, still uses base64 for preview)
+    <!-- Send button -->
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+// Function to handle key event (Enter key sends the message)
+function handleKey(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+}
+
+// Function to preview selected photo
 function previewPhoto() {
     const fileInput = document.getElementById('file-input');
     const imagePreview = document.getElementById('image-preview');
@@ -281,6 +277,25 @@ function previewPhoto() {
     }
 }
 
+// Function to handle the sending of the message and image
+function sendMessage() {
+    const messageInput = document.getElementById('user-message');
+    const imagePreview = document.getElementById('image-preview');
+
+    const message = messageInput.value;
+    const image = imagePreview.src;
+
+    // Assuming you want to send both message and image
+    if (message.trim() || image) {
+        // Logic to send message and image (you can modify this to suit your needs, e.g., sending to a server)
+        console.log('Message:', message);
+        console.log('Image:', image);
+
+        // Clear the message input and image preview after sending
+        messageInput.value = '';
+        imagePreview.style.display = 'none';
+    }
+}
 </script>
 </body>
 

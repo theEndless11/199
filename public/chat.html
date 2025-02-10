@@ -484,9 +484,8 @@ function pickPhoto() {
             .then(response => response.json())
             .then(data => {
                 if (data.photoUrl) {
-                    // Get the photo ID (or the URL if the backend returns an identifier)
-                    const photoId = data.photoId || data.photoUrl;
-                    sendPhoto(photoId);  // Send only the ID or reference (not the URL)
+                    // Use the photo URL provided by the backend and send it to the backend
+                    sendPhoto(data.photoUrl);  // Only send URL here, not base64
                 }
             })
             .catch(error => {

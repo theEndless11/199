@@ -282,19 +282,52 @@ function sendMessage() {
     const messageInput = document.getElementById('user-message');
     const imagePreview = document.getElementById('image-preview');
 
-    const message = messageInput.value;
+    const message = messageInput.value.trim();
     const image = imagePreview.src;
 
-    // Assuming you want to send both message and image
-    if (message.trim() || image) {
-        // Logic to send message and image (you can modify this to suit your needs, e.g., sending to a server)
-        console.log('Message:', message);
-        console.log('Image:', image);
-
-        // Clear the message input and image preview after sending
-        messageInput.value = '';
-        imagePreview.style.display = 'none';
+    // If no message or image is selected, alert the user to select one
+    if (!message && !image) {
+        alert('Please type a message or select an image');
+        return;
     }
+
+    // If there is a message, send it as a text message
+    if (message) {
+        const messageData = {
+            userId: userId,
+            chatWith: chatWith,
+            message: message,
+            messageType: 'text',
+            timestamp: new Date().toISOString()
+        };
+
+        // Send the message and display it immediately
+        addMessageToChat(messageData);
+
+        // Send the message to the server
+        sendToServer(messageData);
+    }
+
+    // If there is a photo, send it
+    if (image) {
+        const messageData = {
+            userId: userId,
+            chatWith: chatWith,
+            photo: image,
+            messageType: 'photo',
+            timestamp: new Date().toISOString()
+        };
+
+        // Send the image and display it immediately
+        addMessageToChat(messageData);
+
+        // Send the image data to the server
+        sendToServer(messageData);
+    }
+
+    // Clear the message input and image preview after sending
+    messageInput.value = '';
+    imagePreview.style.display = 'none';
 }
 </script>
 </body>

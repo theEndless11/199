@@ -219,12 +219,14 @@
                 font-size: 13px;
             }
         }
+        html {
+    scroll-behavior: smooth;
+}
+
     </style>
 </head>
-<body> <button id="scrollTopBtn">Scroll to Top</button>
-<button id="scrollBottomBtn">Scroll to Bottom</button>
-<script>
-    // Function to scroll to the top
+<body> <script>
+    // Scroll to the top of the page smoothly
     function scrollToTop() {
         window.scrollTo({
             top: 0,
@@ -232,7 +234,7 @@
         });
     }
 
-    // Function to scroll to the bottom
+    // Scroll to the bottom of the page smoothly
     function scrollToBottom() {
         window.scrollTo({
             top: document.body.scrollHeight,
@@ -240,31 +242,13 @@
         });
     }
 
-    // Attach event listeners to the buttons
-    document.getElementById('scrollTopBtn').addEventListener('click', scrollToTop);
-    document.getElementById('scrollBottomBtn').addEventListener('click', scrollToBottom);
-</script><style>button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 10px 15px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 100;
-    margin: 10px;
-}
+    // Trigger scroll to top (Example Usage: Automatically scroll to top after loading)
+    scrollToTop();
+    
+    // Trigger scroll to bottom (Example Usage: Automatically scroll to bottom after loading)
+    scrollToBottom();
+</script>
 
-#scrollBottomBtn {
-    bottom: 80px; /* Places the bottom button above the scroll-to-top button */
-}
-
-button:hover {
-    background-color: #45a049;
-}
-</style>
 
     <div class="container">
         <div class="welcome-text">

@@ -252,6 +252,7 @@
 </div>
 
 <script>
+<script>
 // Function to handle key event (Enter key sends the message)
 function handleKey(event) {
     if (event.key === "Enter") {
@@ -328,6 +329,40 @@ function sendMessage() {
     // Clear the message input and image preview after sending
     messageInput.value = '';
     imagePreview.style.display = 'none';
+}
+
+// Function to send the message or image to the server
+function sendToServer(messageData) {
+    fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(messageData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === 'Message sent successfully') {
+            // Publish the message to the other user's channel
+            const realTimeMessage = {
+                userId: userId,
+                chatWith: chatWith,
+                message: messageData.message || null,
+                photo: messageData.photo || null,
+                messageType: messageData.messageType,
+                timestamp: new Date().toISOString()
+            };
+
+            // Publish to the other user's channel
+            const receiverChannel = ably.channels.get(otherUserChannel);
+            receiverChannel.publish('newMessage', realTimeMessage);
+        } else {
+            console.error('Error sending message:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message to backend:', error);
+    });
 }
 </script>
 </body>

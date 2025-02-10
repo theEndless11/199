@@ -229,8 +229,7 @@
         <div id="category-tabs">
             <button class="tab-btn" onclick="changeCategory('support')">Support</button>
         </div>
-
-        <div id="chatbox">
+<div id="chatbox">
             <div id="messages-container">
                 <!-- Messages will be dynamically added here -->
             </div>
@@ -250,159 +249,160 @@
     <!-- Send button -->
     <button onclick="sendMessage()">Send</button>
 </div>
+      <script>
+// Function to preview selected photo
+function previewPhoto() {
+    const fileInput = document.getElementById('file-input');
+    const imagePreview = document.getElementById('image-preview');
 
-<script>
- // Function to preview selected photo
-        function previewPhoto() {
-            const fileInput = document.getElementById('file-input');
-            const imagePreview = document.getElementById('image-preview');
+    const file = fileInput.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block'; // Show image preview
+        };
+        reader.readAsDataURL(file);
+    } else {
+        imagePreview.style.display = 'none'; // Hide image preview if no file is selected
+    }
+}
 
-            const file = fileInput.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block'; // Show image preview
-                };
-                reader.readAsDataURL(file);
-            } else {
-                imagePreview.style.display = 'none'; // Hide image preview if no file is selected
-            }
+// Function to handle key event (Enter key sends the message)
+function handleKey(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+}
+
+// Function to handle the sending of the message and image
+function sendMessage() {
+    const messageInput = document.getElementById('user-message');
+    const imagePreview = document.getElementById('image-preview');
+
+    const message = messageInput.value.trim();
+    const image = imagePreview.src;
+
+    // If no message or image is selected, alert the user to select one
+    if (!message && (!image || image === '')) {
+        alert('Please type a message or select an image');
+        return;
+    }
+
+    // If there is a message, send it as a text message
+    if (message) {
+        const messageData = {
+            userId: userId,
+            chatWith: chatWith,
+            message: message,
+            messageType: 'text',
+            timestamp: new Date().toISOString()
+        };
+
+        // Send the message and display it immediately
+        addMessageToChat(messageData);
+
+        // Send the message to the server
+        sendToServer(messageData);
+    }
+
+    // If there is a photo, send it
+    if (image && image !== '' && image !== 'file://') {  // Ensure it's not just a default image src or empty
+        const messageData = {
+            userId: userId,
+            chatWith: chatWith,
+            photo: image,
+            messageType: 'photo',
+            timestamp: new Date().toISOString()
+        };
+
+        // Send the image and display it immediately
+        addMessageToChat(messageData);
+
+        // Send the image data to the server
+        sendToServer(messageData);
+    }
+
+    // Clear the message input and image preview after sending
+    messageInput.value = '';
+    imagePreview.style.display = 'none';
+}
+
+// Function to send the message or image to the server
+function sendToServer(messageData) {
+    fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(messageData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === 'Message sent successfully') {
+            // Publish the message to the other user's channel
+            const realTimeMessage = {
+                userId: userId,
+                chatWith: chatWith,
+                message: messageData.message || null,
+                photo: messageData.photo || null,
+                messageType: messageData.messageType,
+                timestamp: new Date().toISOString()
+            };
+
+            // Publish to the other user's channel
+            const receiverChannel = ably.channels.get(otherUserChannel);
+            receiverChannel.publish('newMessage', realTimeMessage);
+        } else {
+            console.error('Error sending message:', data.error);
         }
+    })
+    .catch(error => {
+        console.error('Error sending message to backend:', error);
+    });
+}
 
-        // Function to handle key event (Enter key sends the message)
-        function handleKey(event) {
-            if (event.key === "Enter") {
-                sendMessage();
-            }
-        }
+// Function to add message to the chat UI
+function addMessageToChat(messageData) {
+    const messagesContainer = document.getElementById('messages-container');
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
 
-        // Function to handle the sending of the message and image
-        function sendMessage() {
-            const messageInput = document.getElementById('user-message');
-            const imagePreview = document.getElementById('image-preview');
+    const messageBubble = document.createElement('div');
+    messageBubble.classList.add('msg-bubble');
 
-            const message = messageInput.value.trim();
-            const image = imagePreview.src;
+    // Display the message or the photo
+    if (messageData.message) {
+        messageBubble.textContent = messageData.message;
+    } else if (messageData.photo) {
+        const imgElement = document.createElement('img');
+        imgElement.src = messageData.photo;
+        imgElement.alt = "User's photo";
+        imgElement.style.maxWidth = '200px';
+        imgElement.style.maxHeight = '200px';
+        messageBubble.appendChild(imgElement);
+    }
 
-            // If no message or image is selected, alert the user to select one
-            if (!message && !image) {
-                alert('Please type a message or select an image');
-                return;
-            }
+    const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const timeElement = document.createElement('div');
+    timeElement.classList.add('timestamp');
+    timeElement.textContent = timestamp;
 
-            // If there is a message, send it as a text message
-            if (message) {
-                const messageData = {
-                    userId: userId,
-                    chatWith: chatWith,
-                    message: message,
-                    messageType: 'text',
-                    timestamp: new Date().toISOString()
-                };
+    if (messageData.userId === parseInt(userId)) {
+        messageElement.classList.add('user-msg');
+    } else {
+        messageElement.classList.add('other-msg');
+    }
 
-                // Send the message and display it immediately
-                addMessageToChat(messageData);
+    messageElement.appendChild(messageBubble);
+    messageElement.appendChild(timeElement);
+    messagesContainer.appendChild(messageElement);
 
-                // Send the message to the server
-                sendToServer(messageData);
-            }
-
-            // If there is a photo, send it
-            if (image && image !== 'file:///') {  // Make sure it's not just the default image src
-                const messageData = {
-                    userId: userId,
-                    chatWith: chatWith,
-                    photo: image,
-                    messageType: 'photo',
-                    timestamp: new Date().toISOString()
-                };
-
-                // Send the image and display it immediately
-                addMessageToChat(messageData);
-
-                // Send the image data to the server
-                sendToServer(messageData);
-            }
-
-            // Clear the message input and image preview after sending
-            messageInput.value = '';
-            imagePreview.style.display = 'none';
-        }
-       // Function to send the message or image to the server
-        function sendToServer(messageData) {
-            fetch('/api/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(messageData),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message === 'Message sent successfully') {
-                    // Publish the message to the other user's channel
-                    const realTimeMessage = {
-                        userId: userId,
-                        chatWith: chatWith,
-                        message: messageData.message || null,
-                        photo: messageData.photo || null,
-                        messageType: messageData.messageType,
-                        timestamp: new Date().toISOString()
-                    };
-
-                    // Publish to the other user's channel
-                    const receiverChannel = ably.channels.get(otherUserChannel);
-                    receiverChannel.publish('newMessage', realTimeMessage);
-                } else {
-                    console.error('Error sending message:', data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error sending message to backend:', error);
-            });
-        }
-
-        // Function to add message to the chat UI
-        function addMessageToChat(messageData) {
-            const messagesContainer = document.getElementById('messages-container');
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
-
-            const messageBubble = document.createElement('div');
-            messageBubble.classList.add('msg-bubble');
-
-            // Display the message or the photo
-            if (messageData.message) {
-                messageBubble.textContent = messageData.message;
-            } else if (messageData.photo) {
-                const imgElement = document.createElement('img');
-                imgElement.src = messageData.photo;
-                imgElement.alt = "User's photo";
-                imgElement.style.maxWidth = '200px';
-                imgElement.style.maxHeight = '200px';
-                messageBubble.appendChild(imgElement);
-            }
-
-            const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const timeElement = document.createElement('div');
-            timeElement.classList.add('timestamp');
-            timeElement.textContent = timestamp;
-
-            if (messageData.userId === parseInt(userId)) {
-                messageElement.classList.add('user-msg');
-            } else {
-                messageElement.classList.add('other-msg');
-            }
-
-            messageElement.appendChild(messageBubble);
-            messageElement.appendChild(timeElement);
-            messagesContainer.appendChild(messageElement);
-
-            // Scroll to the bottom to show the latest message
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
+    // Scroll to the bottom to show the latest message
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
 </script>
+
 </body>
 
 <script>

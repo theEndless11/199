@@ -284,7 +284,7 @@ function sendMessage() {
     const message = messageInput.value.trim();
     const image = imagePreview.src;
 
-    // If no message or image is selected, alert the user to select one
+    // Check if a message or image is provided
     if (!message && (image === '' || image === 'file://')) {
         alert('Please type a message or select an image');
         return;
@@ -308,7 +308,7 @@ function sendMessage() {
     }
 
     // If there is a photo, send it
-    if (image && image !== '' && image !== 'file://') {  // Ensure it's not just a default image src or empty
+    if (image && image !== '' && !image.startsWith('file://')) {  // Ensure it's not just a default image src or empty
         const messageData = {
             userId: userId,
             chatWith: chatWith,

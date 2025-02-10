@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatVerse | Sign Up / Login</title>
     <style>
-        .message-container {
+    .message-container {
     position: fixed;
     top: 20px;
     left: 50%;
@@ -62,14 +62,14 @@
         }
 
         h1 {
-            font-size: 28px;
+            font-size: 25px;
             font-weight: 600;
             margin-bottom: 20px;
             color: #fff;
         }
 
         .welcome-text {
-            font-size: 14px;
+            font-size: 17px;
             line-height: 1.6;
             margin-bottom: 25px;
             color: #e0e0e0;
@@ -94,7 +94,7 @@
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.2);
             color: #fff;
-            font-size: 14px;
+            font-size: 15px;
             outline: none;
             transition: background 0.3s ease;
         }
@@ -131,7 +131,7 @@
         }
 
         .toggle-link a {
-            color: #667eea;
+            color: #001058;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
@@ -221,7 +221,51 @@
         }
     </style>
 </head>
-<body>
+<body> <button id="scrollTopBtn">Scroll to Top</button>
+<button id="scrollBottomBtn">Scroll to Bottom</button>
+<script>
+    // Function to scroll to the top
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    // Function to scroll to the bottom
+    function scrollToBottom() {
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+
+    // Attach event listeners to the buttons
+    document.getElementById('scrollTopBtn').addEventListener('click', scrollToTop);
+    document.getElementById('scrollBottomBtn').addEventListener('click', scrollToBottom);
+</script><style>button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 100;
+    margin: 10px;
+}
+
+#scrollBottomBtn {
+    bottom: 80px; /* Places the bottom button above the scroll-to-top button */
+}
+
+button:hover {
+    background-color: #45a049;
+}
+</style>
+
     <div class="container">
         <div class="welcome-text">
             <h1>Welcome to ChatVerse</h1>

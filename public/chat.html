@@ -641,7 +641,7 @@ function resizeImage(file, maxWidth = 800, maxHeight = 800) {
 
                 canvas.toBlob(function(blob) {
                     resolve(blob);  // Resolve with the resized image Blob
-                }, 'image/jpeg', 0.8);  // Adjust quality if needed
+                }, 'image/jpeg', 0.5);  // Adjust quality if needed
             };
         };
 

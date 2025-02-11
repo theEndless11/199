@@ -210,16 +210,20 @@ function handleKey(event) {
         }
 
         /* Message Input Area */
-        #message-input {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-top: 1px solid #eee;
-            position: relative;
-            flex-shrink: 0;
-        }
+       #message-input {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #eee;
+    position: fixed;      /* Fixed position */
+    bottom: 10px;         /* 10px from the bottom */
+    left: 0;              /* Stick to the left edge */
+    right: 0;             /* Stick to the right edge */
+    flex-shrink: 0;
+    z-index: 100;         /* Ensure it's above other content */
+}
 
         #user-message {
             width: 65%;

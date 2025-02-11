@@ -334,7 +334,6 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
-// Function to add message to the chat UI
 function addMessageToChat(messageData) {
     if (!messageData || (!messageData.message && !messageData.photo)) return; // Ensure message or photo exists
 
@@ -365,6 +364,9 @@ function addMessageToChat(messageData) {
     timeElement.classList.add('timestamp');
     timeElement.textContent = timestamp;
 
+    console.log("Current User ID: ", userId);
+    console.log("Message User ID: ", messageData.userId);
+
     // Check if the message is from the current user or the other user
     if (messageData.userId === parseInt(userId)) {
         messageElement.classList.add('user-msg');  // Sender's message, align right
@@ -380,11 +382,12 @@ function addMessageToChat(messageData) {
     messagesContainer.appendChild(messageElement);
 
     // Force a reflow/repaint to ensure the correct layout
-    messagesContainer.offsetHeight;  // This triggers a reflow
-
-    // Scroll to the bottom to show the latest message
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    requestAnimationFrame(() => {
+        messagesContainer.offsetHeight;  // Force reflow
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
+    });
 }
+
 
 
 // Function to display messages from initial fetch

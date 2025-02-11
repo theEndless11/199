@@ -233,8 +233,7 @@
             <div id="messages-container">
                 <!-- Messages will be dynamically added here -->
             </div>
-
- <div id="message-input">
+<div id="message-input">
     <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
 
     <!-- Photo picker button -->
@@ -248,6 +247,9 @@
 
     <!-- Send button -->
     <button onclick="sendMessage()">Send</button>
+
+    <!-- Error message -->
+    <p id="error-message" style="color: red; display: none;">Please type a message or select an image</p>
 </div>
 
 <script>
@@ -332,6 +334,14 @@ function sendMessage() {
         isMessageSent = true;
     }
 
+    // Handle error message visibility
+    const errorMessage = document.getElementById('error-message');
+    if (!isMessageSent) {
+        errorMessage.style.display = 'block'; // Show error if no message or photo is sent
+    } else {
+        errorMessage.style.display = 'none'; // Hide error if something was sent
+    }
+
     // Only clear inputs if something was sent (either message or photo)
     if (isMessageSent) {
         // Clear the message input, image preview, and file input after sending
@@ -341,6 +351,7 @@ function sendMessage() {
     }
 }
 </script>
+
 
 
 

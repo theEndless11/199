@@ -499,6 +499,7 @@ function sendPhoto(photoId) {
 }
 
 // Send text message
+<script>
 // Function to send text or photo message
 function sendMessage() {
     const messageInput = document.getElementById('user-message');
@@ -533,6 +534,7 @@ function sendMessage() {
             chatWith: chatWith,
             messageType: 'photo',
             timestamp: new Date().toISOString(),
+            message: ''  // Ensure the message field is set, even if it's empty
         };
 
         if (fileInput.files.length > 0) {
@@ -587,8 +589,8 @@ function sendToServer(messageData) {
             const realTimeMessage = {
                 userId: userId,
                 chatWith: chatWith,
-                message: messageData.message,
-                photo: messageData.photo,
+                message: messageData.message,  // Send message field (even if empty for photos)
+                photo: messageData.photo,      // Send photo field
                 messageType: messageData.messageType,
                 timestamp: new Date().toISOString()
             };
@@ -603,6 +605,7 @@ function sendToServer(messageData) {
         console.error('Error sending message to backend:', error);
     });
 }
+</script>
 
 // Fetch and display previous messages from the database (initial load)
 function loadMessages() {

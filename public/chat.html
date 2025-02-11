@@ -500,7 +500,6 @@ function sendPhoto(photoId) {
     });
 }
 
-
 // Function to send text or photo message
 function sendMessage() {
     const messageInput = document.getElementById('user-message');
@@ -510,7 +509,7 @@ function sendMessage() {
     const message = messageInput.value.trim();
     const image = imagePreview.src;
 
-    let isMessageSent = false;
+    let isMessageSent = false;  // Flag to track if message was sent
 
     // Prepare the message data object for both text and photo messages
     const messageData = {
@@ -523,8 +522,8 @@ function sendMessage() {
     if (message) {
         messageData.message = message;
         messageData.messageType = 'text';
-        addMessageToChat(messageData); // Display message in chat
-        sendToServer(messageData); // Send message to the server
+        addMessageToChat(messageData);  // Show message immediately in chat
+        sendToServer(messageData);      // Send the text message to the server
         isMessageSent = true;
     }
 
@@ -542,25 +541,24 @@ function sendMessage() {
             const file = fileInput.files[0];
             const reader = new FileReader();
             reader.onload = function(e) {
-                // Send the actual base64 image data in the 'photo' field
-                photoMessageData.photo = e.target.result; // This should be the base64 string
-                photoMessageData.message = '';  // Ensure message is empty when sending a photo
-                addMessageToChat(photoMessageData); // Display the message in the chat
-                sendToServer(photoMessageData); // Send photo to the server
+                photoMessageData.photo = e.target.result;  // Base64 string of the image
+                photoMessageData.message = '';             // Empty message for photo
+                addMessageToChat(photoMessageData);       // Display the photo in the chat
+                sendToServer(photoMessageData);           // Send the photo message to the server
             };
-            reader.readAsDataURL(file); // Read file as Data URL (base64 encoding)
+            reader.readAsDataURL(file);  // Read the image as a base64 string
         } else if (image && image !== '') {
             // Image selected through image preview (no file selected)
-            photoMessageData.photo = image;  // Use the image URL from preview
-            photoMessageData.message = '';  // Ensure message is empty when sending a photo
-            addMessageToChat(photoMessageData); // Display the message in the chat
-            sendToServer(photoMessageData); // Send photo to the server
+            photoMessageData.photo = image;  // URL from image preview
+            photoMessageData.message = '';   // Empty message for photo
+            addMessageToChat(photoMessageData);  // Display the message in chat
+            sendToServer(photoMessageData);     // Send the photo to the server
         }
 
         isMessageSent = true;
     }
 
-    // Handle error message visibility
+    // Handle error message visibility (if no message or photo was sent)
     const errorMessage = document.getElementById('error-message');
     if (!isMessageSent) {
         errorMessage.style.display = 'block'; // Show error if no message or photo is sent
@@ -568,15 +566,13 @@ function sendMessage() {
         errorMessage.style.display = 'none'; // Hide error if something was sent
     }
 
-    // Clear inputs if something was sent (either message or photo)
+    // Clear inputs if a message or photo was successfully sent
     if (isMessageSent) {
-        messageInput.value = '';
-        imagePreview.style.display = 'none';
-        fileInput.value = ''; // Clear the file input
+        messageInput.value = '';  // Clear text input
+        imagePreview.style.display = 'none';  // Hide image preview after sending
+        fileInput.value = '';  // Clear the file input
     }
 }
-
-
 
 // Function to send message to the server
 function sendToServer(messageData) {
@@ -616,6 +612,7 @@ function sendToServer(messageData) {
         console.error('Error sending message to backend:', error);
     });
 }
+
 
 
 

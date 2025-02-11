@@ -579,6 +579,9 @@ function sendMessage() {
 // Function to send message to the server
 // Function to send message to the server
 function sendToServer(messageData) {
+    // Debugging: log the messageData before processing
+    console.log('Message Data being sent:', messageData);
+
     // If messageType is 'photo', ensure that 'message' field is empty (it should still be present)
     if (messageData.messageType === 'photo' && !messageData.message) {
         messageData.message = ''; // Set message to an empty string for photo messages
@@ -595,6 +598,9 @@ function sendToServer(messageData) {
         console.error('Photo data missing for photo message');
         return;
     }
+
+    // Debugging: Log before sending the request
+    console.log('Sending message to server:', messageData);
 
     fetch('/api/messages', {
         method: 'POST',

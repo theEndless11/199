@@ -285,62 +285,51 @@ function sendMessage() {
     const message = messageInput.value.trim();
     const image = imagePreview.src;
 
-    // If there is a message, send it as a text message
+    // Prepare message data object
+    const messageData = {
+        userId: userId,
+        chatWith: chatWith,
+        message: message,
+        timestamp: new Date().toISOString(),
+    };
+
+    // If there's a message, add it to messageData
     if (message) {
-        const messageData = {
-            userId: userId,
-            chatWith: chatWith,
-            message: message,
-            messageType: 'text',
-            timestamp: new Date().toISOString()
-        };
-
-        // Send the message and display it immediately
-        addMessageToChat(messageData);
-
-        // Send the message to the server
-        sendToServer(messageData);
+        messageData.messageType = 'text';
+        addMessageToChat(messageData); // Display message in chat
+        sendToServer(messageData); // Send message to server
     }
 
-    // If there is a photo, send it
-    if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const imageData = e.target.result;
+    // If a photo has been selected (via file input or image preview), send it
+    if (fileInput.files.length > 0 || imagePreview.src) {
+        const file = fileInput.files[0] || null; // Take the file from input if selected, else null
+        const imageData = imagePreview.src; // Take the image from preview
 
-            const messageData = {
-                userId: userId,
-                chatWith: chatWith,
-                photo: imageData,
-                messageType: 'photo',
-                timestamp: new Date().toISOString()
+        const photoMessageData = {
+            userId: userId,
+            chatWith: chatWith,
+            photo: imageData,
+            messageType: 'photo',
+            timestamp: new Date().toISOString(),
+        };
+
+        // If a file is selected (via input), read and send it
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageDataFromFile = e.target.result;
+                photoMessageData.photo = imageDataFromFile;
+                addMessageToChat(photoMessageData);
+                sendToServer(photoMessageData);
             };
-
-            // Send the image and display it immediately
-            addMessageToChat(messageData);
-
-            // Send the image data to the server
-            sendToServer(messageData);
-        };
-        reader.readAsDataURL(file);
+            reader.readAsDataURL(file);
+        } else if (imageData) { // If image is already in preview, send it
+            addMessageToChat(photoMessageData);
+            sendToServer(photoMessageData);
+        }
     }
 
-    // If no message or image is provided, send empty data
-    if (!message && fileInput.files.length === 0) {
-        const messageData = {
-            userId: userId,
-            chatWith: chatWith,
-            message: "",
-            messageType: 'empty',
-            timestamp: new Date().toISOString()
-        };
-
-        // Send empty message data
-        sendToServer(messageData);
-    }
-
-    // Clear the message input and image preview after sending
+    // Clear the message input, image preview and file input after sending
     messageInput.value = '';
     imagePreview.style.display = 'none';
     fileInput.value = ''; // Clear the file input

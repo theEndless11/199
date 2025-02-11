@@ -500,7 +500,6 @@ function sendPhoto(photoId) {
 
 
 // Function to send text or photo message
-// Function to send text or photo message
 function sendMessage() {
     const messageInput = document.getElementById('user-message');
     const imagePreview = document.getElementById('image-preview');
@@ -523,40 +522,39 @@ function sendMessage() {
         messageData.message = message;
         messageData.messageType = 'text';
         addMessageToChat(messageData); // Display message in chat
-        sendToServer(messageData); // Send message to server
+        sendToServer(messageData); // Send message to the server
         isMessageSent = true;
     }
 
+    // Handle sending image (either from file input or image preview)
+    if (fileInput.files.length > 0 || image) {
+        const photoMessageData = {
+            userId: userId,
+            chatWith: chatWith,
+            messageType: 'photo',
+            timestamp: new Date().toISOString(),
+        };
 
-// Handle sending image (either from file input or image preview)
-if (fileInput.files.length > 0 || image) {
-    const photoMessageData = {
-        userId: userId,
-        chatWith: chatWith,
-        messageType: 'photo',
-        timestamp: new Date().toISOString(),
-    };
-
-    if (fileInput.files.length > 0) {
-        // Image selected through file input
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            // Send the actual base64 image data in the 'photo' field
-            photoMessageData.photo = e.target.result; // This should be the base64 string
+        if (fileInput.files.length > 0) {
+            // Image selected through file input
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Send the actual base64 image data in the 'photo' field
+                photoMessageData.photo = e.target.result; // This should be the base64 string
+                addMessageToChat(photoMessageData); // Display the message in the chat
+                sendToServer(photoMessageData); // Send photo to the server
+            };
+            reader.readAsDataURL(file); // Read file as Data URL (base64 encoding)
+        } else if (image && image !== '') {
+            // Image selected through image preview (no file selected)
+            photoMessageData.photo = image;  // Use the image URL from preview
             addMessageToChat(photoMessageData); // Display the message in the chat
             sendToServer(photoMessageData); // Send photo to the server
-        };
-        reader.readAsDataURL(file); // Read file as Data URL (base64 encoding)
-    } else if (image && image !== '') {
-        // Image selected through image preview (no file selected)
-        photoMessageData.photo = image;  // Use the image URL from preview
-        addMessageToChat(photoMessageData); // Display the message in the chat
-        sendToServer(photoMessageData); // Send photo to the server
-    }
+        }
 
-    isMessageSent = true;
-}
+        isMessageSent = true;
+    }
 
     // Handle error message visibility
     const errorMessage = document.getElementById('error-message');
@@ -573,6 +571,7 @@ if (fileInput.files.length > 0 || image) {
         fileInput.value = ''; // Clear the file input
     }
 }
+
 
 // Function to send message to the server
 function sendToServer(messageData) {

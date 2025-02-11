@@ -533,7 +533,7 @@ function sendMessage() {
             chatWith: chatWith,
             messageType: 'photo',
             timestamp: new Date().toISOString(),
-            message: ''  // Ensure the message field is set, even if it's empty
+            message: 'Image'  // Send a placeholder message for photo messages
         };
 
         if (fileInput.files.length > 0) {
@@ -604,6 +604,7 @@ function sendToServer(messageData) {
         console.error('Error sending message to backend:', error);
     });
 }
+
 
 
 // Fetch and display previous messages from the database (initial load)

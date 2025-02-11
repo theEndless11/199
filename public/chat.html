@@ -79,17 +79,17 @@ function handleKey(event) {
         }
 
         /* Chatbox Container */
-        #chatbox-container {
-            background-color: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            height: 400px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+       #chatbox-container {
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    height: calc(100vh - 80px); /* Adjust height to allow space for the message input */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
 
         /* Category Tabs */
         #category-tabs {
@@ -116,24 +116,25 @@ function handleKey(event) {
         }
 
         /* Chatbox */
-        #chatbox {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            position: relative;
-            overflow-y: auto;
-        }
+    #chatbox {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    position: relative;
+    overflow-y: auto;
+    margin-bottom: 50px;  /* Add margin to create space for the fixed input */
+}
 
-        /* Messages Container */
-        #messages-container {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+/* Messages Container */
+#messages-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
         /* Message Container */
         .message {

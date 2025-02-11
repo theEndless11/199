@@ -81,22 +81,26 @@
         animation: fadeIn 0.5s ease-out;
     }
 
-    .user-msg {
-        margin-left: auto;
-    }
+   /* Align sender's messages to the right */
+.user-msg {
+    text-align: right;
+    margin-left: 20px;
+}
 
-    .other-msg {
-        margin-right: auto;
-    }
+   .other-msg {
+    text-align: left;
+    margin-right: 20px;
+}
 
-    .msg-bubble {
-        padding: 12px 16px;
-        border-radius: 20px;
-        word-wrap: break-word;
-        font-size: 14px;
-        line-height: 1.4;
-        transition: all 0.3s ease-in-out;
-    }
+/* Ensure the message bubble is styled properly */
+.msg-bubble {
+    display: inline-block;
+    padding: 10px;
+    border-radius: 12px;
+    background-color: #f1f1f1;
+    max-width: 70%; /* Adjust as needed */
+}
+
 
     .user-msg .msg-bubble {
         background-color: #4CAF50;

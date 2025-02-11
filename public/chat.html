@@ -454,10 +454,11 @@ function sendPhoto(photoId) {
         chatWith: chatWith,
         photo: photoId,  // Send photo ID instead of the URL
         messageType: 'photo',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        message: ''  // Ensure message field is set (empty for photos)
     };
 
-    // Immediately display the sent photo message in the UI without logging the URL in the console
+    // Immediately display the sent photo message in the UI
     addMessageToChat(messageData);
 
     // Send message to the server
@@ -480,10 +481,11 @@ function sendPhoto(photoId) {
                 chatWith: chatWith,
                 photo: photoId,  // Send the photo reference (ID) here
                 messageType: 'photo',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                message: ''  // Ensure message is empty for photo messages
             };
 
-            // Publish to the other user's channel without printing the URL
+            // Publish to the other user's channel
             const receiverChannel = ably.channels.get(otherUserChannel);
             receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
 
@@ -527,34 +529,37 @@ function sendMessage() {
     }
 
     // Handle sending image (either from file input or image preview)
-    if (fileInput.files.length > 0 || image) {
-        const photoMessageData = {
-            userId: userId,
-            chatWith: chatWith,
-            messageType: 'photo',
-            timestamp: new Date().toISOString(),
-        };
+   // Updated photo sending logic
+if (fileInput.files.length > 0 || image) {
+    const photoMessageData = {
+        userId: userId,
+        chatWith: chatWith,
+        messageType: 'photo',
+        timestamp: new Date().toISOString(),
+    };
 
-        if (fileInput.files.length > 0) {
-            // Image selected through file input
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // Send the actual base64 image data in the 'photo' field
-                photoMessageData.photo = e.target.result; // This should be the base64 string
-                addMessageToChat(photoMessageData); // Display the message in the chat
-                sendToServer(photoMessageData); // Send photo to the server
-            };
-            reader.readAsDataURL(file); // Read file as Data URL (base64 encoding)
-        } else if (image && image !== '') {
-            // Image selected through image preview (no file selected)
-            photoMessageData.photo = image;  // Use the image URL from preview
+    if (fileInput.files.length > 0) {
+        // Image selected through file input
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Send the actual base64 image data in the 'photo' field
+            photoMessageData.photo = e.target.result; // This should be the base64 string
+            photoMessageData.message = '';  // Ensure message is empty when sending a photo
             addMessageToChat(photoMessageData); // Display the message in the chat
             sendToServer(photoMessageData); // Send photo to the server
-        }
-
-        isMessageSent = true;
+        };
+        reader.readAsDataURL(file); // Read file as Data URL (base64 encoding)
+    } else if (image && image !== '') {
+        // Image selected through image preview (no file selected)
+        photoMessageData.photo = image;  // Use the image URL from preview
+        photoMessageData.message = '';  // Ensure message is empty when sending a photo
+        addMessageToChat(photoMessageData); // Display the message in the chat
+        sendToServer(photoMessageData); // Send photo to the server
     }
+
+    isMessageSent = true;
+}
 
     // Handle error message visibility
     const errorMessage = document.getElementById('error-message');

@@ -64,74 +64,61 @@ module.exports = async (req, res) => {
     }
 
     // Handle POST request to send a message (with optional photo)
-    if (req.method === 'POST') {
-      const { userId, chatWith, message } = req.body;
+  // Handle POST request to send a message (with optional photo)
+if (req.method === 'POST') {
+  const { userId, chatWith, message, photo } = req.body;
 
-      console.log('POST request received with userId:', userId, 'chatWith:', chatWith, 'message:', message);
+  console.log('POST request received with userId:', userId, 'chatWith:', chatWith, 'message:', message, 'photo:', photo);
 
-      if (!userId || !chatWith || !message) {
-        console.error('Missing fields in POST request: userId, chatWith, message');
-        return res.status(400).json({ error: 'Missing required fields: userId, chatWith, message' });
-      }
+  // Validate that both userId and chatWith are present, and either message or photo must be present
+  if (!userId || !chatWith || (!message && !photo)) {
+    console.error('Missing fields in POST request: userId, chatWith, message/photo');
+    return res.status(400).json({ error: 'Missing required fields: userId, chatWith, message/photo' });
+  }
 
-      // Check if message is empty
-      if (message.trim() === '') {
-        console.error('Message is empty');
-        return res.status(400).json({ error: 'Message cannot be empty' });
-      }
+  // Check if the message contains photo data
+  let photoPath = null;
 
-      // Check if the message contains photo data
-      let photoPath = null;
-      
-      // If a photo is uploaded (via multer), get its path
-      if (req.file) {
-        photoPath = `/uploads/${req.file.filename}`;  // The URL path of the uploaded image
-        console.log('Photo uploaded, path:', photoPath);
-      } 
-      // If the message contains base64 image data, it's assumed to be a photo message
-      else if (message.startsWith('data:image')) {
-        photoPath = message; // Store the base64 string in the photo column
-        // Do not log base64 string or photo URL to avoid unnecessary exposure
-      }
+  // If a photo is uploaded (via multer), get its path
+  if (photo) {
+    photoPath = photo; // Store the base64 string (or URL if sent as base64)
+    // Do not log base64 string or photo URL to avoid unnecessary exposure
+  } else if (req.file) {
+    // If a file is uploaded (via multer), store the file path
+    photoPath = `/uploads/${req.file.filename}`;
+    console.log('Photo uploaded, path:', photoPath);
+  }
 
-      // Insert the message into the database
-      const sql = 'INSERT INTO messages (userId, chatWith, message, photo, timestamp) VALUES (?, ?, ?, ?, NOW())';
-      console.log('Inserting message into database:', message, 'Photo:', photoPath);
+  // Insert the message into the database
+  const sql = 'INSERT INTO messages (userId, chatWith, message, photo, timestamp) VALUES (?, ?, ?, ?, NOW())';
+  console.log('Inserting message into database:', message, 'Photo:', photoPath);
 
-      // Insert the photo (if any) into the photo column, or text message into the message column
-      const [result] = await pool.query(sql, [
-        userId,
-        chatWith,
-        message,     // Text message (can be empty if photo is present)
-        photoPath    // Photo URL (base64 or file path)
-      ]);
+  // Insert the message (text or empty) and photo (base64 or file path) into the database
+  const [result] = await pool.query(sql, [
+    userId,
+    chatWith,
+    message || '',     // If no message, insert an empty string
+    photoPath || null   // If no photo, insert null
+  ]);
 
-      if (result.affectedRows > 0) {
-        console.log('Message inserted successfully');
+  if (result.affectedRows > 0) {
+    console.log('Message inserted successfully');
 
-        const messageData = { userId, chatWith, message, photo: photoPath };
+    const messageData = { userId, chatWith, message, photo: photoPath };
 
-        // Publish to Ably (so other user can see it in real-time)
-        try {
-          console.log('Publishing to Ably with data:', messageData);
-          await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData);
-          console.log('Message published to Ably successfully');
-        } catch (err) {
-          console.error('Error publishing to Ably:', err);
-          return res.status(500).json({ error: 'Failed to publish message to Ably' });
-        }
-
-        return res.status(200).json({ message: 'Message sent successfully' });
-      } else {
-        console.error('Message insertion failed');
-        return res.status(500).json({ error: 'Failed to insert message into the database' });
-      }
+    // Publish to Ably (so other user can see it in real-time)
+    try {
+      console.log('Publishing to Ably with data:', messageData);
+      await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData);
+      console.log('Message published to Ably successfully');
+    } catch (err) {
+      console.error('Error publishing to Ably:', err);
+      return res.status(500).json({ error: 'Failed to publish message to Ably' });
     }
 
-    return res.status(405).json({ error: 'Method Not Allowed' });
-
-  } catch (err) {
-    console.error('Unexpected error:', err);
-    return res.status(500).json({ error: 'Unexpected error occurred', details: err.message });
+    return res.status(200).json({ message: 'Message sent successfully' });
+  } else {
+    console.error('Message insertion failed');
+    return res.status(500).json({ error: 'Failed to insert message into the database' });
   }
-};
+}

@@ -321,51 +321,82 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
-function addMessageToChat(messageData) {
-    if (!messageData || (!messageData.message && !messageData.photo)) return; // Ensure message or photo exists
+// Function to poll for new messages every 3 seconds
+function pollForNewMessages() {
+    setInterval(() => {
+        fetchMessagesAndUpdateChat();
+    }, 3000);  // 3000ms = 3 seconds
+}
 
+// Function to fetch messages and update the chat
+function fetchMessagesAndUpdateChat() {
+    fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages && Array.isArray(data.messages)) {
+                // Only display valid messages
+                const validMessages = data.messages.filter(msg => 
+                    msg && (msg.message || msg.photo) && msg.timestamp
+                );
+
+                // If new messages exist, update the chat
+                if (validMessages.length > 0) {
+                    updateChatUI(validMessages);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching new messages:', error);
+        });
+}
+
+// Function to update the UI with new messages
+function updateChatUI(messages) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message');
-    
-    // Creating message bubble
-    const messageBubble = document.createElement('div');
-    messageBubble.classList.add('msg-bubble');
-    
-    if (messageData.message) {
-        messageBubble.textContent = messageData.message;
-    } else if (messageData.photo) {
-        const imgElement = document.createElement('img');
-        imgElement.src = messageData.photo;
-        imgElement.alt = "User's photo";
-        imgElement.style.maxWidth = '200px';
-        imgElement.style.maxHeight = '200px';
-        messageBubble.appendChild(imgElement);
-    }
+    messages.forEach(msg => {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message');
+        
+        const messageBubble = document.createElement('div');
+        messageBubble.classList.add('msg-bubble');
 
-    const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const timeElement = document.createElement('div');
-    timeElement.classList.add('timestamp');
-    timeElement.textContent = timestamp;
+        // Display text or photo message
+        if (msg.message) {
+            messageBubble.textContent = msg.message;
+        } else if (msg.photo) {
+            const imgElement = document.createElement('img');
+            imgElement.src = msg.photo;  // Photo URL
+            imgElement.alt = "User's photo";
+            imgElement.style.maxWidth = '200px';
+            imgElement.style.maxHeight = '200px';
+            messageBubble.appendChild(imgElement);
+        }
 
-    if (messageData.userId === parseInt(userId)) {
-        messageElement.classList.add('user-msg');
-    } else {
-        messageElement.classList.add('other-msg');
-    }
+        const timestamp = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const timeElement = document.createElement('div');
+        timeElement.classList.add('timestamp');
+        timeElement.textContent = timestamp;
 
-    messageElement.appendChild(messageBubble);
-    messageElement.appendChild(timeElement);
-    messagesContainer.appendChild(messageElement);
+        if (msg.userId === parseInt(userId)) {
+            messageElement.classList.add('user-msg');
+        } else {
+            messageElement.classList.add('other-msg');
+        }
 
-    // Force reflow (layout recalculation)
-    messagesContainer.offsetHeight; // This forces a reflow (necessary for layout to be updated)
+        messageElement.appendChild(messageBubble);
+        messageElement.appendChild(timeElement);
+        messagesContainer.appendChild(messageElement);
+    });
 
-    // Then scroll to the bottom
+    // Scroll to the bottom after adding the new messages
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+
+// Start the polling when the page loads
+pollForNewMessages();
+
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {

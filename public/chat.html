@@ -321,13 +321,14 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
-// Function to add message to the chat UI
+// Function to add message to the chat UI (with re-render)
 function addMessageToChat(messageData) {
     if (!messageData || (!messageData.message && !messageData.photo)) return; // Ensure message or photo exists
 
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
+    // Append message to the array of messages (we will re-render the entire UI later)
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
 
@@ -363,13 +364,12 @@ function addMessageToChat(messageData) {
     messageElement.appendChild(messageBubble);
     messageElement.appendChild(timeElement);
 
-    // Append the new message to the container
-    messagesContainer.appendChild(messageElement);
+    // Clear existing messages and re-render
+    messagesContainer.innerHTML = '';  // Clear the chat container (to force a full re-render)
+    messagesContainer.appendChild(messageElement);  // Append the new message
 
-    // Force layout refresh, then scroll to the bottom after a small delay
-    setTimeout(() => {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
-    }, 100); // Set a small delay to ensure the layout is updated before scrolling
+    // Now scroll to the bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
 }
 
 
@@ -640,17 +640,27 @@ function sendToServer(messageData) {
 
 
 // Fetch and display previous messages from the database (initial load)
+// Fetch and display previous messages from the database (initial load)
 function loadMessages() {
     fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
     .then(response => response.json())
     .then(data => {
         if (data.messages && Array.isArray(data.messages)) {
+            // Clear the container before re-rendering messages
+            const messagesContainer = document.getElementById('messages-container');
+            if (messagesContainer) {
+                messagesContainer.innerHTML = '';  // Clear all existing messages
+            }
+
             // Only display valid messages
             const validMessages = data.messages.filter(msg => 
                 msg && (msg.message || msg.photo) && msg.timestamp
             );
+
             if (validMessages.length > 0) {
-                displayMessages(validMessages);
+                validMessages.forEach(msg => {
+                    addMessageToChat(msg);  // Add each message one by one
+                });
             } else {
                 console.warn('No valid messages found.');
             }
@@ -662,9 +672,6 @@ function loadMessages() {
         console.error('Error loading messages:', error);
     });
 }
-
-// Call the function to load previous messages when the page is loaded
-loadMessages();
 
 </script>
 

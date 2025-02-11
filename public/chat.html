@@ -529,37 +529,36 @@ function sendMessage() {
     }
 
     // Handle sending image (either from file input or image preview)
-   // Updated photo sending logic
-if (fileInput.files.length > 0 || image) {
-    const photoMessageData = {
-        userId: userId,
-        chatWith: chatWith,
-        messageType: 'photo',
-        timestamp: new Date().toISOString(),
-    };
+    if (fileInput.files.length > 0 || image) {
+        const photoMessageData = {
+            userId: userId,
+            chatWith: chatWith,
+            messageType: 'photo',
+            timestamp: new Date().toISOString(),
+        };
 
-    if (fileInput.files.length > 0) {
-        // Image selected through file input
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            // Send the actual base64 image data in the 'photo' field
-            photoMessageData.photo = e.target.result; // This should be the base64 string
+        if (fileInput.files.length > 0) {
+            // Image selected through file input
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Send the actual base64 image data in the 'photo' field
+                photoMessageData.photo = e.target.result; // This should be the base64 string
+                photoMessageData.message = '';  // Ensure message is empty when sending a photo
+                addMessageToChat(photoMessageData); // Display the message in the chat
+                sendToServer(photoMessageData); // Send photo to the server
+            };
+            reader.readAsDataURL(file); // Read file as Data URL (base64 encoding)
+        } else if (image && image !== '') {
+            // Image selected through image preview (no file selected)
+            photoMessageData.photo = image;  // Use the image URL from preview
             photoMessageData.message = '';  // Ensure message is empty when sending a photo
             addMessageToChat(photoMessageData); // Display the message in the chat
             sendToServer(photoMessageData); // Send photo to the server
-        };
-        reader.readAsDataURL(file); // Read file as Data URL (base64 encoding)
-    } else if (image && image !== '') {
-        // Image selected through image preview (no file selected)
-        photoMessageData.photo = image;  // Use the image URL from preview
-        photoMessageData.message = '';  // Ensure message is empty when sending a photo
-        addMessageToChat(photoMessageData); // Display the message in the chat
-        sendToServer(photoMessageData); // Send photo to the server
-    }
+        }
 
-    isMessageSent = true;
-}
+        isMessageSent = true;
+    }
 
     // Handle error message visibility
     const errorMessage = document.getElementById('error-message');
@@ -578,8 +577,15 @@ if (fileInput.files.length > 0 || image) {
 }
 
 
+
 // Function to send message to the server
 function sendToServer(messageData) {
+    // Ensure that userId, chatWith, and message/photo are present
+    if (!messageData.userId || !messageData.chatWith || (!messageData.message && !messageData.photo)) {
+        console.error('Missing required fields: userId, chatWith, message/photo');
+        return;
+    }
+
     fetch('/api/messages', {
         method: 'POST',
         headers: {
@@ -610,6 +616,7 @@ function sendToServer(messageData) {
         console.error('Error sending message to backend:', error);
     });
 }
+
 
 
 

@@ -293,14 +293,17 @@ function sendMessage() {
         timestamp: new Date().toISOString(),
     };
 
-    // If there's a message, add it to messageData
+    let isMessageSent = false;
+
+    // If there's a text message, add it to messageData
     if (message) {
         messageData.messageType = 'text';
         addMessageToChat(messageData); // Display message in chat
         sendToServer(messageData); // Send message to server
+        isMessageSent = true;
     }
 
-    // If a photo has been selected (via file input or image preview), send it
+    // If a photo has been selected, send it
     if (fileInput.files.length > 0 || imagePreview.src) {
         const photoMessageData = {
             userId: userId,
@@ -325,14 +328,20 @@ function sendMessage() {
             addMessageToChat(photoMessageData);
             sendToServer(photoMessageData);
         }
+
+        isMessageSent = true;
     }
 
-    // Clear the message input, image preview, and file input after sending
-    messageInput.value = '';
-    imagePreview.style.display = 'none';
-    fileInput.value = ''; // Clear the file input
+    // Only clear inputs if something was sent (either message or photo)
+    if (isMessageSent) {
+        // Clear the message input, image preview, and file input after sending
+        messageInput.value = '';
+        imagePreview.style.display = 'none';
+        fileInput.value = ''; // Clear the file input
+    }
 }
 </script>
+
 
 
 </body>

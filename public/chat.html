@@ -534,7 +534,7 @@ function sendMessage() {
             chatWith: chatWith,
             messageType: 'photo',
             timestamp: new Date().toISOString(),
-            message: 'Image'  // Send a placeholder message for photo messages
+            message: 'Image'  // Placeholder message for photo messages
         };
 
         if (fileInput.files.length > 0) {
@@ -543,14 +543,14 @@ function sendMessage() {
             const reader = new FileReader();
             reader.onload = function(e) {
                 // Send the actual base64 image data in the 'photo' field
-                photoMessageData.photo = e.target.result;
+                photoMessageData.photo = e.target.result; // This should be the base64 string
                 addMessageToChat(photoMessageData); // Display the message in the chat
                 sendToServer(photoMessageData); // Send photo to the server
             };
             reader.readAsDataURL(file); // Read file as Data URL (base64 encoding)
-        } else if (image) {
+        } else if (image && image !== '') {
             // Image selected through image preview (no file selected)
-            photoMessageData.photo = image;  // Use the image URL
+            photoMessageData.photo = image;  // Use the image URL from preview
             addMessageToChat(photoMessageData); // Display the message in the chat
             sendToServer(photoMessageData); // Send photo to the server
         }
@@ -591,7 +591,7 @@ function sendToServer(messageData) {
                 userId: userId,
                 chatWith: chatWith,
                 message: messageData.message,  // Send message field (even if empty for photos)
-                photo: messageData.photo,      // Send actual photo data (base64 or URL)
+                photo: messageData.photo,      // Send the actual photo data (base64 or URL)
                 messageType: messageData.messageType,
                 timestamp: new Date().toISOString()
             };

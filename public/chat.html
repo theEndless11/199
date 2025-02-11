@@ -321,58 +321,51 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
-// Function to add a message to the chat container and scroll to the bottom
 function addMessageToChat(messageData) {
     if (!messageData || (!messageData.message && !messageData.photo)) return; // Ensure message or photo exists
 
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
-    // Create new message element
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
-
+    
+    // Creating message bubble
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('msg-bubble');
-
-    // Check if the message is text or photo
+    
     if (messageData.message) {
-        messageBubble.textContent = messageData.message; // Display text message
+        messageBubble.textContent = messageData.message;
     } else if (messageData.photo) {
         const imgElement = document.createElement('img');
-        imgElement.src = messageData.photo;  // This is the URL from the backend
+        imgElement.src = messageData.photo;
         imgElement.alt = "User's photo";
-        imgElement.style.maxWidth = '200px';  // Optionally control image size
+        imgElement.style.maxWidth = '200px';
         imgElement.style.maxHeight = '200px';
         messageBubble.appendChild(imgElement);
     }
 
-    // Add timestamp to the message
     const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const timeElement = document.createElement('div');
     timeElement.classList.add('timestamp');
     timeElement.textContent = timestamp;
 
-    // Determine if the message is from the current user or other user
     if (messageData.userId === parseInt(userId)) {
-        messageElement.classList.add('user-msg');  // Sender's message, align right
+        messageElement.classList.add('user-msg');
     } else {
-        messageElement.classList.add('other-msg');  // Receiver's message, align left
+        messageElement.classList.add('other-msg');
     }
 
-    // Append the bubble and time to the message element
     messageElement.appendChild(messageBubble);
     messageElement.appendChild(timeElement);
-
-    // Append the message to the container
     messagesContainer.appendChild(messageElement);
 
-    // Scroll to the bottom of the messages container after the new message is added
+    // Force reflow (layout recalculation)
+    messagesContainer.offsetHeight; // This forces a reflow (necessary for layout to be updated)
+
+    // Then scroll to the bottom
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
-
-
-
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {

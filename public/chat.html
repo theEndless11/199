@@ -280,12 +280,13 @@ function handleKey(event) {
 function sendMessage() {
     const messageInput = document.getElementById('user-message');
     const imagePreview = document.getElementById('image-preview');
+    const fileInput = document.getElementById('file-input');
 
     const message = messageInput.value.trim();
     const image = imagePreview.src;
 
     // Check if a message or image is provided
-    if (!message && (image === '' || image === 'file://')) {
+    if (!message && fileInput.files.length === 0) {
         alert('Please type a message or select an image');
         return;
     }
@@ -308,25 +309,33 @@ function sendMessage() {
     }
 
     // If there is a photo, send it
-    if (image && image !== '' && !image.startsWith('file://')) {  // Ensure it's not just a default image src or empty
-        const messageData = {
-            userId: userId,
-            chatWith: chatWith,
-            photo: image,
-            messageType: 'photo',
-            timestamp: new Date().toISOString()
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageData = e.target.result;
+
+            const messageData = {
+                userId: userId,
+                chatWith: chatWith,
+                photo: imageData,
+                messageType: 'photo',
+                timestamp: new Date().toISOString()
+            };
+
+            // Send the image and display it immediately
+            addMessageToChat(messageData);
+
+            // Send the image data to the server
+            sendToServer(messageData);
         };
-
-        // Send the image and display it immediately
-        addMessageToChat(messageData);
-
-        // Send the image data to the server
-        sendToServer(messageData);
+        reader.readAsDataURL(file);
     }
 
     // Clear the message input and image preview after sending
     messageInput.value = '';
     imagePreview.style.display = 'none';
+    fileInput.value = ''; // Clear the file input
 }
 </script>
 

@@ -73,61 +73,67 @@
         max-height: calc(100% - 100px); /* To ensure the messages don't push the input off the screen */
     }
 
-    /* Message Bubbles */
-    .message {
-        display: flex;
-        align-items: flex-end;
-        max-width: 80%;
-        animation: fadeIn 0.5s ease-out;
-    }
+  /* Message Container */
+.message {
+    display: block; /* Remove flexbox from the container */
+    margin-bottom: 10px;  /* Add some space between messages */
+}
 
-   /* Align sender's messages to the right */
+/* Align sender's messages to the right */
 .user-msg {
     text-align: right;
     margin-left: 20px;
+    display: flex;
+    justify-content: flex-end;
 }
 
-   .other-msg {
+/* Align receiver's messages to the left */
+.other-msg {
     text-align: left;
     margin-right: 20px;
+    display: flex;
+    justify-content: flex-start;
 }
 
-/* Ensure the message bubble is styled properly */
+/* Message Bubble Styling */
 .msg-bubble {
     display: inline-block;
     padding: 10px;
     border-radius: 12px;
     background-color: #f1f1f1;
     max-width: 70%; /* Adjust as needed */
+    word-wrap: break-word; /* Handle long text gracefully */
 }
 
+/* Custom styling for sender's messages */
+.user-msg .msg-bubble {
+    background-color: #4CAF50;
+    color: white;
+    border-bottom-right-radius: 5px;
+}
 
-    .user-msg .msg-bubble {
-        background-color: #4CAF50;
-        color: white;
-        border-bottom-right-radius: 5px;
-    }
+/* Custom styling for receiver's messages */
+.other-msg .msg-bubble {
+    background-color: #f0f0f0;
+    color: #333;
+    border-bottom-left-radius: 5px;
+}
 
-    .other-msg .msg-bubble {
-        background-color: #f0f0f0;
-        color: #333;
-        border-bottom-left-radius: 5px;
-    }
+/* Styling for images inside messages */
+.msg-bubble img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    display: block;
+}
 
-    /* Styling for images in message bubbles */
-    .msg-bubble img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 10px;
-        display: block;
-    }
-
-    .timestamp {
-        font-size: 0.75em;
-        color: #888;
-        margin-top: 5px;
-        text-align: right;
-    }
+/* Styling for the timestamp */
+.timestamp {
+    font-size: 0.75em;
+    color: #888;
+    margin-top: 5px;
+    text-align: right;
+}
 
 
     /* Animations */

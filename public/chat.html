@@ -74,20 +74,26 @@
     }
 
   /* Message Container */
-#messages-container {
-    display: flex;
-    flex-direction: column; /* Stack messages vertically */
-    align-items: flex-start; /* Default alignment for other users */
+.message {
+    display: block; /* Remove flexbox from the container */
+    margin-bottom: 10px;  /* Add some space between messages */
 }
 
+/* Align sender's messages to the right */
 .user-msg {
-    align-self: flex-end; /* Align the sender's message to the right */
+    text-align: right;
+    margin-left: 20px;
+    display: flex;
+    justify-content: flex-end;
 }
 
+/* Align receiver's messages to the left */
 .other-msg {
-    align-self: flex-start; /* Align the receiver's message to the left */
+    text-align: left;
+    margin-right: 20px;
+    display: flex;
+    justify-content: flex-start;
 }
-
 
 /* Message Bubble Styling */
 .msg-bubble {
@@ -353,6 +359,9 @@ function addMessageToChat(messageData) {
     timeElement.classList.add('timestamp');
     timeElement.textContent = timestamp;
 
+    console.log("Current User ID: ", userId);
+    console.log("Message User ID: ", messageData.userId);
+
     // Check if the message is from the current user or the other user
     if (messageData.userId === parseInt(userId)) {
         messageElement.classList.add('user-msg');  // Sender's message, align right
@@ -363,16 +372,16 @@ function addMessageToChat(messageData) {
     // Append message bubble and time
     messageElement.appendChild(messageBubble);
     messageElement.appendChild(timeElement);
-
+    
     // Append the new message to the container
     messagesContainer.appendChild(messageElement);
 
-    // Trigger a reflow to apply the CSS styles properly
-    requestAnimationFrame(() => {
-        // Scroll to the bottom of the messages container
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    });
+    // Allow the layout to update first, then scroll to the bottom
+    setTimeout(() => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
+    }, 0); // Allow the browser to repaint before scrolling
 }
+
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {

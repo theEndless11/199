@@ -265,7 +265,7 @@ function previewPhoto() {
             imagePreview.src = e.target.result;
             imagePreview.style.display = 'block'; // Show image preview
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(file); // Read file as Data URL
     } else {
         imagePreview.style.display = 'none'; // Hide image preview if no file is selected
     }
@@ -315,17 +315,18 @@ function sendMessage() {
         };
 
         if (fileInput.files.length > 0) {
+            // Image selected through file input
             const file = fileInput.files[0]; // File selected from input
             const reader = new FileReader();
             reader.onload = function(e) {
                 const imageDataFromFile = e.target.result;
-                photoMessageData.photo = imageDataFromFile;
+                photoMessageData.photo = imageDataFromFile; // Set photo data to send
                 addMessageToChat(photoMessageData);
                 sendToServer(photoMessageData);
             };
             reader.readAsDataURL(file); // Read file as Data URL
         } else if (image) {
-            // If an image is displayed in the preview, send it
+            // Image selected through image preview (no file selected)
             photoMessageData.photo = image;
             addMessageToChat(photoMessageData);
             sendToServer(photoMessageData);
@@ -351,8 +352,6 @@ function sendMessage() {
     }
 }
 </script>
-
-
 
 
 </body>

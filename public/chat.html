@@ -285,12 +285,6 @@ function sendMessage() {
     const message = messageInput.value.trim();
     const image = imagePreview.src;
 
-    // Check if a message or an image is provided
-    if (!message && !image && fileInput.files.length === 0) {
-        alert('Please type a message or select an image');
-        return;
-    }
-
     // If there is a message, send it as a text message
     if (message) {
         const messageData = {
@@ -309,29 +303,41 @@ function sendMessage() {
     }
 
     // If there is a photo, send it
-    if (fileInput.files.length > 0 || image) {  // Check if file is selected or preview is available
-        const file = fileInput.files[0] || imagePreview.src; // Get the file or image preview
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imageData = e.target.result;
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageData = e.target.result;
 
-                const messageData = {
-                    userId: userId,
-                    chatWith: chatWith,
-                    photo: imageData,
-                    messageType: 'photo',
-                    timestamp: new Date().toISOString()
-                };
-
-                // Send the image and display it immediately
-                addMessageToChat(messageData);
-
-                // Send the image data to the server
-                sendToServer(messageData);
+            const messageData = {
+                userId: userId,
+                chatWith: chatWith,
+                photo: imageData,
+                messageType: 'photo',
+                timestamp: new Date().toISOString()
             };
-            reader.readAsDataURL(file);
-        }
+
+            // Send the image and display it immediately
+            addMessageToChat(messageData);
+
+            // Send the image data to the server
+            sendToServer(messageData);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // If no message or image is provided, send empty data
+    if (!message && fileInput.files.length === 0) {
+        const messageData = {
+            userId: userId,
+            chatWith: chatWith,
+            message: "",
+            messageType: 'empty',
+            timestamp: new Date().toISOString()
+        };
+
+        // Send empty message data
+        sendToServer(messageData);
     }
 
     // Clear the message input and image preview after sending
@@ -339,8 +345,8 @@ function sendMessage() {
     imagePreview.style.display = 'none';
     fileInput.value = ''; // Clear the file input
 }
-
 </script>
+
 
 
 </body>

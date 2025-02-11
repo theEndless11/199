@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <script src="https://cdn.ably.io/lib/ably.min.js"></script>
+</head>
+    <body>
+    <div id="chatbox-container">
+        <div id="category-tabs">
+            <button class="tab-btn" onclick="changeCategory('support')">Support</button>
+        </div>
+<div id="chatbox">
+            <div id="messages-container">
+                <!-- Messages will be dynamically added here -->
+            </div>
+<div id="message-input">
+    <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
+
+    <!-- Photo picker button -->
+    <input type="file" id="file-input" accept="image/*" onchange="previewPhoto()" style="display: none;" />
+    <div class="icon-container" title="Pick a photo" onclick="document.getElementById('file-input').click()">
+        <div class="cloudflare-icon"></div>
+    </div>
+
+    <!-- Image preview -->
+    <img id="image-preview" class="image-preview" style="display: none;" />
+
+    <!-- Send button -->
+    <button onclick="sendMessage()">Send</button>
+
+    <!-- Error message -->
+    <p id="error-message" style="color: red; display: none;">Please type a message or select an image</p>
+</div>
     <style>
         /* General Reset */
     * {
@@ -75,24 +103,21 @@
 
   /* Message Container */
 .message {
-    display: block; /* Remove flexbox from the container */
-    margin-bottom: 10px;  /* Add some space between messages */
+    display: flex; /* Use flex to align child elements */
+    justify-content: flex-end; /* Align to the right for sender's message */
+    margin-bottom: 10px;
 }
 
-/* Align sender's messages to the right */
 .user-msg {
     text-align: right;
-    margin-left: 20px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-end; /* Ensure alignment of the message to the right */
 }
 
-/* Align receiver's messages to the left */
 .other-msg {
     text-align: left;
-    margin-right: 20px;
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-start; /* Ensure alignment of the message to the left */
 }
 
 /* Message Bubble Styling */
@@ -228,34 +253,7 @@
         }
 
     </style>
-</head>
-<body>
-    <div id="chatbox-container">
-        <div id="category-tabs">
-            <button class="tab-btn" onclick="changeCategory('support')">Support</button>
-        </div>
-<div id="chatbox">
-            <div id="messages-container">
-                <!-- Messages will be dynamically added here -->
-            </div>
-<div id="message-input">
-    <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
 
-    <!-- Photo picker button -->
-    <input type="file" id="file-input" accept="image/*" onchange="previewPhoto()" style="display: none;" />
-    <div class="icon-container" title="Pick a photo" onclick="document.getElementById('file-input').click()">
-        <div class="cloudflare-icon"></div>
-    </div>
-
-    <!-- Image preview -->
-    <img id="image-preview" class="image-preview" style="display: none;" />
-
-    <!-- Send button -->
-    <button onclick="sendMessage()">Send</button>
-
-    <!-- Error message -->
-    <p id="error-message" style="color: red; display: none;">Please type a message or select an image</p>
-</div>
 
 <script>
 // Function to preview selected photo
@@ -284,9 +282,6 @@ function handleKey(event) {
 }
 
 </script>
-
-
-</body>
 
 <script>
 // Get userId and chatWith from query parameters
@@ -359,9 +354,6 @@ function addMessageToChat(messageData) {
     timeElement.classList.add('timestamp');
     timeElement.textContent = timestamp;
 
-    console.log("Current User ID: ", userId);
-    console.log("Message User ID: ", messageData.userId);
-
     // Check if the message is from the current user or the other user
     if (messageData.userId === parseInt(userId)) {
         messageElement.classList.add('user-msg');  // Sender's message, align right
@@ -372,7 +364,7 @@ function addMessageToChat(messageData) {
     // Append message bubble and time
     messageElement.appendChild(messageBubble);
     messageElement.appendChild(timeElement);
-    
+
     // Append the new message to the container
     messagesContainer.appendChild(messageElement);
 
@@ -381,6 +373,7 @@ function addMessageToChat(messageData) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
     }, 0); // Allow the browser to repaint before scrolling
 }
+
 
 
 // Function to display messages from initial fetch

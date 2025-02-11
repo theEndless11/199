@@ -234,7 +234,7 @@
                 <!-- Messages will be dynamically added here -->
             </div>
 
-    <div id="message-input">
+ <div id="message-input">
     <input type="text" id="user-message" placeholder="Type a message..." onkeyup="handleKey(event)">
 
     <!-- Photo picker button -->
@@ -283,7 +283,7 @@ function sendMessage() {
     const fileInput = document.getElementById('file-input');
 
     const message = messageInput.value.trim();
-    const image = imagePreview.src;
+    const image = imagePreview.src; // This is the image preview's source, not the file input directly.
 
     // Check if a message or image is provided
     if (!message && fileInput.files.length === 0) {
@@ -338,6 +338,7 @@ function sendMessage() {
     fileInput.value = ''; // Clear the file input
 }
 </script>
+
 
 </body>
 

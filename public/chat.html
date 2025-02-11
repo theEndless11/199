@@ -364,20 +364,19 @@ function addMessageToChat(messageData) {
     timeElement.classList.add('timestamp');
     timeElement.textContent = timestamp;
 
-    console.log("Current User ID: ", userId);
-    console.log("Message User ID: ", messageData.userId);
-
     // Check if the message is from the current user or the other user
     if (messageData.userId === parseInt(userId)) {
         messageElement.classList.add('user-msg');  // Sender's message, align right
+        messageElement.style.alignSelf = 'flex-end';  // Force alignment to the right
     } else {
         messageElement.classList.add('other-msg');  // Receiver's message, align left
+        messageElement.style.alignSelf = 'flex-start';  // Force alignment to the left
     }
 
     // Append message bubble and time
     messageElement.appendChild(messageBubble);
     messageElement.appendChild(timeElement);
-    
+
     // Append the new message to the container
     messagesContainer.appendChild(messageElement);
 
@@ -386,9 +385,6 @@ function addMessageToChat(messageData) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
     }, 0); // Allow the browser to repaint before scrolling
 }
-
-
-
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {

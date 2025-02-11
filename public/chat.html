@@ -33,91 +33,120 @@
     <!-- Error message -->
     <p id="error-message" style="color: red; display: none;">Please type a message or select an image</p>
 </div>
+    
+<script>
+// Function to preview selected photo
+function previewPhoto() {
+    const fileInput = document.getElementById('file-input');
+    const imagePreview = document.getElementById('image-preview');
+
+    const file = fileInput.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block'; // Show image preview
+        };
+        reader.readAsDataURL(file); // Read file as Data URL
+    } else {
+        imagePreview.style.display = 'none'; // Hide image preview if no file is selected
+    }
+}
+
+// Function to handle key event (Enter key sends the message)
+function handleKey(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+}
+
+</script>
     <style>
-        /* General Reset */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+    /* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    /* Chatbox Container */
-    #chatbox-container {
-        background-color: #ffffff;
-        border-radius: 15px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        max-width: 400px;
-        height: 600px;
-        display: flex;
-        flex-direction: column;
-        font-family: 'Arial', sans-serif;
-        overflow: hidden;
-        margin: 0 auto;
-    }
+/* Chatbox Container */
+#chatbox-container {
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+    margin: 0 auto;
+}
 
-    /* Category Tabs */
-    #category-tabs {
-        display: flex;
-        justify-content: space-around;
-        background-color: #4CAF50;
-        padding: 10px;
-        border-radius: 15px 15px 0 0;
-    }
+/* Category Tabs */
+#category-tabs {
+    display: flex;
+    justify-content: space-around;
+    background-color: #4CAF50;
+    padding: 10px;
+    border-radius: 15px 15px 0 0;
+}
 
-    .tab-btn {
-        background: none;
-        border: none;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        padding: 5px 10px;
-        border-radius: 20px;
-        transition: background-color 0.3s ease;
-    }
+.tab-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+}
 
-    .tab-btn:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
+.tab-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
 
-    /* Chatbox */
-    #chatbox {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        padding: 15px;
-        position: relative;
-        overflow-y: auto; /* Ensures scrolling when the messages grow */
-    }
+/* Chatbox */
+#chatbox {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    position: relative;
+    overflow-y: auto; /* Ensures scrolling when the messages grow */
+}
 
-    /* Messages Container */
-    #messages-container {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        max-height: calc(100% - 100px); /* To ensure the messages don't push the input off the screen */
-    }
+/* Messages Container */
+#messages-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: calc(100% - 100px); /* To ensure the messages don't push the input off the screen */
+}
 
-  /* Message Container */
+/* Message Container */
 .message {
-    display: flex; /* Use flex to align child elements */
-    justify-content: flex-end; /* Align to the right for sender's message */
+    display: flex; /* Flexbox to align message components */
     margin-bottom: 10px;
 }
 
+/* Aligning sender's message to the right */
 .user-msg {
     text-align: right;
     display: flex;
-    justify-content: flex-end; /* Ensure alignment of the message to the right */
+    justify-content: flex-end; /* Align message to the right */
 }
 
+/* Aligning receiver's message to the left */
 .other-msg {
     text-align: left;
     display: flex;
-    justify-content: flex-start; /* Ensure alignment of the message to the left */
+    justify-content: flex-start; /* Align message to the left */
 }
 
 /* Message Bubble Styling */
@@ -126,8 +155,8 @@
     padding: 10px;
     border-radius: 12px;
     background-color: #f1f1f1;
-    max-width: 70%; /* Adjust as needed */
-    word-wrap: break-word; /* Handle long text gracefully */
+    max-width: 70%; /* Adjust to control message width */
+    word-wrap: break-word; /* Prevent overflow of long text */
 }
 
 /* Custom styling for sender's messages */
@@ -160,128 +189,96 @@
     text-align: right;
 }
 
+/* Animations */
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
 
-    /* Animations */
-    @keyframes fadeIn {
-        0% { opacity: 0; transform: translateY(10px); }
-        100% { opacity: 1; transform: translateY(0); }
+/* Responsive Design */
+@media screen and (max-width: 480px) {
+    #chatbox-container {
+        height: 100vh;
+        border-radius: 0;
+        max-width: 100%;
     }
 
-    /* Responsive Design */
-    @media screen and (max-width: 480px) {
-        #chatbox-container {
-            height: 100vh;
-            border-radius: 0;
-            max-width: 100%;
-        }
-
-        .msg-bubble {
-            max-width: 90%;
-        }
-
-        #message-input {
-            padding: 8px;
-        }
-
-        #user-message {
-            width: 70%;
-        }
-
-        button {
-            padding: 8px 15px;
-        }
+    .msg-bubble {
+        max-width: 90%;
     }
-      
 
+    #message-input {
+        padding: 8px;
+    }
 
-        /* Message Input Area */
-        #message-input {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-top: 1px solid #eee;
-            position: relative;
-            flex-shrink: 0; /* Prevent shrinking */
-        }
+    #user-message {
+        width: 70%;
+    }
 
-        #user-message {
-            width: 65%;
-            padding: 10px;
-            border-radius: 20px;
-            border: 1px solid #ddd;
-            font-size: 14px;
-            outline: none;
-        }
-
-        #user-message:focus {
-            border-color: #4CAF50;
-        }
-
-        /* Preview for the selected image */
-        #image-preview {
-            display: none;
-            max-width: 100px;
-            max-height: 100px;
-            border-radius: 10px;
-            margin-left: 10px;
-        }
-
-        /* Photo Picker Icon */
-        .icon-container {
-            margin-right: 10px; /* Space between photo picker and send button */
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background-color: #4CAF50;
-            border-radius: 50%;
-        }
-
-        .cloudflare-icon {
-            width: 20px;
-            height: 20px;
-            background-color: white;
-            border-radius: 50%;
-        }
-
-        button {
-            padding: 10px 20px;
-        }
-
-    </style>
-
-
-<script>
-// Function to preview selected photo
-function previewPhoto() {
-    const fileInput = document.getElementById('file-input');
-    const imagePreview = document.getElementById('image-preview');
-
-    const file = fileInput.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            imagePreview.src = e.target.result;
-            imagePreview.style.display = 'block'; // Show image preview
-        };
-        reader.readAsDataURL(file); // Read file as Data URL
-    } else {
-        imagePreview.style.display = 'none'; // Hide image preview if no file is selected
+    button {
+        padding: 8px 15px;
     }
 }
 
-// Function to handle key event (Enter key sends the message)
-function handleKey(event) {
-    if (event.key === "Enter") {
-        sendMessage();
-    }
+/* Message Input Area */
+#message-input {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #eee;
+    position: relative;
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
-</script>
+#user-message {
+    width: 65%;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    outline: none;
+}
+
+#user-message:focus {
+    border-color: #4CAF50;
+}
+
+/* Preview for the selected image */
+#image-preview {
+    display: none;
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+/* Photo Picker Icon */
+.icon-container {
+    margin-right: 10px; /* Space between photo picker and send button */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+}
+
+.cloudflare-icon {
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+}
+
+button {
+    padding: 10px 20px;
+}
+
+ </style>
 
 <script>
 // Get userId and chatWith from query parameters

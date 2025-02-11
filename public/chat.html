@@ -287,7 +287,9 @@ function sendMessage() {
     const message = messageInput.value.trim();
     const image = imagePreview.src;
 
-    // Prepare message data object
+    let isMessageSent = false;
+
+    // Prepare message data object for text message
     const messageData = {
         userId: userId,
         chatWith: chatWith,
@@ -295,9 +297,7 @@ function sendMessage() {
         timestamp: new Date().toISOString(),
     };
 
-    let isMessageSent = false;
-
-    // If there's a text message, add it to messageData
+    // Handle sending text message
     if (message) {
         messageData.messageType = 'text';
         addMessageToChat(messageData); // Display message in chat
@@ -305,8 +305,8 @@ function sendMessage() {
         isMessageSent = true;
     }
 
-    // If a photo has been selected, send it
-    if (fileInput.files.length > 0 || imagePreview.src) {
+    // Handle sending image (either from file input or image preview)
+    if (fileInput.files.length > 0 || image) {
         const photoMessageData = {
             userId: userId,
             chatWith: chatWith,
@@ -324,9 +324,9 @@ function sendMessage() {
                 sendToServer(photoMessageData);
             };
             reader.readAsDataURL(file); // Read file as Data URL
-        } else if (imagePreview.src) {
+        } else if (image) {
             // If an image is displayed in the preview, send it
-            photoMessageData.photo = imagePreview.src;
+            photoMessageData.photo = image;
             addMessageToChat(photoMessageData);
             sendToServer(photoMessageData);
         }

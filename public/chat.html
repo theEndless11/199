@@ -381,12 +381,12 @@ function addMessageToChat(messageData) {
     // Append the new message to the container
     messagesContainer.appendChild(messageElement);
 
-    // Force a reflow/repaint to ensure the correct layout
-    requestAnimationFrame(() => {
-        messagesContainer.offsetHeight;  // Force reflow
+    // Allow the layout to update first, then scroll to the bottom
+    setTimeout(() => {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
-    });
+    }, 0); // Allow the browser to repaint before scrolling
 }
+
 
 
 

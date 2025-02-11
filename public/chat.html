@@ -176,12 +176,24 @@ function handleKey(event) {
         }
 
         /* Styling for images inside messages */
-        .msg-bubble img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 10px;
-            display: block;
-        }
+      /* Styling for images inside messages */
+.msg-bubble img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    display: block;
+    object-fit: contain;  /* Ensures the image is not stretched */
+}
+
+/* Mobile-specific adjustments */
+@media screen and (max-width: 480px) {
+    .msg-bubble img {
+        max-width: 80%;  /* Limit the image size on mobile */
+        max-height: 200px; /* Add a max height to prevent large images */
+        object-fit: contain;  /* Prevent stretching */
+    }
+}
+
 
         /* Styling for the timestamp */
         .timestamp {

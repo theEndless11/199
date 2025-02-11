@@ -321,14 +321,14 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
-// Function to add message to the chat UI (with re-render)
+// Function to add a message to the chat container and scroll to the bottom
 function addMessageToChat(messageData) {
     if (!messageData || (!messageData.message && !messageData.photo)) return; // Ensure message or photo exists
 
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
-    // Append message to the array of messages (we will re-render the entire UI later)
+    // Create new message element
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
 
@@ -353,24 +353,24 @@ function addMessageToChat(messageData) {
     timeElement.classList.add('timestamp');
     timeElement.textContent = timestamp;
 
-    // Check if the message is from the current user or the other user
+    // Determine if the message is from the current user or other user
     if (messageData.userId === parseInt(userId)) {
         messageElement.classList.add('user-msg');  // Sender's message, align right
     } else {
         messageElement.classList.add('other-msg');  // Receiver's message, align left
     }
 
-    // Append message bubble and time
+    // Append the bubble and time to the message element
     messageElement.appendChild(messageBubble);
     messageElement.appendChild(timeElement);
 
-    // Clear existing messages and re-render
-    messagesContainer.innerHTML = '';  // Clear the chat container (to force a full re-render)
-    messagesContainer.appendChild(messageElement);  // Append the new message
+    // Append the message to the container
+    messagesContainer.appendChild(messageElement);
 
-    // Now scroll to the bottom
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
+    // Scroll to the bottom of the messages container after the new message is added
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+
 
 
 

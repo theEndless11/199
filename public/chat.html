@@ -85,7 +85,7 @@ function handleKey(event) {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
-            height: 600px;
+            height: 500px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -608,6 +608,31 @@ function sendPhoto(photoId) {
         console.error('Error sending message to backend:', error);
     });
 }
+    function resizeImage(file, maxWidth = 800, maxHeight = 800) {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        img.src = e.target.result;
+        img.onload = function () {
+            let canvas = document.createElement('canvas');
+            const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(function(blob) {
+                // Continue with your image upload logic, using the resized blob
+                uploadImage(blob);
+            }, 'image/jpeg', 0.8);  // Adjust quality if needed
+        };
+    };
+
+    reader.readAsDataURL(file);
+}
+
 
 // Function to send text or photo message
 function sendMessage() {

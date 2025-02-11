@@ -74,26 +74,20 @@
     }
 
   /* Message Container */
-.message {
-    display: block; /* Remove flexbox from the container */
-    margin-bottom: 10px;  /* Add some space between messages */
+#messages-container {
+    display: flex;
+    flex-direction: column; /* Stack messages vertically */
+    align-items: flex-start; /* Default alignment for other users */
 }
 
-/* Align sender's messages to the right */
 .user-msg {
-    text-align: right;
-    margin-left: 20px;
-    display: flex;
-    justify-content: flex-end;
+    align-self: flex-end; /* Align the sender's message to the right */
 }
 
-/* Align receiver's messages to the left */
 .other-msg {
-    text-align: left;
-    margin-right: 20px;
-    display: flex;
-    justify-content: flex-start;
+    align-self: flex-start; /* Align the receiver's message to the left */
 }
+
 
 /* Message Bubble Styling */
 .msg-bubble {
@@ -166,12 +160,7 @@
             padding: 8px 15px;
         }
     }
-        /* General Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      
 
 
         /* Message Input Area */
@@ -367,10 +356,8 @@ function addMessageToChat(messageData) {
     // Check if the message is from the current user or the other user
     if (messageData.userId === parseInt(userId)) {
         messageElement.classList.add('user-msg');  // Sender's message, align right
-        messageElement.style.alignSelf = 'flex-end';  // Force alignment to the right
     } else {
         messageElement.classList.add('other-msg');  // Receiver's message, align left
-        messageElement.style.alignSelf = 'flex-start';  // Force alignment to the left
     }
 
     // Append message bubble and time
@@ -380,10 +367,11 @@ function addMessageToChat(messageData) {
     // Append the new message to the container
     messagesContainer.appendChild(messageElement);
 
-    // Allow the layout to update first, then scroll to the bottom
-    setTimeout(() => {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
-    }, 0); // Allow the browser to repaint before scrolling
+    // Trigger a reflow to apply the CSS styles properly
+    requestAnimationFrame(() => {
+        // Scroll to the bottom of the messages container
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
 }
 
 // Function to display messages from initial fetch

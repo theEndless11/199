@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatVerse | Sign Up / Login</title>
     <style>
-           html {
-    scroll-behavior: smooth;
+ html, body {
+    height: 100%;
+    overflow-y: scroll; /* Forces the vertical scrollbar to always appear */
 }
+
     .message-container {
     position: fixed;
     top: 20px;
@@ -225,16 +227,7 @@
 
     </style>
 </head>
-<body> <script>
-        // Example of automatically scrolling to the bottom after 2 seconds
-        setTimeout(() => {
-            window.scrollTo({
-                top: document.body.scrollHeight,
-                behavior: 'smooth'
-            });
-        }, 2000);
-    </script>
-
+<body> 
 
     <div class="container">
         <div class="welcome-text">

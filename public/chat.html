@@ -528,35 +528,37 @@ function sendMessage() {
     }
 
     // Handle sending image (either from file input or image preview)
-    if (fileInput.files.length > 0 || image) {
-        const photoMessageData = {
-            userId: userId,
-            chatWith: chatWith,
-            messageType: 'photo',
-            timestamp: new Date().toISOString(),
+  if (fileInput.files.length > 0 || image) {
+    const photoMessageData = {
+        userId: userId,
+        chatWith: chatWith,
+        messageType: 'photo',
+        timestamp: new Date().toISOString(),
+    };
+
+    // Handle sending image from file input or image preview
+    if (fileInput.files.length > 0) {
+        // Image selected through file input
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            photoMessageData.photo = e.target.result;  // Base64 string of the image
+            photoMessageData.message = '';             // Empty message for photo
+            addMessageToChat(photoMessageData);       // Display the photo in the chat
+            sendToServer(photoMessageData);           // Send the photo message to the server
         };
-
-        if (fileInput.files.length > 0) {
-            // Image selected through file input
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                photoMessageData.photo = e.target.result;  // Base64 string of the image
-                photoMessageData.message = '';             // Empty message for photo
-                addMessageToChat(photoMessageData);       // Display the photo in the chat
-                sendToServer(photoMessageData);           // Send the photo message to the server
-            };
-            reader.readAsDataURL(file);  // Read the image as a base64 string
-        } else if (image && image !== '') {
-            // Image selected through image preview (no file selected)
-            photoMessageData.photo = image;  // URL from image preview
-            photoMessageData.message = '';   // Empty message for photo
-            addMessageToChat(photoMessageData);  // Display the message in chat
-            sendToServer(photoMessageData);     // Send the photo to the server
-        }
-
-        isMessageSent = true;
+        reader.readAsDataURL(file);  // Read the image as a base64 string
+    } else if (image && image !== '') {
+        // Image selected through image preview (no file selected)
+        photoMessageData.photo = image;  // URL from image preview
+        photoMessageData.message = '';   // Empty message for photo
+        addMessageToChat(photoMessageData);  // Display the message in chat
+        sendToServer(photoMessageData);     // Send the photo to the server
     }
+
+    isMessageSent = true;
+}
+
 
     // Handle error message visibility (if no message or photo was sent)
     const errorMessage = document.getElementById('error-message');
@@ -575,10 +577,17 @@ function sendMessage() {
 }
 
 // Function to send message to the server
+// Function to send message to the server
 function sendToServer(messageData) {
-    // Ensure that userId, chatWith, and message/photo are present
+    // Ensure that userId, chatWith, and either message or photo are present
     if (!messageData.userId || !messageData.chatWith || (!messageData.message && !messageData.photo)) {
         console.error('Missing required fields: userId, chatWith, message/photo');
+        return;
+    }
+
+    // If sending a photo, ensure that photo is set
+    if (messageData.messageType === 'photo' && !messageData.photo) {
+        console.error('Photo data missing for photo message');
         return;
     }
 
@@ -594,15 +603,15 @@ function sendToServer(messageData) {
         if (data.message === 'Message sent successfully') {
             // Publish the message to the receiver's channel
             const realTimeMessage = {
-                userId: userId,
-                chatWith: chatWith,
+                userId: messageData.userId,
+                chatWith: messageData.chatWith,
                 message: messageData.message,  // Send message field (even if empty for photos)
                 photo: messageData.photo,      // Send the actual photo data (base64 or URL)
                 messageType: messageData.messageType,
                 timestamp: new Date().toISOString()
             };
 
-            const receiverChannel = ably.channels.get(otherUserChannel);
+            const receiverChannel = ably.channels.get(`chat-${messageData.chatWith}-${messageData.userId}`);
             receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
         } else {
             console.error('Error sending message:', data.error);
@@ -612,9 +621,6 @@ function sendToServer(messageData) {
         console.error('Error sending message to backend:', error);
     });
 }
-
-
-
 
 
 

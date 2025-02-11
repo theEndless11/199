@@ -324,6 +324,7 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to add message to the chat UI
+// Function to add message to the chat UI
 function addMessageToChat(messageData) {
     if (!messageData || (!messageData.message && !messageData.photo)) return; // Ensure message or photo exists
 
@@ -348,19 +349,24 @@ function addMessageToChat(messageData) {
         messageBubble.appendChild(imgElement);
     }
 
+    // Add timestamp to the message
     const timestamp = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const timeElement = document.createElement('div');
     timeElement.classList.add('timestamp');
     timeElement.textContent = timestamp;
 
+    // Check if the message is from the current user or the other user
     if (messageData.userId === parseInt(userId)) {
-        messageElement.classList.add('user-msg');
+        messageElement.classList.add('user-msg');  // Sender's message, align right
     } else {
-        messageElement.classList.add('other-msg');
+        messageElement.classList.add('other-msg');  // Receiver's message, align left
     }
 
+    // Append message bubble and time
     messageElement.appendChild(messageBubble);
     messageElement.appendChild(timeElement);
+    
+    // Append the new message to the container
     messagesContainer.appendChild(messageElement);
 
     // Force a reflow/repaint to ensure the correct layout
@@ -369,6 +375,7 @@ function addMessageToChat(messageData) {
     // Scroll to the bottom to show the latest message
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {

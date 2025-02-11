@@ -302,19 +302,15 @@ function sendMessage() {
 
     // If a photo has been selected (via file input or image preview), send it
     if (fileInput.files.length > 0 || imagePreview.src) {
-        const file = fileInput.files[0] || null; // Take the file from input if selected, else null
-        const imageData = imagePreview.src; // Take the image from preview
-
         const photoMessageData = {
             userId: userId,
             chatWith: chatWith,
-            photo: imageData,
             messageType: 'photo',
             timestamp: new Date().toISOString(),
         };
 
-        // If a file is selected (via input), read and send it
-        if (file) {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0]; // File selected from input
             const reader = new FileReader();
             reader.onload = function(e) {
                 const imageDataFromFile = e.target.result;
@@ -322,20 +318,21 @@ function sendMessage() {
                 addMessageToChat(photoMessageData);
                 sendToServer(photoMessageData);
             };
-            reader.readAsDataURL(file);
-        } else if (imageData) { // If image is already in preview, send it
+            reader.readAsDataURL(file); // Read file as Data URL
+        } else if (imagePreview.src) {
+            // If an image is displayed in the preview, send it
+            photoMessageData.photo = imagePreview.src;
             addMessageToChat(photoMessageData);
             sendToServer(photoMessageData);
         }
     }
 
-    // Clear the message input, image preview and file input after sending
+    // Clear the message input, image preview, and file input after sending
     messageInput.value = '';
     imagePreview.style.display = 'none';
     fileInput.value = ''; // Clear the file input
 }
 </script>
-
 
 
 </body>

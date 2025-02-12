@@ -607,7 +607,7 @@ function sendPhoto(photoData) {
                 message: ''  // Ensure message is empty for photo messages
             };
 
-            const receiverChannel = ably.channels.get(`chat-${chatWith}-${userId}`);  // Fixed string interpolation
+            const receiverChannel = ably.channels.get(`chat-${chatWith}-${userId}`);  // Fixed string interpolation with backticks
             receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
 
             // Clear the input field after message is sent
@@ -666,7 +666,6 @@ function resizeImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.5) {
     });
 }
 
-
 // Function to send message to the server
 function sendToServer(messageData) {
     // Debugging: log the messageData before processing
@@ -712,7 +711,7 @@ function sendToServer(messageData) {
                 timestamp: new Date().toISOString()
             };
 
-            const receiverChannel = ably.channels.get(`chat-${messageData.chatWith}-${messageData.userId}`);  // Fixed string interpolation
+            const receiverChannel = ably.channels.get(`chat-${messageData.chatWith}-${messageData.userId}`);  // Fixed string interpolation with backticks
             receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
         } else {
             console.error('Error sending message:', data.error);
@@ -763,29 +762,20 @@ function sendMessage() {
         if (fileInput.files.length > 0) {
             // Image selected through file input
             const file = fileInput.files[0];
-            resizeImage(file, 1024, 1024, 0.5)  // Resize and degrade quality
-                .then(degradedBlob => {
-                    // Convert degraded Blob to base64
-                    blobToBase64(degradedBlob).then(base64Image => {
-                        photoMessageData.photo = base64Image;  // Set the base64-encoded image
-                        photoMessageData.message = '';         // Empty message for photo
-                        addMessageToChat(photoMessageData);   // Display the photo in the chat
-                        sendToServer(photoMessageData);       // Send the photo to the server
-                    });
-                })
-                .catch(error => {
-                    console.error('Error resizing/degrading image:', error);
-                });
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoMessageData.photo = e.target.result;  // Base64 string of the image
+                photoMessageData.message = '';             // Empty message for photo
+                addMessageToChat(photoMessageData);       // Display the photo in the chat
+                sendToServer(photoMessageData);           // Send the photo message to the server
+            };
+            reader.readAsDataURL(file);  // Read the image as a base64 string
         } else if (image && image !== '') {
             // Image selected through image preview (no file selected)
-            // Just send the degraded image, assume it's already been resized and degraded
-            const degradedBlob = dataURLToBlob(image);  // Convert data URL to Blob
-            blobToBase64(degradedBlob).then(base64Image => {
-                photoMessageData.photo = base64Image;  // Set the base64-encoded image
-                photoMessageData.message = '';   // Empty message for photo
-                addMessageToChat(photoMessageData);  // Display the message in chat
-                sendToServer(photoMessageData);     // Send the photo to the server
-            });
+            photoMessageData.photo = image;  // URL from image preview
+            photoMessageData.message = '';   // Empty message for photo
+            addMessageToChat(photoMessageData);  // Display the message in chat
+            sendToServer(photoMessageData);     // Send the photo to the server
         }
 
         isMessageSent = true;
@@ -805,100 +795,6 @@ function sendMessage() {
         imagePreview.style.display = 'none';  // Hide image preview after sending
         fileInput.value = '';  // Clear the file input
     }
-}
-
-// Helper function to convert a base64 image to a Blob
-function dataURLToBlob(dataURL) {
-    const [base, data] = dataURL.split(',');
-    const mime = base.match(/:(.*?);/)[1];
-    const binary = atob(data);
-    const array = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-        array[i] = binary.charCodeAt(i);
-    }
-    return new Blob([array], { type: mime });
-}
-
-// Helper function to convert Blob to base64 string
-function blobToBase64(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = function () {
-            resolve(reader.result.split(',')[1]);  // Remove the base64 header part
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-}
-
-// Optional: Resize image (this function can be used if you want to resize and degrade the image)
-function resizeImage(file, maxWidth, maxHeight, quality) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        const reader = new FileReader();
-
-        reader.onload = function () {
-            img.src = reader.result;
-        };
-
-        reader.readAsDataURL(file);
-
-        img.onload = function () {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            const width = img.width;
-            const height = img.height;
-
-            // Calculate the new dimensions
-            const ratio = Math.min(maxWidth / width, maxHeight / height);
-            canvas.width = width * ratio;
-            canvas.height = height * ratio;
-
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            // Get the resized and degraded image as a Blob
-            canvas.toBlob(function (blob) {
-                resolve(blob);
-            }, 'image/jpeg', quality);  // JPEG format with defined quality
-        };
-
-        img.onerror = reject;
-    });
-}
-
-
-// Fetch and display previous messages from the database (initial load)
-function loadMessages() {
-    fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
-    .then(response => response.json())
-    .then(data => {
-        if (data.messages && Array.isArray(data.messages)) {
-            // Clear the container before re-rendering messages
-            const messagesContainer = document.getElementById('messages-container');
-            if (messagesContainer) {
-                messagesContainer.innerHTML = '';  // Clear all existing messages
-            }
-
-            // Only display valid messages
-            const validMessages = data.messages.filter(msg => 
-                msg && (msg.message || msg.photo) && msg.timestamp
-            );
-
-            if (validMessages.length > 0) {
-                validMessages.forEach(msg => {
-                    addMessageToChat(msg);  // Add each message one by one
-                });
-            } else {
-                console.warn('No valid messages found.');
-            }
-        } else {
-            console.error('Invalid message data received:', data);
-        }
-    })
-    .catch(error => {
-        console.error('Error loading messages:', error);
-    });
 }
 
 // Call the function to load previous messages when the page is loaded

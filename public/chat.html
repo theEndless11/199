@@ -725,6 +725,7 @@ function sendToServer(messageData) {
 }
 
 // Function to send text or photo message
+// Function to send message to the server
 function sendMessage() {
     const messageInput = document.getElementById('user-message');
     const imagePreview = document.getElementById('image-preview');
@@ -764,17 +765,21 @@ function sendMessage() {
         if (fileInput.files.length > 0) {
             // Image selected through file input
             const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                photoMessageData.photo = e.target.result;  // Base64 string of the image
-                photoMessageData.message = '';             // Empty message for photo
-                addMessageToChat(photoMessageData);       // Display the photo in the chat
-                sendToServer(photoMessageData);           // Send the photo message to the server
-            };
-            reader.readAsDataURL(file);  // Read the image as a base64 string
+            resizeImage(file, 1024, 1024, 0.5)  // Resize and degrade quality
+                .then(degradedBlob => {
+                    photoMessageData.photo = degradedBlob;  // Set the degraded photo Blob
+                    photoMessageData.message = '';         // Empty message for photo
+                    addMessageToChat(photoMessageData);   // Display the photo in the chat
+                    sendToServer(photoMessageData);       // Send the degraded photo to the server
+                })
+                .catch(error => {
+                    console.error('Error resizing/degrading image:', error);
+                });
         } else if (image && image !== '') {
             // Image selected through image preview (no file selected)
-            photoMessageData.photo = image;  // URL from image preview
+            // Just send the degraded image, assume it's already been resized and degraded
+            const degradedBlob = dataURLToBlob(image);  // Convert data URL to Blob
+            photoMessageData.photo = degradedBlob;
             photoMessageData.message = '';   // Empty message for photo
             addMessageToChat(photoMessageData);  // Display the message in chat
             sendToServer(photoMessageData);     // Send the photo to the server
@@ -797,6 +802,18 @@ function sendMessage() {
         imagePreview.style.display = 'none';  // Hide image preview after sending
         fileInput.value = '';  // Clear the file input
     }
+}
+
+// Helper function to convert a base64 image to a Blob
+function dataURLToBlob(dataURL) {
+    const [base, data] = dataURL.split(',');
+    const mime = base.match(/:(.*?);/)[1];
+    const binary = atob(data);
+    const array = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        array[i] = binary.charCodeAt(i);
+    }
+    return new Blob([array], { type: mime });
 }
 
 

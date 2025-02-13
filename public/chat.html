@@ -538,20 +538,19 @@ function degradeImageQuality(imageSrc, quality = 0.5) {
                 mimeType = 'image/png';  // Use PNG for PNG images (no quality parameter here)
             }
 
-            // Convert canvas content to a data URL with the specified quality for JPEG (or none for PNG)
-            if (mimeType === 'image/jpeg') {
-                // For JPEG, apply quality degradation (JPEG supports quality parameter)
-                canvas.toDataURL(mimeType, quality, (result) => {
-                    console.log(`Degrading image to ${mimeType} format with quality: ${quality}`);
-                    resolve(result);  // Resolve the promise with the compressed image data
-                });
-            } else {
-                // For PNG, just return the data URL without quality degradation
-                canvas.toDataURL(mimeType, (result) => {
-                    console.log(`PNG image loaded with dimensions: ${canvas.width}x${canvas.height}`);
-                    resolve(result);
-                });
-            }
+            // Convert canvas content to a Blob with the specified quality for JPEG (or none for PNG)
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    reject("Failed to create a Blob from canvas.");
+                    return;
+                }
+
+                // Convert the Blob to a URL (optional, for display in image tag)
+                const url = URL.createObjectURL(blob);
+
+                console.log(`Degrading image to ${mimeType} format with quality: ${quality}`);
+                resolve(url);  // Resolve the promise with the Blob URL
+            }, mimeType, quality);  // Apply quality parameter for JPEG, no quality for PNG
         };
 
         img.onerror = function(error) {
@@ -618,7 +617,6 @@ function addMessageToChat(messageData) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
     }, 0); // Allow the browser to repaint before scrolling
 }
-
 
 
 // Function to display messages from initial fetch

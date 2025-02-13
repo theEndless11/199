@@ -5,165 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        /* Global Styles */
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #e9ecef;
-            color: #333;
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        header {
-            background-color: #343a40;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 2rem;
-        }
-
-        .search-box {
-            width: 90%;
-            padding: 10px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            font-size: 1rem;
-        }
-
-        /* Section Toggle */
-        .section-toggle {
-            display: flex;
-            justify-content: center;
-            background-color: #6c757d;
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .section-toggle button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 10px;
-            transition: background-color 0.3s;
-        }
-
-        .section-toggle button:hover {
-            background-color: #495057;
-            border-radius: 5px;
-        }
-
-        /* Section Content */
-        .section-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background-color: white;
-            border-top: 1px solid #ddd;
-        }
-
-        .section-content h2 {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-        }
-
-        /* User/Contact Cards */
-        .user, .contact {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            margin: 20px 0;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.3s ease;
-        }
-
-        .user:hover, .contact:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        .user img, .contact img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            margin-right: 15px;
-        }
-
-        .user p, .contact p {
-            font-size: 1.1rem;
-            margin: 0;
-            flex-grow: 1;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .add-friend, .save-profile {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .add-friend:hover, .save-profile:hover {
-            background-color: #218838;
-        }
-
-        /* Hidden Section */
-        .hidden {
-            display: none;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .search-box {
-                width: 80%;
-            }
-
-            .section-toggle button {
-                font-size: 1.2rem;
-            }
-
-            .user, .contact {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .user img, .contact img {
-                margin-bottom: 10px;
-            }
-        }
-        .profile-img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px; /* Spacing between image and username */
-}
-    </style>
+    
 </head>
 <body>
     <div class="container">
@@ -337,3 +179,162 @@
     fetchUsers();
 </script>
 
+<style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e9ecef;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .search-box {
+            width: 90%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 1rem;
+        }
+
+        /* Section Toggle */
+        .section-toggle {
+            display: flex;
+            justify-content: center;
+            background-color: #6c757d;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section-toggle button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .section-toggle button:hover {
+            background-color: #495057;
+            border-radius: 5px;
+        }
+
+        /* Section Content */
+        .section-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: white;
+            border-top: 1px solid #ddd;
+        }
+
+        .section-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        /* User/Contact Cards */
+        .user, .contact {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 20px 0;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        .user:hover, .contact:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .user img, .contact img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .user p, .contact p {
+            font-size: 1.1rem;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-friend, .save-profile {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .add-friend:hover, .save-profile:hover {
+            background-color: #218838;
+        }
+
+        /* Hidden Section */
+        .hidden {
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .search-box {
+                width: 80%;
+            }
+
+            .section-toggle button {
+                font-size: 1.2rem;
+            }
+
+            .user, .contact {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .user img, .contact img {
+                margin-bottom: 10px;
+            }
+        }
+        .profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px; /* Spacing between image and username */
+}
+    </style>

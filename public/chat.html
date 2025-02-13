@@ -545,11 +545,19 @@ function degradeImageQuality(imageSrc, quality = 0.5) {
                     return;
                 }
 
+                // Log the size of the blob to check if the file size is changing
+                console.log("Degraded Blob size:", blob.size);
+
                 // Convert the Blob to a URL (optional, for display in image tag)
                 const url = URL.createObjectURL(blob);
 
+                // Visual check: let's add both the original and degraded image for comparison
+                const originalUrl = imageSrc;
+                console.log(`Original Image URL: ${originalUrl}`);
+
+                // Log that the image is being degraded
                 console.log(`Degrading image to ${mimeType} format with quality: ${quality}`);
-                resolve(url);  // Resolve the promise with the Blob URL
+                resolve({ degradedUrl: url, originalUrl: originalUrl });
             }, mimeType, quality);  // Apply quality parameter for JPEG, no quality for PNG
         };
 
@@ -580,11 +588,21 @@ function addMessageToChat(messageData) {
 
         // Degrade the quality before adding the photo to the chat UI
         degradeImageQuality(messageData.photo, 0.5) // 0.5 for quality degradation
-            .then(degradedImageSrc => {
-                imgElement.src = degradedImageSrc;  // Set the degraded image as the source
+            .then(({ degradedUrl, originalUrl }) => {
+                imgElement.src = degradedUrl;  // Set the degraded image as the source
                 imgElement.alt = "User's photo";
                 imgElement.style.maxWidth = '200px';  // Control image size
                 imgElement.style.maxHeight = '200px';
+
+                // Add both original and degraded images for side-by-side comparison
+                const originalImgElement = document.createElement('img');
+                originalImgElement.src = originalUrl;
+                originalImgElement.alt = "Original User's photo";
+                originalImgElement.style.maxWidth = '200px';  // Control image size
+                originalImgElement.style.maxHeight = '200px';
+
+                // Append both images
+                messageBubble.appendChild(originalImgElement);
                 messageBubble.appendChild(imgElement);
             })
             .catch(error => {
@@ -617,6 +635,7 @@ function addMessageToChat(messageData) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
     }, 0); // Allow the browser to repaint before scrolling
 }
+
 
 
 // Function to display messages from initial fetch

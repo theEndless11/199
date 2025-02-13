@@ -508,14 +508,13 @@ function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
             // Draw the image on the canvas with the new dimensions
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Function to check size after converting to DataURL
-            function checkSizeAndResolve(dataURL) {
-                const blob = dataURItoBlob(dataURL);
+            // Function to check size after converting to Blob
+            function checkSizeAndResolve(blob) {
                 const sizeKB = blob.size / 1024;  // Size in KB
                 console.log(`Compressed image size: ${sizeKB} KB`);
 
                 if (sizeKB <= maxSizeKB) {
-                    resolve(dataURL);  // If under 65KB, resolve with the image data URL
+                    resolve(blob);  // If under 65KB, resolve with the Blob
                 } else {
                     console.log("Image exceeds max size, rejecting...");
                     reject("Image is too large after resizing.");
@@ -523,12 +522,13 @@ function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
             }
 
             // Try converting to WebP (if supported)
-            if (canvas.toDataURL) {
+            if (canvas.toBlob) {
                 console.log("Converting to WebP...");
-                const webpDataUrl = canvas.toDataURL('image/webp', 0.7); // WebP with reduced quality
-                checkSizeAndResolve(webpDataUrl); // Check size after converting to WebP
+                canvas.toBlob((blob) => {
+                    checkSizeAndResolve(blob);
+                }, 'image/webp', 0.7);  // WebP with reduced quality
             } else {
-                console.log("Canvas.toDataURL() not supported.");
+                console.log("Canvas.toBlob() not supported.");
                 reject("Canvas API not supported.");
             }
         };
@@ -540,23 +540,28 @@ function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
     });
 }
 
-// Function to convert DataURI to Blob
-function dataURItoBlob(dataURI) {
-    const byteString = atob(dataURI.split(',')[1]);
-    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-    }
-    return new Blob([ab], { type: mimeString });
+// Function to upload photo as Blob
+function sendPhotoBlob(blob) {
+    const formData = new FormData();
+    formData.append('photo', blob, 'photo.webp');  // Append the Blob to the form data
+
+    // Upload the Blob to the server
+    fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.photoUrl) {
+            sendPhoto(data.photoUrl);  // Send the URL of the uploaded photo
+        }
+    })
+    .catch(error => {
+        console.error('Error uploading photo:', error);
+    });
 }
 
-
-// Function to add message to the chat UI and handle the photo size
 function addMessageToChat(messageData) {
-    if (!messageData || (!messageData.message && !messageData.photo)) return;  // Ensure there is a message or photo
-
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
 
@@ -574,8 +579,10 @@ function addMessageToChat(messageData) {
 
         // Resize the image and ensure it doesn't exceed 65KB
         resizeImageToMaxSize(messageData.photo, 65) // Ensure size is below 65KB
-            .then((compressedImageSrc) => {
-                imgElement.src = compressedImageSrc;  // Set the compressed image as the source
+            .then((compressedImageBlob) => {
+                // Create an object URL from the Blob to display the image
+                const imageUrl = URL.createObjectURL(compressedImageBlob);
+                imgElement.src = imageUrl;
                 imgElement.alt = "User's photo";
                 imgElement.style.maxWidth = '200px';  // Control image size
                 imgElement.style.maxHeight = '200px';
@@ -592,13 +599,6 @@ function addMessageToChat(messageData) {
     timeElement.classList.add('timestamp');
     timeElement.textContent = timestamp;
 
-    // Check if the message is from the current user or the other user
-    if (messageData.userId === parseInt(userId)) {
-        messageElement.classList.add('user-msg');  // Sender's message, align right
-    } else {
-        messageElement.classList.add('other-msg');  // Receiver's message, align left
-    }
-
     // Append message bubble and time
     messageElement.appendChild(messageBubble);
     messageElement.appendChild(timeElement);
@@ -611,6 +611,7 @@ function addMessageToChat(messageData) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
     }, 0); // Allow the browser to repaint before scrolling
 }
+
 
 // Function to handle photo upload and resizing
 function pickPhoto() {

@@ -402,6 +402,7 @@ channel.subscribe('newMessage', function (message) {
 });
 
 // Function to fetch messages from the server and update the chat
+// Function to fetch messages from the server and update the chat
 function fetchMessagesAndUpdateChat() {
     fetch(`/api/messages?userId=${userId}&chatWith=${chatWith}`)
     .then(response => response.json())
@@ -426,7 +427,7 @@ function fetchMessagesAndUpdateChat() {
 }
 
 // Function to display messages from the response
-ffunction displayMessages(messages) {
+function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
     messagesContainer.innerHTML = '';  // Clear previous messages
     
@@ -495,7 +496,6 @@ function pollForNewMessages() {
         fetchMessagesAndUpdateChat();
     }, 3000);  // 3000ms = 3 seconds
 }
-
 
 // Function to resize the image to a maximum size and ensure it's below 65KB
 function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {

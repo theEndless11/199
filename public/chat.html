@@ -34,14 +34,30 @@
         </div>
     </div>
 
-    <!-- Options menu -->
     <div id="options-menu">
-    <button id="shareOption">Share</button>
-    <button id="clearChatOption">Clear Chat</button>
-    <button id="changeThemeOption">Change Theme</button>
-
+    <button id="menuButton">...</button> <!-- This is the three dot button -->
+    <div id="dropdownMenu" style="display: none;">
+        <button id="shareOption">Share</button>
+        <button id="clearChatOption">Clear Chat</button>
+        <button id="changeThemeOption">Change Theme</button>
+    </div>
 </div>
+
   <script>
+    // Toggle the visibility of the dropdown menu when the three dots button is clicked
+    document.getElementById('menuButton').addEventListener('click', function() {
+        var dropdown = document.getElementById('dropdownMenu');
+        dropdown.style.display = (dropdown.style.display === 'none' || dropdown.style.display === '') ? 'block' : 'none';
+    });
+
+    // Close the menu if clicking anywhere outside of the menu (optional)
+    window.addEventListener('click', function(event) {
+        var dropdown = document.getElementById('dropdownMenu');
+        if (!dropdown.contains(event.target) && event.target !== document.getElementById('menuButton')) {
+            dropdown.style.display = 'none';
+        }
+    });
+
     // Share button functionality
     document.getElementById('shareOption').addEventListener('click', function() {
         if (navigator.share) {
@@ -54,7 +70,6 @@
                 console.log('Error sharing:', error);
             });
         } else {
-            // Fallback if the Web Share API is not supported (open the shareable URL in new tab)
             window.open(`https://www.addtoany.com/share#url=${encodeURIComponent(window.location.href)}`);
         }
     });
@@ -62,24 +77,18 @@
     // Clear Chat button functionality
     document.getElementById('clearChatOption').addEventListener('click', function() {
         if (confirm('Are you sure you want to clear the chat history?')) {
-            // This is where the chat clearing logic goes, for example:
-            // - Clearing chat from a database
-            // - Clearing chat from localStorage
-
-            // Example of clearing chat stored in localStorage
             localStorage.removeItem('chatHistory');
-            
-            // Or if you're using a chat container element
-            document.getElementById('chatContainer').innerHTML = '';  // Assuming your chat messages are inside an element with id="chatContainer"
+            document.getElementById('chatContainer').innerHTML = '';  // Clear chat container (if using)
             alert('Chat history cleared!');
         }
     });
 
-    // Optionally, you can implement the Change Theme button (this could be toggling between light and dark mode)
+    // Change Theme button functionality
     document.getElementById('changeThemeOption').addEventListener('click', function() {
         document.body.classList.toggle('dark-theme');
     });
 </script>
+
 <script>
 // Function to preview selected photo
 function previewPhoto() {
@@ -693,13 +702,13 @@ function sendMessage() {
     const fileInput = document.getElementById('file-input');
     const message = messageInput.value.trim();
 
-    let isMessageSent = false;  // Flag to track if message was sent
-
     const messageData = {
         userId: userId,
         chatWith: chatWith,
         timestamp: new Date().toISOString(),
     };
+
+    let isMessageSent = false;  // Flag to track if message was sent
 
     // Handle sending text message
     if (message) {
@@ -746,7 +755,6 @@ function sendMessage() {
     }
 }
 
-// Function to send message to the server using FormData
 // Function to send message to the server as JSON (with base64-encoded photo)
 function sendToServer(messageData) {
     fetch('/api/messages', {
@@ -765,59 +773,6 @@ function sendToServer(messageData) {
     });
 }
 
-// Function to send message (either text or photo)
-function sendMessage() {
-    const messageInput = document.getElementById('user-message');
-    const fileInput = document.getElementById('file-input');
-    const message = messageInput.value.trim();
-
-    const messageData = {
-        userId: userId,
-        chatWith: chatWith,
-        timestamp: new Date().toISOString(),
-    };
-
-    let isMessageSent = false;  // Flag to track if message was sent
-
-    // Handle sending text message
-    if (message) {
-        messageData.message = message;
-        messageData.messageType = 'text';
-        isMessageSent = true;
-    }
-
-    // Handle sending image (either from file input or image preview)
-    if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            resizeImageToMaxSize(e.target.result, 65)  // Resize the image before sending
-                .then(resizedImageBlob => {
-                    // Convert Blob to Base64 and add it to messageData
-                    blobToBase64(resizedImageBlob)
-                        .then(base64Image => {
-                            messageData.photo = base64Image;
-                            messageData.messageType = 'photo';  // Set message type to photo
-                            sendToServer(messageData);         // Send the photo to the server
-                        })
-                        .catch(error => {
-                            console.error('Error converting image to base64:', error);
-                        });
-                })
-                .catch(error => {
-                    console.error('Error resizing image:', error);
-                });
-        };
-        reader.readAsDataURL(file);
-        isMessageSent = true;
-    }
-
-    if (isMessageSent) {
-        // Clear the inputs after sending the message
-        messageInput.value = '';
-        fileInput.value = '';  // Clear the file input
-    }
-}
 
 </script>
 

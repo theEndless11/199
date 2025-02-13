@@ -522,41 +522,47 @@ function degradeImageQuality(imageSrc, quality = 0.5) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
-            // Resize image to fit a max width of 200px
-            const scale = 200 / img.width;  
+            // Resize image to fit a max width of 200px (while maintaining aspect ratio)
+            const maxWidth = 200;  // You can adjust this value based on the desired image size
+            const scale = maxWidth / img.width;  // Scaling factor to resize the image
             canvas.width = img.width * scale;
             canvas.height = img.height * scale;
 
-            // Draw the image to the canvas
+            // Draw the image on the canvas with the new dimensions
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Detect file extension to decide the MIME type
+            // Check the file extension to set the correct MIME type for the image
             const fileExtension = imageSrc.split('.').pop().toLowerCase();
             let mimeType = 'image/jpeg';  // Default to JPEG for quality degradation
             if (fileExtension === 'png') {
-                mimeType = 'image/png';  // For PNG images, we use PNG (no quality degradation)
+                mimeType = 'image/png';  // Use PNG for PNG images (no quality parameter here)
             }
 
-            console.log(`Degrading image to ${mimeType} format with quality: ${quality}`);
-
-            // Convert the canvas to a data URL with the specified quality (JPEG only)
-            canvas.toDataURL(mimeType, quality, function(result) {
-                console.log('Degraded image result:', result);  // Log the resulting data URL
-                resolve(result);  // Return the new image as data URL
-            });
+            // Convert canvas content to a data URL with the specified quality for JPEG (or none for PNG)
+            if (mimeType === 'image/jpeg') {
+                // For JPEG, apply quality degradation (JPEG supports quality parameter)
+                canvas.toDataURL(mimeType, quality, (result) => {
+                    console.log(`Degrading image to ${mimeType} format with quality: ${quality}`);
+                    resolve(result);  // Resolve the promise with the compressed image data
+                });
+            } else {
+                // For PNG, just return the data URL without quality degradation
+                canvas.toDataURL(mimeType, (result) => {
+                    console.log(`PNG image loaded with dimensions: ${canvas.width}x${canvas.height}`);
+                    resolve(result);
+                });
+            }
         };
 
         img.onerror = function(error) {
-            console.error('Error loading image:', error);  // Log image load errors
-            reject(error);  // Reject promise if there's an error loading the image
+            reject(error);  // Reject the promise if there's an error with the image
         };
     });
 }
 
-
-// Function to add message to the chat UI
+// Example usage of degradeImageQuality:
 function addMessageToChat(messageData) {
-    if (!messageData || (!messageData.message && !messageData.photo)) return; // Ensure message or photo exists
+    if (!messageData || (!messageData.message && !messageData.photo)) return;  // Ensure there is a message or photo
 
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
@@ -574,11 +580,8 @@ function addMessageToChat(messageData) {
         const imgElement = document.createElement('img');
 
         // Degrade the quality before adding the photo to the chat UI
-        console.log("Starting image quality degradation...");
-
-        degradeImageQuality(messageData.photo, 0.5)  // 0.5 for quality degradation
+        degradeImageQuality(messageData.photo, 0.5) // 0.5 for quality degradation
             .then(degradedImageSrc => {
-                console.log("Degraded image source:", degradedImageSrc);
                 imgElement.src = degradedImageSrc;  // Set the degraded image as the source
                 imgElement.alt = "User's photo";
                 imgElement.style.maxWidth = '200px';  // Control image size
@@ -615,6 +618,7 @@ function addMessageToChat(messageData) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
     }, 0); // Allow the browser to repaint before scrolling
 }
+
 
 
 // Function to display messages from initial fetch

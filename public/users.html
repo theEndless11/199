@@ -187,12 +187,48 @@ function displayUsers(users) {
         displayUsers(filteredUsers);
     }
 
-    // Placeholder function for adding friends (you can implement it later)
+     // Function to add a user to contacts and store them in localStorage
     function addFriend(user) {
-        console.log(`Adding ${user.username} to friends...`); // Corrected syntax
+        let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+        contacts.push(user); // Add user to the contacts array
+
+        // Save the updated contacts list to localStorage
+        localStorage.setItem('contacts', JSON.stringify(contacts));
+
+        // Optionally, update the Contacts section immediately
+        displayContacts();
     }
 
-    fetchUsers();
+    // Function to display contacts from localStorage in the Contacts section
+    function displayContacts() {
+        const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+        const contactsContainer = document.getElementById('contacts-container');
+        contactsContainer.innerHTML = ''; // Clear previous contacts
+
+        contacts.forEach(contact => {
+            const contactElement = document.createElement('div');
+            contactElement.classList.add('contact');
+
+            const profileImage = document.createElement('img');
+            profileImage.classList.add('profile-img');
+            profileImage.src = contact.profileImage || 'https://randomuser.me/api/portraits/men/32.jpg'; // Default image if no image available
+            profileImage.alt = `Profile of ${contact.name}`;
+
+            const contactName = document.createElement('p');
+            contactName.textContent = contact.name;
+
+            contactElement.appendChild(profileImage);
+            contactElement.appendChild(contactName);
+
+            contactsContainer.appendChild(contactElement);
+        });
+    }
+    
+    // Call fetchUsers when the page loads to display all users
+    window.onload = () => {
+        fetchUsers(); // Fetch users from API
+        displayContacts(); // Display contacts from localStorage
+    };
 </script>
 
 <style>
@@ -241,6 +277,7 @@ function displayUsers(users) {
             background-color: #6c757d;
             padding: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            gap:15px;
         }
 
         .section-toggle button {

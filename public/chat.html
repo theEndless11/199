@@ -159,7 +159,7 @@ function handleKey(event) {
     }
  /* Phone Icon Styling */
     #callIcon {
-        font-size: 18px; /* Size of the phone icon */
+        font-size: 20px; /* Size of the phone icon */
         margin-right: 10px; /* Space between the icon and the three dots */
         cursor: pointer;
     }
@@ -169,17 +169,11 @@ function handleKey(event) {
         display: flex;
     }
 
-   #three-dots-menu {
-        font-size: 30px; /* Size of the 3 dots */
+  #three-dots-menu {
+        font-size: 20px; /* Size of the 3 dots */
         cursor: pointer;
         background: none;
         border: none;
-        color: white;
-        transition: transform 0.3s ease;
-    }
-
-    #three-dots-menu:hover {
-        transform: scale(1.1);
     }
 
     /* Dropdown Menu styling */
@@ -187,55 +181,27 @@ function handleKey(event) {
         position: absolute;
         top: 50px; /* Adjust as needed */
         right: 20px; /* Adjust position for the dropdown */
-        background: linear-gradient(135deg, #6a5acd, #00bfff); /* Blue to Purple gradient */
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        padding: 15px;
+   background-color: #4CAF50;
+; /* Light gray background for contrast */
+        border: 1px solid #ccc;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 10px;
         z-index: 1000;
         display: none; /* Initially hidden */
-        width: 180px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    /* Make the dropdown visible */
-    #dropdownMenu.show {
-        display: block;
-        opacity: 1;
+        width: 150px; /* Adjust width if needed */
     }
 
     #dropdownMenu button {
-        background-color: transparent;
+        background-color: red;
         border: none;
-        padding: 12px 15px;
-        margin: 5px 0;
+        padding: 10px;
         width: 100%;
         text-align: left;
         cursor: pointer;
-        font-size: 16px;
-        color: white;
-        border-radius: 6px;
-        transition: background-color 0.3s ease, transform 0.3s ease;
+        font-size: 14px;
     }
 
-    #dropdownMenu button:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-        transform: scale(1.05);
-    }
-
-    /* Mobile-friendly dropdown */
-    @media (max-width: 600px) {
-        #header {
-            flex-direction: column;
-            text-align: center;
-        }
-
-        #header-right {
-            justify-content: center;
-            margin-top: 10px;
-        }
-    }
-        /* General Reset */
+   * General Reset */
         * {
             margin: 0;
             padding: 0;

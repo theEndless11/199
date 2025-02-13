@@ -150,7 +150,8 @@
             // Add click event to redirect to chat page when user is clicked
             userElement.onclick = () => {
                 if (user.id !== parseInt(userId)) {
-                    window.location.href = `chat.html?userId=${userId}&chatWith=${user.id}`; // Corrected syntax
+                    // Pass the username and password along with the userId and chatWith as URL parameters
+                    window.location.href = `chat.html?userId=${userId}&chatWith=${user.id}&username=${encodeURIComponent(user.username)}&password=${encodeURIComponent(user.password)}`;
                 }
             };
 
@@ -163,6 +164,7 @@
             usersContainer.appendChild(userElement);
         });
     }
+
 
     // Function for searching users
     function searchUsers() {

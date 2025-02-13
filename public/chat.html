@@ -486,51 +486,6 @@ function pollForNewMessages() {
     }, 3000);  // 3000ms = 3 seconds
 }
 
-    // Function to display messages from initial fetch
-function displayMessages(messages) {
-    const messagesContainer = document.getElementById('messages-container');
-    messagesContainer.innerHTML = ''; // Clear any existing messages
-
-    messages.forEach(msg => {
-        if (msg && (msg.message || msg.photo) && msg.timestamp) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
-
-            const messageBubble = document.createElement('div');
-            messageBubble.classList.add('msg-bubble');
-
-            // Check if it's a text message
-            if (msg.message && !msg.photo) {
-                messageBubble.textContent = msg.message;
-            }
-            // Check if it's a photo message
-            else if (msg.photo) {
-                const imgElement = document.createElement('img');
-                imgElement.src = msg.photo;  // Use the URL from the database or file system
-                imgElement.alt = "User's photo";
-                imgElement.style.maxWidth = '200px';  // Optionally control image size
-                imgElement.style.maxHeight = '200px';
-                messageBubble.appendChild(imgElement);
-            }
-
-            // Format timestamp
-            const timestamp = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const timeElement = document.createElement('div');
-            timeElement.classList.add('timestamp');
-            timeElement.textContent = timestamp;
-
-            if (msg.userId === parseInt(userId)) {
-                messageElement.classList.add('user-msg');
-            } else {
-                messageElement.classList.add('other-msg');
-            }
-
-            messageElement.appendChild(messageBubble);
-            messageElement.appendChild(timeElement); // Append time below message bubble
-            messagesContainer.appendChild(messageElement);
-        }
-    });
-}
 
 // Function to resize the image to a maximum size and ensure it's below 65KB
 function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
@@ -539,6 +494,8 @@ function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
         img.src = imageSrc;
 
         img.onload = function () {
+            console.log("Image loaded successfully");
+
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
@@ -551,27 +508,34 @@ function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
             // Draw the image on the canvas with the new dimensions
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Function to convert canvas to base64 and check the size
+            // Function to check size after converting to DataURL
             function checkSizeAndResolve(dataURL) {
                 const blob = dataURItoBlob(dataURL);
                 const sizeKB = blob.size / 1024;  // Size in KB
+                console.log(`Compressed image size: ${sizeKB} KB`);
 
                 if (sizeKB <= maxSizeKB) {
                     resolve(dataURL);  // If under 65KB, resolve with the image data URL
                 } else {
+                    console.log("Image exceeds max size, rejecting...");
                     reject("Image is too large after resizing.");
                 }
             }
 
             // Try converting to WebP (if supported)
             if (canvas.toDataURL) {
+                console.log("Converting to WebP...");
                 const webpDataUrl = canvas.toDataURL('image/webp', 0.7); // WebP with reduced quality
                 checkSizeAndResolve(webpDataUrl); // Check size after converting to WebP
+            } else {
+                console.log("Canvas.toDataURL() not supported.");
+                reject("Canvas API not supported.");
             }
         };
 
         img.onerror = function (error) {
-            reject("Error loading image: " + error);  // Reject if image loading fails
+            console.error('Error loading image:', error);  // Reject if image loading fails
+            reject("Error loading image: " + error);
         };
     });
 }
@@ -587,6 +551,7 @@ function dataURItoBlob(dataURI) {
     }
     return new Blob([ab], { type: mimeString });
 }
+
 
 // Function to add message to the chat UI and handle the photo size
 function addMessageToChat(messageData) {

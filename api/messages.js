@@ -13,6 +13,7 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + path.extname(file.originalname));  // Unique file name
   }
 });
+
 const upload = multer({ storage: storage });
 
 // Middleware for handling photo uploads in POST request
@@ -37,21 +38,19 @@ module.exports = async (req, res) => {
 
       console.log('Fetching messages for userId:', userId, 'chatWith:', chatWith);
 
-      // SQL query to fetch messages between two users
       const sql = 'SELECT * FROM messages WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) ORDER BY timestamp';
       const [messages] = await pool.query(sql, [userId, chatWith, chatWith, userId]);
 
       if (messages.length > 0) {
         console.log('Fetched messages:', messages);
         
-        // Format the messages to return both text and photo data correctly
         const formattedMessages = messages.map(message => {
           return {
             id: message.id,
             userId: message.userId,
             chatWith: message.chatWith,
             message: message.message,
-            photo: message.photo, // This will be either the base64 string or file path
+            photo: message.photo,  // Either base64 or file path
             timestamp: message.timestamp
           };
         });
@@ -69,19 +68,16 @@ module.exports = async (req, res) => {
 
       console.log('POST request received with userId:', userId, 'chatWith:', chatWith, 'message:', message, 'photo:', photo);
 
-      // Validate that both userId and chatWith are present, and either message or photo must be present
       if (!userId || !chatWith || (!message && !photo)) {
         console.error('Missing fields in POST request: userId, chatWith, message/photo');
         return res.status(400).json({ error: 'Missing required fields: userId, chatWith, message/photo' });
       }
 
-      // Check if the message contains photo data
       let photoPath = null;
 
-      // Case 1: If photo data is sent as a base64 string
+      // Case 1: If photo data is sent as base64 string
       if (photo && photo.startsWith('data:image')) {
         photoPath = photo;  // Store the base64 string
-        // Do not log base64 string or photo URL to avoid unnecessary exposure
       }
       
       // Case 2: If a file is uploaded (via multer)
@@ -106,7 +102,6 @@ module.exports = async (req, res) => {
 
         const messageData = { userId, chatWith, message, photo: photoPath };
 
-        // Publish to Ably (so other user can see it in real-time)
         try {
           console.log('Publishing to Ably with data:', messageData);
           await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData);

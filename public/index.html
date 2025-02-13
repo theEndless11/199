@@ -231,45 +231,66 @@ html, body {
 <body> 
 
     <div class="container">
-        <div class="welcome-text">
-            <h1>Welcome to ChatVerse</h1>
-            <p>ChatVerse is your go-to place for seamless conversations, whether it's with old friends or new ones. It’s not just a chatting app—it's a social space where you can connect, share, and grow.</p>
-        </div>
+    <div class="welcome-text">
+        <h1>Welcome to ChatVerse</h1>
+        <p>ChatVerse is your go-to place for seamless conversations, whether it's with old friends or new ones. It’s not just a chatting app—it's a social space where you can connect, share, and grow.</p>
+    </div>
 
-        <div id="login-form" class="form-container">
-            <h2>Login</h2>
-            <form id="login">
-                <input type="text" id="login-username" placeholder="Username" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <button type="submit">Login</button>
-            </form>
-            <div class="toggle-link">
-                <p>Don't have an account? <a href="javascript:void(0)" onclick="showSignup()">Sign Up</a></p>
-            </div>
-        </div>
+    <!-- Extra content for the first page -->
+    <div class="additional-text">
+        <h2>Why ChatVerse?</h2>
+        <p>In a world that's always connected, it’s important to find a space where you can have meaningful conversations without distractions. ChatVerse offers you just that. We believe that communication is key to building relationships, whether personal or professional. Our platform makes it easier for you to reach out to others, share your ideas, and stay connected.</p>
+        <p>Our features are designed to make your experience smoother and more enjoyable. Whether you're chatting with friends, joining group discussions, or exploring new ideas, ChatVerse helps you do it all.</p>
+    </div>
 
-        <div id="signup-form" class="form-container" style="display:none;">
-            <h2>Sign Up</h2>
-            <form id="signup">
-                <input type="text" id="signup-username" placeholder="Username" required>
-                <input type="password" id="signup-password" placeholder="Password" required>
-                <button type="submit">Sign Up</button>
-            </form>
-            <div class="toggle-link">
-                <p>Already have an account? <a href="javascript:void(0)" onclick="showLogin()">Login</a></p>
-            </div>
-        </div>
-
-        <div class="feature-text">
-            <h3>Features of ChatVerse</h3>
-            <p><span>Instant Messaging</span> – Chat in real-time with your friends and family.</p>
-            <p><span>Group Chats</span> – Connect with multiple people instantly.</p>
-            <p><span>Security First</span> – End-to-end encryption ensures your privacy.</p>
-            <p><span>Customize Your Profile</span> – Express yourself with a unique profile.</p>
-            <p><span>Multi-Device Support</span> – Stay connected across all your devices.</p>
-            <p><a href="javascript:void(0)" onclick="showSignup()">Join now</a> and start chatting today!</p>
+    <div id="login-form" class="form-container">
+        <h2>Login</h2>
+        <form id="login">
+            <input type="text" id="login-username" placeholder="Username" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div class="toggle-link">
+            <p>Don't have an account? <a href="javascript:void(0)" onclick="showSignup()">Sign Up</a></p>
         </div>
     </div>
+
+    <div id="signup-form" class="form-container" style="display:none;">
+        <h2>Sign Up</h2>
+        <form id="signup">
+            <input type="text" id="signup-username" placeholder="Username" required>
+            <input type="password" id="signup-password" placeholder="Password" required>
+            <button type="submit">Sign Up</button>
+        </form>
+        <div class="toggle-link">
+            <p>Already have an account? <a href="javascript:void(0)" onclick="showLogin()">Login</a></p>
+        </div>
+    </div>
+
+    <div class="feature-text">
+        <h3>Features of ChatVerse</h3>
+        <p><span>Instant Messaging</span> – Chat in real-time with your friends and family.</p>
+        <p><span>Group Chats</span> – Connect with multiple people instantly.</p>
+        <p><span>Security First</span> – End-to-end encryption ensures your privacy.</p>
+        <p><span>Customize Your Profile</span> – Express yourself with a unique profile.</p>
+        <p><span>Multi-Device Support</span> – Stay connected across all your devices.</p>
+        <p><a href="javascript:void(0)" onclick="showSignup()">Join now</a> and start chatting today!</p>
+    </div>
+
+    <!-- Extra content for second page -->
+    <div class="additional-text">
+        <h2>Building Connections</h2>
+        <p>With ChatVerse, you’re not just chatting – you’re building a community. From individual chats to group conversations, we aim to provide an environment that encourages collaboration, creativity, and personal growth. Our platform enables you to reach out to people globally and interact in ways that are both meaningful and enjoyable.</p>
+        <p>We believe that technology should bring people together. That’s why we focus on creating a platform that fosters open and honest conversations while prioritizing your privacy and safety.</p>
+    </div>
+
+    <!-- Extra content for third page -->
+    <div class="additional-text">
+        <h2>Join the ChatVerse Community</h2>
+        <p>Ready to take your social experience to the next level? ChatVerse offers everything you need to stay connected with the people who matter most. Whether you’re catching up with friends or exploring new conversations, you’ll find a place that feels just like home. Sign up today, and discover how easy it is to connect, chat, and share.</p>
+        <p>With ChatVerse, the world is just one message away. Create your account and join the millions of users already enjoying a new way to communicate. We can’t wait to welcome you to the family!</p>
+    </div>
+</div>
 
     
 <script>

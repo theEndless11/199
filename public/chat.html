@@ -8,11 +8,11 @@
 </head>
     <body>
 <div id="chatbox-container">
- <header id="header">
+<header id="header">
     <div id="header-left">
         <span id="username">Username</span> <!-- Placeholder for username -->
         <!-- Call Icon (Cloudflare logo as placeholder) -->
-        <i id="callIcon" class="fa fa-cloud" aria-hidden="true"></i> <!-- Cloudflare icon -->
+        <img id="callIcon" src="https://upload.wikimedia.org/wikipedia/commons/8/86/Cloudflare_logo.svg" alt="Cloudflare" style="height: 24px; width: 24px; margin-right: 10px; cursor: pointer;">
     </div>
     <div id="header-right">
         <div id="three-dots-menu">︙</div> <!-- Three-dot menu icon -->
@@ -131,14 +131,16 @@ function handleKey(event) {
         background-color: #333;
         color: #fff;
     }
+
     /* General styling for the header */
     #header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 10px 20px;
-        background-color: #87CEEB; /* Sky blue color */
-        color: #4CAF50;
+        background-color: #4CAF50;
+ /* Sky blue color */
+        color: white;
         font-family: Arial, sans-serif;
     }
 
@@ -155,7 +157,8 @@ function handleKey(event) {
 
     /* Cloudflare Call Icon */
     #callIcon {
-        font-size: 22px; /* Adjust the size of the icon */
+        height: 24px;
+        width: 24px;
         margin-right: 10px; /* Space between icon and username */
         cursor: pointer;
     }
@@ -169,7 +172,7 @@ function handleKey(event) {
     #three-dots-menu {
         font-size: 30px; /* Size of the 3 dots */
         cursor: pointer;
-        color: #4CAF50;
+        background: none;
         border: none;
     }
 
@@ -178,26 +181,30 @@ function handleKey(event) {
         position: absolute;
         top: 50px; /* Adjust as needed */
         right: 20px; /* Adjust position for the dropdown */
-        background-color: white;
+    background-color: #4CAF50;
+ /* Light gray background for contrast */
         border: 1px solid #ccc;
         box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         padding: 10px;
         z-index: 1000;
         display: none; /* Initially hidden */
+        width: 150px; /* Adjust width if needed */
     }
 
     #dropdownMenu button {
-        background-color: #f9f9f9;
+        background-color: black;
         border: none;
         padding: 10px;
         width: 100%;
         text-align: left;
         cursor: pointer;
+        font-size: 14px;
     }
 
     #dropdownMenu button:hover {
         background-color: #f1f1f1;
     }
+
 
 
         /* General Reset */

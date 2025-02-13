@@ -12,6 +12,7 @@
 <!-- Header -->
 <header id="header">
     <div id="header-left">
+        <img id="profile-image" class="profile-img" src="" alt="Profile Image"> <!-- Profile image -->
         <span id="username">Username</span> <!-- Placeholder for username -->
     </div>
     <div id="header-right">
@@ -130,6 +131,15 @@ function handleKey(event) {
 
 </script>
     <style>
+        /* Profile image styling */
+.profile-img {
+    width: 40px; /* Set the width to a smaller size */
+    height: 40px; /* Set the height to match the width */
+    border-radius: 50%; /* Make the image circular */
+    object-fit: cover; /* Ensures the image covers the area without distortion */
+    margin-right: 10px; /* Space between the profile image and the username */
+}
+
     .dark-theme {
         background-color: #333;
         color: black;
@@ -424,23 +434,25 @@ function handleKey(event) {
     </style>
 
 <script>
-// Get userId, chatWith, username, and password from query parameters
+// Get userId, chatWith, username, password, and profileImage from query parameters
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId');
 const chatWith = urlParams.get('chatWith');
 const username = urlParams.get('username');  // Extract the username
 const password = urlParams.get('password');  // Extract the password
+const profileImage = urlParams.get('profileImage');  // Extract the profile image URL
 
 // Log the query parameters to check if they are correctly passed
-if (userId && chatWith && username && password) {
-    console.log('userId:', userId, 'chatWith:', chatWith, 'username:', username, 'password:', password);
+if (userId && chatWith && username && password && profileImage) {
+    console.log('userId:', userId, 'chatWith:', chatWith, 'username:', username, 'password:', password, 'profileImage:', profileImage);
 } else {
-    alert('Missing userId, chatWith, username or password in the URL parameters');
+    alert('Missing userId, chatWith, username, password, or profileImage in the URL parameters');
     window.location.href = '/'; // Redirect to homepage or login
 }
 
-// Set the username in the header
+// Set the username and profile image in the header
 document.getElementById('username').textContent = username; // Display the username
+document.getElementById('profile-image').src = profileImage; // Set the profile image source
 // Ably API Key
 const ablyApiKey = 'z-PJnQ.-j8d2A:2MPSxeZ_Vfj487pTV11np4OE5yDTAZiln1a5IXWNj34';
 

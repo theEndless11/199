@@ -517,36 +517,42 @@ function degradeImageQuality(imageSrc, quality = 0.5) {
         img.src = imageSrc;
 
         img.onload = function() {
+            console.log("Image loaded:", imageSrc);
+
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
-            // Set canvas size to match image
-            const scale = 200 / img.width;  // Resize image to fit a max width of 200px
+            // Resize image to fit a max width of 200px
+            const scale = 200 / img.width;  
             canvas.width = img.width * scale;
             canvas.height = img.height * scale;
 
             // Draw the image to the canvas
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Detect if the image is JPEG or PNG and set appropriate format
+            // Detect file extension to decide the MIME type
             const fileExtension = imageSrc.split('.').pop().toLowerCase();
-            let mimeType = 'image/jpeg';  // Default to JPEG
-
+            let mimeType = 'image/jpeg';  // Default to JPEG for quality degradation
             if (fileExtension === 'png') {
-                mimeType = 'image/png';  // For PNG images, use PNG format
+                mimeType = 'image/png';  // For PNG images, we use PNG (no quality degradation)
             }
 
-            // Convert the canvas to a data URL with the specified quality for JPEG, or no quality for PNG
+            console.log(`Degrading image to ${mimeType} format with quality: ${quality}`);
+
+            // Convert the canvas to a data URL with the specified quality (JPEG only)
             canvas.toDataURL(mimeType, quality, function(result) {
-                resolve(result);  // Resolve with the new data URL (degraded image)
+                console.log('Degraded image result:', result);  // Log the resulting data URL
+                resolve(result);  // Return the new image as data URL
             });
         };
 
         img.onerror = function(error) {
-            reject(error);  // Reject if there was an error with the image
+            console.error('Error loading image:', error);  // Log image load errors
+            reject(error);  // Reject promise if there's an error loading the image
         };
     });
 }
+
 
 // Function to add message to the chat UI
 function addMessageToChat(messageData) {
@@ -566,10 +572,13 @@ function addMessageToChat(messageData) {
         messageBubble.textContent = messageData.message; // Display text message
     } else if (messageData.photo) {
         const imgElement = document.createElement('img');
-        
+
         // Degrade the quality before adding the photo to the chat UI
-        degradeImageQuality(messageData.photo, 0.5) // 0.5 for quality degradation
+        console.log("Starting image quality degradation...");
+
+        degradeImageQuality(messageData.photo, 0.5)  // 0.5 for quality degradation
             .then(degradedImageSrc => {
+                console.log("Degraded image source:", degradedImageSrc);
                 imgElement.src = degradedImageSrc;  // Set the degraded image as the source
                 imgElement.alt = "User's photo";
                 imgElement.style.maxWidth = '200px';  // Control image size

@@ -8,10 +8,11 @@
 </head>
     <body>
 <div id="chatbox-container">
-   <header id="header">
+ <header id="header">
     <div id="header-left">
         <span id="username">Username</span> <!-- Placeholder for username -->
-        <span id="callIcon">📞</span> <!-- Placeholder for call icon -->
+        <!-- Call Icon (Cloudflare logo as placeholder) -->
+        <i id="callIcon" class="fa fa-cloud" aria-hidden="true"></i> <!-- Cloudflare icon -->
     </div>
     <div id="header-right">
         <div id="three-dots-menu">︙</div> <!-- Three-dot menu icon -->
@@ -24,6 +25,7 @@
     <button id="clearChatOption">Clear Chat</button>
     <button id="changeThemeOption">Change Theme</button>
 </div>
+
 
  <script>
     // Toggle the visibility of the dropdown menu when the three dots button is clicked
@@ -129,6 +131,7 @@ function handleKey(event) {
         background-color: #333;
         color: #fff;
     }
+  <style>
     /* General styling for the header */
     #header {
         display: flex;
@@ -136,7 +139,7 @@ function handleKey(event) {
         align-items: center;
         padding: 10px 20px;
         background-color: #87CEEB; /* Sky blue color */
-        color: rgb(68, 63, 63);
+        color: #4CAF50;
         font-family: Arial, sans-serif;
     }
 
@@ -151,8 +154,10 @@ function handleKey(event) {
         margin-right: 10px;
     }
 
+    /* Cloudflare Call Icon */
     #callIcon {
-        font-size: 22px;
+        font-size: 22px; /* Adjust the size of the icon */
+        margin-right: 10px; /* Space between icon and username */
         cursor: pointer;
     }
 
@@ -165,7 +170,7 @@ function handleKey(event) {
     #three-dots-menu {
         font-size: 30px; /* Size of the 3 dots */
         cursor: pointer;
-        background: none;
+        color: #4CAF50;
         border: none;
     }
 
@@ -194,6 +199,8 @@ function handleKey(event) {
     #dropdownMenu button:hover {
         background-color: #f1f1f1;
     }
+</style>
+
 
         /* General Reset */
         * {

@@ -8,60 +8,6 @@
 </head>
     <body>
     <div id="chatbox-container">
-         <div id="options-menu">
-        <a href="#" id="shareOption">Share</a>
-        <a href="#" id="clearChatOption">Clear Chat</a>
-        <a href="#" id="changeThemeOption">Change Theme</a>
-    </div>
-</div>
-
-<script>
-    const chatboxContainer = document.getElementById('chatbox-container');
-    const optionsMenu = document.getElementById('options-menu');
-
-    chatboxContainer.addEventListener('click', () => {
-        // Toggle the visibility of the options menu
-        const isMenuVisible = optionsMenu.style.display === 'block';
-        optionsMenu.style.display = isMenuVisible ? 'none' : 'block';
-    });
-
-    // Add functionality for each option
-    document.getElementById('shareOption').addEventListener('click', (e) => {
-        e.preventDefault();
-        alert("Share option clicked!");
-    });
-
-    document.getElementById('clearChatOption').addEventListener('click', (e) => {
-        e.preventDefault();
-        alert("Chat cleared!");
-    });
-
-    document.getElementById('changeThemeOption').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.body.style.backgroundColor = (document.body.style.backgroundColor === 'lightgray') ? 'white' : 'lightgray';
-    });
-</script> <style>  #options-menu {
-            display: none;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            padding: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 150px;
-            z-index: 1000;
-        }
-        #options-menu a {
-            display: block;
-            margin-bottom: 10px;
-            color: #333;
-            text-decoration: none;
-        }
-        #options-menu a:hover {
-            color: #007bff;
-        }
-    </style>
         
 <div id="chatbox">
             <div id="messages-container">
@@ -582,97 +528,6 @@ function displayMessages(messages) {
     });
 }
 
-// Handle photo selectionfunction pickPhoto() {
-    const photoInput = document.createElement('input');
-    photoInput.type = 'file';
-    photoInput.accept = 'image/*';
-    photoInput.onchange = function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            // Resize the image before uploading to maintain quality
-            resizeImage(file, 1024, 1024) // Resize to a maximum of 1024px in width/height
-                .then(resizedBlob => {
-                    const formData = new FormData();
-                    formData.append('photo', resizedBlob, file.name);  // Append the resized image Blob
-
-                    // Upload the resized photo to the backend
-                    fetch('/api/upload', {
-                        method: 'POST',
-                        body: formData,
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.photoUrl) {
-                            // Send the URL of the uploaded photo
-                            sendPhoto(data.photoUrl);  // Only send URL here
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error uploading photo:', error);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error resizing image:', error);
-                });
-        }
-    };
-    photoInput.click();  // Trigger the file input dialog
-
-
-// Consolidated sendPhoto function
-function sendPhoto(photoData) {
-    const messageData = {
-        userId: userId,
-        chatWith: chatWith,
-        photo: photoData,  // Send the photo data (resized URL)
-        messageType: 'photo',
-        timestamp: new Date().toISOString(),
-        message: ''  // Ensure message field is set (empty for photos)
-    };
-
-    // Immediately display the sent photo message in the UI
-    addMessageToChat(messageData);
-
-    // Send message to the server
-    fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(messageData),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message === 'Message sent successfully') {
-            // Hide image preview after sending
-            document.getElementById('image-preview').style.display = 'none'; 
-
-            // Publish the message to the receiver's channel
-            const realTimeMessage = {
-                userId: userId,
-                chatWith: chatWith,
-                photo: photoData,  // Send the photo reference (URL)
-                messageType: 'photo',
-                timestamp: new Date().toISOString(),
-                message: ''  // Ensure message is empty for photo messages
-            };
-
-            const receiverChannel = ably.channels.get(`chat-${chatWith}-${userId}`);  // Fixed string interpolation with backticks
-            receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
-
-            // Clear the input field after message is sent
-            document.getElementById('user-message').value = '';
-        } else {
-            console.error('Error sending message:', data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error sending message to backend:', error);
-    });
-}
-
-
-// Resize the image and return a resized Blob
 function pickPhoto() {
     const photoInput = document.createElement('input');
     photoInput.type = 'file';
@@ -754,6 +609,59 @@ function resizeImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.5) {
         reader.readAsDataURL(file);  // Read the image as base64 for resizing
     });
 }
+
+// Function to send photo URL (as per the original flow)
+function sendPhoto(photoData) {
+    const messageData = {
+        userId: userId,
+        chatWith: chatWith,
+        photo: photoData,  // Send the photo data (resized URL)
+        messageType: 'photo',
+        timestamp: new Date().toISOString(),
+        message: ''  // Ensure message field is set (empty for photos)
+    };
+
+    // Immediately display the sent photo message in the UI
+    addMessageToChat(messageData);
+
+    // Send message to the server
+    fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(messageData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === 'Message sent successfully') {
+            // Hide image preview after sending
+            document.getElementById('image-preview').style.display = 'none'; 
+
+            // Publish the message to the receiver's channel
+            const realTimeMessage = {
+                userId: userId,
+                chatWith: chatWith,
+                photo: photoData,  // Send the photo reference (URL)
+                messageType: 'photo',
+                timestamp: new Date().toISOString(),
+                message: ''  // Ensure message is empty for photo messages
+            };
+
+            const receiverChannel = ably.channels.get(`chat-${chatWith}-${userId}`);  // Fixed string interpolation with backticks
+            receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
+
+            // Clear the input field after message is sent
+            document.getElementById('user-message').value = '';
+        } else {
+            console.error('Error sending message:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message to backend:', error);
+    });
+}
+
 
 
 // Function to send message to the server

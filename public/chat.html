@@ -32,14 +32,14 @@
     // Toggle the visibility of the dropdown menu when the three dots button is clicked
     document.getElementById('three-dots-menu').addEventListener('click', function() {
         var dropdown = document.getElementById('dropdownMenu');
-        dropdown.classList.toggle('show'); // Toggles the 'show' class to display the menu
+        dropdown.style.display = (dropdown.style.display === 'none' || dropdown.style.display === '') ? 'block' : 'none';
     });
 
     // Close the menu if clicking anywhere outside of the menu (optional)
     window.addEventListener('click', function(event) {
         var dropdown = document.getElementById('dropdownMenu');
         if (!dropdown.contains(event.target) && event.target !== document.getElementById('three-dots-menu')) {
-            dropdown.classList.remove('show'); // Close the dropdown
+            dropdown.style.display = 'none';
         }
     });
 
@@ -73,6 +73,7 @@
         document.body.classList.toggle('dark-theme');
     });
 </script>
+
 
 
 
@@ -159,14 +160,13 @@ function handleKey(event) {
  /* Phone Icon Styling */
     #callIcon {
         font-size: 18px; /* Size of the phone icon */
-        margin-right: 11px; /* Space between the icon and the three dots */
+        margin-right: 10px; /* Space between the icon and the three dots */
         cursor: pointer;
     }
 
     /* Align three-dots menu to the right */
     #header-right {
         display: flex;
-        align-items: center;
     }
 
    #three-dots-menu {

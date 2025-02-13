@@ -521,7 +521,7 @@ function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
                     console.error('Image exceeds max size limit');
                     reject('Image is too large after resizing and compressing');
                 }
-            }, 'image/webp', 0.5); // WebP format with 50% quality
+            }, 'image/webp', 0.4); // WebP format with 50% quality
         };
 
         img.onerror = function (error) {
@@ -551,6 +551,50 @@ function uploadCompressedImage(blob, userId, chatWith, message) {
         console.error('Error uploading image:', error);
     });
 }
+function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = imageSrc;
+
+        img.onload = function () {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            const maxWidth = 200;
+            const scale = maxWidth / img.width;
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // Function to check size after converting to Blob
+            function checkSizeAndResolve(blob) {
+                const sizeKB = blob.size / 1024;
+                if (sizeKB <= maxSizeKB) {
+                    resolve(blob); 
+                } else {
+                    reject("Image exceeds max size after resizing.");
+                }
+            }
+
+            // Try WebP first, fallback to JPEG if not supported
+            const imageFormat = 'image/webp'; 
+            if (!canvas.toBlob) {
+                reject("Canvas API not supported.");
+                return;
+            }
+
+            canvas.toBlob((blob) => {
+                checkSizeAndResolve(blob);
+            }, imageFormat, 0.4);  // WebP with reduced quality
+
+        };
+
+        img.onerror = function (error) {
+            reject("Error loading image: " + error);
+        };
+    });
+}
 
 // Function to handle photo upload and resizing
 function pickPhoto() {
@@ -563,8 +607,8 @@ function pickPhoto() {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const imageSrc = e.target.result;
-                resizeImageToMaxSize(imageSrc, 65)  // Resize the image before sending
-                    .then(resizedImageBlob => {
+                resizeImageToMaxSize(imageSrc, 65)
+                    .then((resizedImageBlob) => {
                         // Send or display the resized image
                         sendPhoto(resizedImageBlob);
                     })
@@ -576,6 +620,26 @@ function pickPhoto() {
         }
     };
     photoInput.click();
+}
+
+// Send compressed image
+function sendPhoto(blob) {
+    const formData = new FormData();
+    formData.append('photo', blob, 'photo.webp');
+    
+    fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.photoUrl) {
+            sendPhotoToChat(data.photoUrl);  // Send the URL of the uploaded photo
+        }
+    })
+    .catch(error => {
+        console.error('Error uploading photo:', error);
+    });
 }
 
 // Function to send photo message to the backend

@@ -8,17 +8,27 @@
 </head>
     <body>
 <div id="chatbox-container">
-    <div id="three-dots-menu">︙</div> <!-- Three-dot icon acting as the button -->
+   <header id="header">
+    <div id="header-left">
+        <span id="username">Username</span> <!-- Placeholder for username -->
+        <span id="callIcon">📞</span> <!-- Placeholder for call icon -->
+    </div>
+    <div id="header-right">
+        <div id="three-dots-menu">︙</div> <!-- Three-dot menu icon -->
+    </div>
+</header>
+
+<!-- Dropdown Menu -->
 <div id="dropdownMenu" style="display: none;">
     <button id="shareOption">Share</button>
     <button id="clearChatOption">Clear Chat</button>
     <button id="changeThemeOption">Change Theme</button>
 </div>
-<script>
+
+ <script>
     // Toggle the visibility of the dropdown menu when the three dots button is clicked
     document.getElementById('three-dots-menu').addEventListener('click', function() {
         var dropdown = document.getElementById('dropdownMenu');
-        // Toggle dropdown menu visibility
         dropdown.style.display = (dropdown.style.display === 'none' || dropdown.style.display === '') ? 'block' : 'none';
     });
 
@@ -60,6 +70,8 @@
         document.body.classList.toggle('dark-theme');
     });
 </script>
+
+
     <div id="chatbox">
         <div id="messages-container">
             <!-- Messages will be dynamically added here -->
@@ -117,21 +129,52 @@ function handleKey(event) {
         background-color: #333;
         color: #fff;
     }
+    /* General styling for the header */
+    #header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: #87CEEB; /* Sky blue color */
+        color: rgb(68, 63, 63);
+        font-family: Arial, sans-serif;
+    }
+
+    /* Align username and call icon */
+    #header-left {
+        display: flex;
+        align-items: center;
+    }
+
+    #username {
+        font-size: 18px;
+        margin-right: 10px;
+    }
+
+    #callIcon {
+        font-size: 22px;
+        cursor: pointer;
+    }
+
+    /* Align three-dots menu to the right */
+    #header-right {
+        display: flex;
+        align-items: center;
+    }
 
     #three-dots-menu {
         font-size: 30px; /* Size of the 3 dots */
         cursor: pointer;
         background: none;
         border: none;
-        display: inline-block;
-        margin: 10px;
     }
 
+    /* Dropdown Menu styling */
     #dropdownMenu {
         position: absolute;
-        top: 40px; /* Adjust as needed */
-        right: 0;
-        background-color: #fff;
+        top: 50px; /* Adjust as needed */
+        right: 20px; /* Adjust position for the dropdown */
+        background-color: white;
         border: 1px solid #ccc;
         box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         padding: 10px;

@@ -496,36 +496,42 @@ function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
         img.src = imageSrc;
 
         img.onload = function () {
-            console.log("Image loaded successfully");
-
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
             // Resize image to fit a max width of 200px (you can adjust this if needed)
-            const maxWidth = 200;  // Maximum width in pixels
-            const scale = maxWidth / img.width;  // Calculate scaling factor
+            const maxWidth = 200;
+            const scale = maxWidth / img.width;
             canvas.width = img.width * scale;
             canvas.height = img.height * scale;
 
-            // Draw the image on the canvas with the new dimensions
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Convert the canvas to a compressed Blob (WebP with reduced quality)
-            canvas.toBlob((blob) => {
+            // Function to check size after converting to Blob
+            function checkSizeAndResolve(blob) {
                 const sizeKB = blob.size / 1024;
-                console.log(`Compressed image size: ${sizeKB} KB`);
-
                 if (sizeKB <= maxSizeKB) {
-                    resolve(blob); // Return the compressed image Blob if it fits the size limit
+                    resolve(blob); 
                 } else {
-                    console.error('Image exceeds max size limit');
-                    reject('Image is too large after resizing and compressing');
+                    reject("Image exceeds max size after resizing.");
                 }
-            }, 'image/webp', 0.4); // WebP format with 50% quality
+            }
+
+            // WebP format with reduced quality (0.4 => 40% quality, 60% degradation)
+            const imageFormat = 'image/webp'; 
+            if (!canvas.toBlob) {
+                reject("Canvas API not supported.");
+                return;
+            }
+
+            // Convert to WebP with reduced quality of 0.4 (60% quality degradation)
+            canvas.toBlob((blob) => {
+                checkSizeAndResolve(blob);
+            }, imageFormat, 0.4);  // WebP format with 40% quality (60% degradation)
+
         };
 
         img.onerror = function (error) {
-            console.error('Error loading image:', error);
             reject("Error loading image: " + error);
         };
     });
@@ -549,50 +555,6 @@ function uploadCompressedImage(blob, userId, chatWith, message) {
     })
     .catch(error => {
         console.error('Error uploading image:', error);
-    });
-}
-function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = imageSrc;
-
-        img.onload = function () {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            const maxWidth = 200;
-            const scale = maxWidth / img.width;
-            canvas.width = img.width * scale;
-            canvas.height = img.height * scale;
-
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            // Function to check size after converting to Blob
-            function checkSizeAndResolve(blob) {
-                const sizeKB = blob.size / 1024;
-                if (sizeKB <= maxSizeKB) {
-                    resolve(blob); 
-                } else {
-                    reject("Image exceeds max size after resizing.");
-                }
-            }
-
-            // Try WebP first, fallback to JPEG if not supported
-            const imageFormat = 'image/webp'; 
-            if (!canvas.toBlob) {
-                reject("Canvas API not supported.");
-                return;
-            }
-
-            canvas.toBlob((blob) => {
-                checkSizeAndResolve(blob);
-            }, imageFormat, 0.4);  // WebP with reduced quality
-
-        };
-
-        img.onerror = function (error) {
-            reject("Error loading image: " + error);
-        };
     });
 }
 
@@ -635,30 +597,6 @@ function sendPhoto(blob) {
     .then(data => {
         if (data.photoUrl) {
             sendPhotoToChat(data.photoUrl);  // Send the URL of the uploaded photo
-        }
-    })
-    .catch(error => {
-        console.error('Error uploading photo:', error);
-    });
-}
-
-// Function to send photo message to the backend
-function sendPhoto(blob) {
-    const formData = new FormData();
-    formData.append('photo', blob, 'photo.webp');  // Append the Blob to the form data
-    formData.append('userId', userId);
-    formData.append('chatWith', chatWith);
-    formData.append('message', ''); // Empty message for photo
-
-    // Upload the Blob to the server
-    fetch('/api/messages', {
-        method: 'POST',
-        body: formData,
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.photoUrl) {
-            addMessageToChat(data);  // Add photo to chat after uploading
         }
     })
     .catch(error => {
@@ -710,7 +648,7 @@ function addMessageToChat(messageData) {
     }, 0); // Allow the browser to repaint before scrolling
 }
 
-// Function to send text message or photo
+// Function to send text or photo message
 function sendMessage() {
     const messageInput = document.getElementById('user-message');
     const fileInput = document.getElementById('file-input');
@@ -788,6 +726,7 @@ function sendToServer(messageData) {
 }
 
 
+
 // Function to send text or photo message
 function sendMessage() {
     const messageInput = document.getElementById('user-message');
@@ -863,7 +802,5 @@ function sendMessage() {
     }
 }
 
-// Call the function to load previous messages when the page is loaded
-loadMessages();
 </script>
 

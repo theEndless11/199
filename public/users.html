@@ -114,56 +114,70 @@
         }
     }
 
-    // Display sers in the Users section
 
-    // Function to fetch a random profile image (using a placeholder image API)
-    function getRandomProfilePicture() {
-        const randomNumber = Math.floor(Math.random() * 100); // Generate random number for uniqueness
-        return `https://latestnewsandaffairs.site/public/pfp.jpg`; // Random male profile image URL
+  // Function to fetch a random profile image (using a placeholder image API)
+function getRandomProfilePicture() {
+    // Check if there's already a stored profile image in localStorage
+    const storedProfilePicture = localStorage.getItem('profilePicture');
+    
+    // If there's a stored image, return it
+    if (storedProfilePicture) {
+        return storedProfilePicture;
     }
+    
+    // Otherwise, generate a new random image and store it in localStorage
+    const randomNumber = Math.floor(Math.random() * 100); // Generate random number for uniqueness
+    const newProfilePicture = `https://latestnewsandaffairs.site/public/pfp.jpg`; // Random male profile image URL
+    
+    // Store the newly generated profile picture URL in localStorage
+    localStorage.setItem('profilePicture', newProfilePicture);
+    
+    return newProfilePicture;
+}
 
-    // Display users in the Users section with random profile image
-    function displayUsers(users) {
-        const usersContainer = document.getElementById('users-container');
-        usersContainer.innerHTML = ''; // Clear previous data
+// Display users in the Users section with random profile image
+function displayUsers(users) {
+    const usersContainer = document.getElementById('users-container');
+    usersContainer.innerHTML = ''; // Clear previous data
 
-        users.forEach(user => {
-            const userElement = document.createElement('div');
-            userElement.classList.add('user');
+    users.forEach(user => {
+        const userElement = document.createElement('div');
+        userElement.classList.add('user');
 
-            // Create a profile picture element
-            const profileImage = document.createElement('img');
-            profileImage.classList.add('profile-img');
-            profileImage.src = getRandomProfilePicture(); // Assign a random image to each user
-            profileImage.alt = 'User Profile Picture';
+        // Create a profile picture element
+        const profileImage = document.createElement('img');
+        profileImage.classList.add('profile-img');
+        profileImage.src = getRandomProfilePicture(); // Assign a random image to each user
+        profileImage.alt = 'User Profile Picture';
 
-            // Create a user name element
-            const userName = document.createElement('p');
-            userName.textContent = user.username;
+        // Create a user name element
+        const userName = document.createElement('p');
+        userName.textContent = user.username;
 
-            // Add "Add to Friends" icon
-            const addButton = document.createElement('button');
-            addButton.classList.add('add-friend');
-            addButton.textContent = 'Add Friend';
-            addButton.onclick = () => addFriend(user);
+        // Add "Add to Friends" icon
+        const addButton = document.createElement('button');
+        addButton.classList.add('add-friend');
+        addButton.textContent = 'Add Friend';
+        addButton.onclick = () => addFriend(user);
 
-            // Add click event to redirect to chat page when user is clicked
-            userElement.onclick = () => {
-                if (user.id !== parseInt(userId)) {
-                    // Pass the username and password along with the userId and chatWith as URL parameters
-                    window.location.href = `chat.html?userId=${userId}&chatWith=${user.id}&username=${encodeURIComponent(user.username)}&password=${encodeURIComponent(user.password)}`;
-                }
-            };
+        // Add click event to redirect to chat page when user is clicked
+        userElement.onclick = () => {
+            if (user.id !== parseInt(userId)) {
+                // Pass the username, password, and profile image along with the userId and chatWith as URL parameters
+                window.location.href = `chat.html?userId=${userId}&chatWith=${user.id}&username=${encodeURIComponent(user.username)}&password=${encodeURIComponent(user.password)}&profileImage=${encodeURIComponent(profileImage.src)}`;
+            }
+        };
 
-            // Append the profile image and user name to the user element
-            userElement.appendChild(profileImage);
-            userElement.appendChild(userName);
-            userElement.appendChild(addButton);
+        // Append the profile image and user name to the user element
+        userElement.appendChild(profileImage);
+        userElement.appendChild(userName);
+        userElement.appendChild(addButton);
 
-            // Append user element to the container
-            usersContainer.appendChild(userElement);
-        });
-    }
+        // Append user element to the container
+        usersContainer.appendChild(userElement);
+    });
+}
+
 
 
     // Function for searching users

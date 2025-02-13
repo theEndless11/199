@@ -730,24 +730,14 @@ function sendMessage() {
 }
 
 // Function to send message to the server using FormData
+// Function to send message to the server as JSON (with base64-encoded photo)
 function sendToServer(messageData) {
-    const formData = new FormData();
-
-    // If there's a photo in the message data, append it as base64
-    if (messageData.photo) {
-        formData.append('photo', messageData.photo); // Base64 photo or Blob
-    }
-
-    // Append other message fields (text and metadata)
-    formData.append('userId', messageData.userId);
-    formData.append('chatWith', messageData.chatWith);
-    formData.append('message', messageData.message || '');  // Optional text message
-    formData.append('timestamp', messageData.timestamp);
-
-    // Send the form data via a POST request
     fetch('/api/messages', {
         method: 'POST',
-        body: formData,  // Send FormData instead of JSON
+        headers: {
+            'Content-Type': 'application/json',  // Ensure the server expects JSON
+        },
+        body: JSON.stringify(messageData),  // Send data as JSON
     })
     .then(response => response.json())
     .then(data => {
@@ -758,7 +748,7 @@ function sendToServer(messageData) {
     });
 }
 
-// Example usage of sending photo and text together:
+// Function to send message (either text or photo)
 function sendMessage() {
     const messageInput = document.getElementById('user-message');
     const fileInput = document.getElementById('file-input');
@@ -811,7 +801,6 @@ function sendMessage() {
         fileInput.value = '';  // Clear the file input
     }
 }
-
 
 </script>
 

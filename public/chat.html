@@ -168,15 +168,6 @@ function handleKey(event) {
     overflow: hidden;
 }
 
-        /* Category Tabs */
-        #options-menu{
-            display: flex;
-            justify-content: space-around;
-            background-color: #4CAF50;
-            padding: 10px;
-            border-radius: 15px 15px 0 0;
-        }
-
         /* Chatbox */
     #chatbox {
     flex-grow: 1;
@@ -496,30 +487,42 @@ function pollForNewMessages() {
 }
 
 // Function to degrade the quality of the image before displaying it in the chat UI
-function degradeJPGQuality(imageSrc, quality = 0.5) {
+function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.src = imageSrc;
 
         img.onload = function () {
-            console.log("JPG Image loaded:", imageSrc);
-
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-
-            // Resize image to fit a max width of 200px (while maintaining aspect ratio)
-            const maxWidth = 200;  // You can adjust this value based on the desired image size
-            const scale = maxWidth / img.width;  // Scaling factor to resize the image
+            
+            // Resize image to fit a max width of 200px (you can adjust this if needed)
+            const maxWidth = 200;  // Maximum width in pixels
+            const scale = maxWidth / img.width;  // Calculate scaling factor
             canvas.width = img.width * scale;
             canvas.height = img.height * scale;
 
             // Draw the image on the canvas with the new dimensions
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Convert to JPG format with specified quality
-            canvas.toDataURL('image/jpeg', quality, (result) => {
-                console.log("Degrading JPG image quality to", quality);
-                resolve(result);  // Resolve with the degraded JPG image data URL
+            // Try converting to WebP (if supported)
+            canvas.toDataURL('image/webp', 0.7, (result) => { // 0.7 is a lower quality for WebP
+                const size = dataURItoBlob(result).size / 1024;  // Get the size in KB
+                if (size <= maxSizeKB) {
+                    console.log("Image compressed successfully to WebP with size:", size, "KB");
+                    resolve(result);  // If under 65KB, resolve with the WebP image
+                } else {
+                    // If the size is still too large, reduce further
+                    canvas.toDataURL('image/jpeg', 0.5, (result) => { // Convert to JPEG with 50% quality
+                        const size = dataURItoBlob(result).size / 1024;  // Get the size in KB
+                        if (size <= maxSizeKB) {
+                            console.log("Image compressed to JPG successfully with size:", size, "KB");
+                            resolve(result);  // If under 65KB, resolve with the JPG image
+                        } else {
+                            reject("Image size is too large even after compression.");
+                        }
+                    });
+                }
             });
         };
 
@@ -529,49 +532,18 @@ function degradeJPGQuality(imageSrc, quality = 0.5) {
     });
 }
 
-function compressPNG(imageSrc) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = imageSrc;
-
-        img.onload = function () {
-            console.log("PNG Image loaded:", imageSrc);
-
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            // Resize image to fit a max width of 200px (while maintaining aspect ratio)
-            const maxWidth = 200;  // You can adjust this value based on the desired image size
-            const scale = maxWidth / img.width;  // Scaling factor to resize the image
-            canvas.width = img.width * scale;
-            canvas.height = img.height * scale;
-
-            // Draw the image on the canvas with the new dimensions
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            // Check if the browser supports WebP and use it for compression
-            if (canvas.toDataURL('image/webp')) {
-                // Convert to WebP format for better compression
-                canvas.toDataURL('image/webp', 0.8, (result) => {
-                    console.log("PNG image compressed to WebP format.");
-                    resolve(result);  // Resolve with WebP image data URL
-                });
-            } else {
-                // If WebP is not supported, fallback to PNG
-                canvas.toDataURL('image/png', (result) => {
-                    console.log("PNG image compressed.");
-                    resolve(result);
-                });
-            }
-        };
-
-        img.onerror = function (error) {
-            reject(error);  // Reject the promise if there's an error with the image
-        };
-    });
+function dataURItoBlob(dataURI) {
+    const byteString = atob(dataURI.split(',')[1]);
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
 }
 
-// Example usage of degradeImageQuality for handling JPG, PNG and JPEG:
+// Function to add message to chat UI and handle the photo size
 function addMessageToChat(messageData) {
     if (!messageData || (!messageData.message && !messageData.photo)) return;  // Ensure there is a message or photo
 
@@ -590,37 +562,18 @@ function addMessageToChat(messageData) {
     } else if (messageData.photo) {
         const imgElement = document.createElement('img');
 
-        // Handle PNG and JPG images
-        const fileExtension = messageData.photo.split('.').pop().toLowerCase();
-
-        if (fileExtension === 'png') {
-            // Compress PNG and convert to WebP
-            compressPNG(messageData.photo)
-                .then((compressedImageSrc) => {
-                    imgElement.src = compressedImageSrc;  // Set the compressed image as the source
-                    imgElement.alt = "User's photo";
-                    imgElement.style.maxWidth = '200px';  // Control image size
-                    imgElement.style.maxHeight = '200px';
-                    messageBubble.appendChild(imgElement);
-                })
-                .catch(error => {
-                    console.error('Error compressing PNG image:', error);
-                });
-        } else if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
-            // Degrade JPG/JPEG quality
-            degradeJPGQuality(messageData.photo, 0.5) // 0.5 for quality degradation
-                .then(degradedImageSrc => {
-                    imgElement.src = degradedImageSrc;  // Set the degraded image as the source
-                    imgElement.alt = "User's photo";
-                    imgElement.style.maxWidth = '200px';  // Control image size
-                    imgElement.style.maxHeight = '200px';
-                    messageBubble.appendChild(imgElement);
-                })
-                .catch(error => {
-                    console.error('Error degrading JPG/JPEG image quality:', error);
-                });
-        }
-
+        // Resize the image and ensure it doesn't exceed 65KB
+        resizeImageToMaxSize(messageData.photo, 65) // Ensure size is below 65KB
+            .then((compressedImageSrc) => {
+                imgElement.src = compressedImageSrc;  // Set the compressed image as the source
+                imgElement.alt = "User's photo";
+                imgElement.style.maxWidth = '200px';  // Control image size
+                imgElement.style.maxHeight = '200px';
+                messageBubble.appendChild(imgElement);
+            })
+            .catch(error => {
+                console.error('Error compressing image:', error);
+            });
     }
 
     // Add timestamp to the message

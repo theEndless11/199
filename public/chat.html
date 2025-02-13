@@ -143,7 +143,6 @@ function handleKey(event) {
         color: black;
     }
 
-    /* General styling for the header */
 /* Header Styling */
 #header {
     display: flex;
@@ -153,8 +152,12 @@ function handleKey(event) {
     background-color: #4CAF50; /* Sky blue color */
     color: white;
     font-family: Arial, sans-serif;
+    position: fixed;  /* Make header fixed at the top */
+    top: 0;  /* Ensure header stays at the top */
+    left: 0;
+    right: 0;
+    z-index: 1000; /* Ensure the header stays above other content */
 }
-
     /* Align username and call icon */
     #header-left {
         display: flex;
@@ -220,11 +223,13 @@ body {
     font-family: 'Arial', sans-serif;
     background-color: #f5f5f5;
     display: flex;
-    flex-direction: column; /* Make sure content is stacked vertically */
-    justify-content: flex-start; /* Align from the top */
+    flex-direction: column; /* Stack content vertically */
+    justify-content: flex-start; /* Align content to the top */
     height: 100vh; /* Full viewport height */
+    padding-top: 60px; /* Make room for the fixed header */
 }
 
+/* Chatbox Container */
 #chatbox-container {
     background-color: #ffffff;
     border-radius: 15px;
@@ -235,7 +240,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    margin-top: 70px; /* Space for header */
+    margin-top: 20px; /* Space for the header */
 }
 
 /* Chatbox */
@@ -426,6 +431,7 @@ button:hover {
         padding: 8px 15px;
     }
 }
+
 
     </style>
 

@@ -146,16 +146,15 @@ function handleKey(event) {
     }
 
     /* General styling for the header */
-    #header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 20px;
-        background-color: #4CAF50;
- /* Sky blue color */
-        color: white;
-        font-family: Arial, sans-serif;
-    }
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #4CAF50; /* Sky blue color */
+    color: white;
+    font-family: Arial, sans-serif;
+}
 
     /* Align username and call icon */
     #header-left {
@@ -211,37 +210,39 @@ function handleKey(event) {
         font-size: 14px;
     }
 
-   * General Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align from the top */
+    height: 100vh;
+    flex-direction: column;
+}
 
-        /* Chatbox Container */
-       #chatbox-container {
+/* Chatbox Container */
+#chatbox-container {
     background-color: #ffffff;
     border-radius: 15px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 400px;
-    height: calc(100vh - 80px); /* Adjust height to allow space for the message input */
+    height: calc(100vh - 160px); /* Adjust height to fit below header and above input */
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    margin-top: 70px; /* Space for header */
 }
 
-        /* Chatbox */
-    #chatbox {
+/* Chatbox */
+#chatbox {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -261,54 +262,53 @@ function handleKey(event) {
     gap: 10px;
 }
 
-        /* Message Container */
-        .message {
-            display: flex;
-            margin-bottom: 10px;
-        }
+/* Message Container */
+.message {
+    display: flex;
+    margin-bottom: 10px;
+}
 
-        /* Aligning sender's message to the right */
-        .user-msg {
-            justify-content: flex-end;
-        }
+/* Aligning sender's message to the right */
+.user-msg {
+    justify-content: flex-end;
+}
 
-        /* Aligning receiver's message to the left */
-        .other-msg {
-            justify-content: flex-start;
-        }
+/* Aligning receiver's message to the left */
+.other-msg {
+    justify-content: flex-start;
+}
 
-        /* Message Bubble Styling */
-        .msg-bubble {
-            display: inline-block;
-            padding: 10px;
-            border-radius: 20px;
-            background-color: #f1f1f1;
-            max-width: 70%;
-            word-wrap: break-word;
-        }
+/* Message Bubble Styling */
+.msg-bubble {
+    display: inline-block;
+    padding: 10px;
+    border-radius: 20px;
+    background-color: #f1f1f1;
+    max-width: 70%;
+    word-wrap: break-word;
+}
 
-        /* Custom styling for sender's messages */
-        .user-msg .msg-bubble {
-            background-color: #4CAF50;
-            color: white;
-            border-bottom-right-radius: 5px;
-        }
+/* Custom styling for sender's messages */
+.user-msg .msg-bubble {
+    background-color: #4CAF50;
+    color: white;
+    border-bottom-right-radius: 5px;
+}
 
-        /* Custom styling for receiver's messages */
-        .other-msg .msg-bubble {
-            background-color: #f0f0f0;
-            color: #333;
-            border-bottom-left-radius: 5px;
-        }
+/* Custom styling for receiver's messages */
+.other-msg .msg-bubble {
+    background-color: #f0f0f0;
+    color: #333;
+    border-bottom-left-radius: 5px;
+}
 
-        /* Styling for images inside messages */
-      /* Styling for images inside messages */
+/* Styling for images inside messages */
 .msg-bubble img {
     max-width: 100%;
     height: auto;
     border-radius: 10px;
     display: block;
-    object-fit: contain;  /* Ensures the image is not stretched */
+    object-fit: contain; /* Ensures the image is not stretched */
 }
 
 /* Mobile-specific adjustments */
@@ -320,23 +320,22 @@ function handleKey(event) {
     }
 }
 
+/* Styling for the timestamp */
+.timestamp {
+    font-size: 0.75em;
+    color: #888;
+    margin-top: 5px;
+    text-align: right;
+}
 
-        /* Styling for the timestamp */
-        .timestamp {
-            font-size: 0.75em;
-            color: #888;
-            margin-top: 5px;
-            text-align: right;
-        }
+/* Animations */
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
 
-        /* Animations */
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Message Input Area */
-       #message-input {
+/* Message Input Area */
+#message-input {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -344,93 +343,93 @@ function handleKey(event) {
     background-color: #f9f9f9;
     border-top: 1px solid #eee;
     position: fixed;      /* Fixed position */
-    bottom: 10px;         /* 10px from the bottom */
+    bottom: 0;            /* Stick to the bottom */
     left: 0;              /* Stick to the left edge */
     right: 0;             /* Stick to the right edge */
     flex-shrink: 0;
     z-index: 100;         /* Ensure it's above other content */
 }
 
-        #user-message {
-            width: 65%;
-            padding: 10px;
-            border-radius: 20px;
-            border: 1px solid #ddd;
-            font-size: 14px;
-            outline: none;
-        }
+#user-message {
+    width: 65%;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    outline: none;
+}
 
-        #user-message:focus {
-            border-color: #4CAF50;
-        }
+#user-message:focus {
+    border-color: #4CAF50;
+}
 
-        /* Preview for the selected image */
-        #image-preview {
-            display: none;
-            max-width: 100px;
-            max-height: 100px;
-            border-radius: 10px;
-            margin-left: 10px;
-        }
+/* Preview for the selected image */
+#image-preview {
+    display: none;
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 10px;
+    margin-left: 10px;
+}
 
-        /* Photo Picker Icon */
-        .icon-container {
-            margin-right: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background-color: #4CAF50;
-            border-radius: 50%;
-        }
+/* Photo Picker Icon */
+.icon-container {
+    margin-right: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+}
 
-        .cloudflare-icon {
-            width: 20px;
-            height: 20px;
-            background-color: white;
-            border-radius: 50%;
-        }
+.cloudflare-icon {
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+}
 
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
 
-        button:hover {
-            background-color: #45a049;
-        }
+button:hover {
+    background-color: #45a049;
+}
 
-        /* Responsive Design */
-        @media screen and (max-width: 480px) {
-            #chatbox-container {
-                height: 100vh;
-                border-radius: 0;
-                max-width: 100%;
-            }
+/* Responsive Design */
+@media screen and (max-width: 480px) {
+    #chatbox-container {
+        height: calc(100vh - 130px); /* Adjust height for mobile devices */
+        max-width: 100%;
+    }
 
-            .msg-bubble {
-                max-width: 90%;
-            }
+    .msg-bubble {
+        max-width: 90%;
+    }
 
-            #message-input {
-                padding: 8px;
-            }
+    #message-input {
+        padding: 8px;
+    }
 
-            #user-message {
-                width: 70%;
-            }
+    #user-message {
+        width: 70%;
+    }
 
-            button {
-                padding: 8px 15px;
-            }
-        }
+    button {
+        padding: 8px 15px;
+    }
+}
+
     </style>
 
 <script>

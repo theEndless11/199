@@ -427,6 +427,7 @@ function fetchMessagesAndUpdateChat() {
 }
 
 // Function to display messages from the response
+// Function to display messages from the response
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
     messagesContainer.innerHTML = '';  // Clear previous messages
@@ -447,21 +448,11 @@ function displayMessages(messages) {
             // Check if it's a photo message
             else if (msg.photo) {
                 const imgElement = document.createElement('img');
-
-                // Before displaying the image, compress it to ensure it stays within size limits
-                resizeImageToMaxSize(msg.photo, 65)  // Ensure size is below 65KB
-                    .then((compressedImageBlob) => {
-                        // Create an object URL from the Blob to display the image
-                        const imageUrl = URL.createObjectURL(compressedImageBlob);
-                        imgElement.src = imageUrl;
-                        imgElement.alt = "User's photo";
-                        imgElement.style.maxWidth = '200px';  // Optionally control image size
-                        imgElement.style.maxHeight = '200px';
-                        messageBubble.appendChild(imgElement);
-                    })
-                    .catch(error => {
-                        console.error('Error compressing image:', error);
-                    });
+                imgElement.src = msg.photo;  // Use the URL from the backend
+                imgElement.alt = "User's photo";
+                imgElement.style.maxWidth = '200px';  // Optionally control image size
+                imgElement.style.maxHeight = '200px';
+                messageBubble.appendChild(imgElement);
             }
 
             // Add timestamp
@@ -483,7 +474,7 @@ function displayMessages(messages) {
         }
     });
 }
-
+    
 // Call the initial fetch for messages as soon as the page loads
 document.addEventListener('DOMContentLoaded', () => {
     fetchMessagesAndUpdateChat();  // Initial fetch when the page loads
@@ -498,6 +489,7 @@ function pollForNewMessages() {
 }
 
 // Function to resize the image to a maximum size and ensure it's below 65KB
+// Function to resize and compress the image
 function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -518,52 +510,91 @@ function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
             // Draw the image on the canvas with the new dimensions
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Function to check size after converting to Blob
-            function checkSizeAndResolve(blob) {
-                const sizeKB = blob.size / 1024;  // Size in KB
+            // Convert the canvas to a compressed Blob (WebP with reduced quality)
+            canvas.toBlob((blob) => {
+                const sizeKB = blob.size / 1024;
                 console.log(`Compressed image size: ${sizeKB} KB`);
 
                 if (sizeKB <= maxSizeKB) {
-                    resolve(blob);  // If under 65KB, resolve with the Blob
+                    resolve(blob); // Return the compressed image Blob if it fits the size limit
                 } else {
-                    console.log("Image exceeds max size, rejecting...");
-                    reject("Image is too large after resizing.");
+                    console.error('Image exceeds max size limit');
+                    reject('Image is too large after resizing and compressing');
                 }
-            }
-
-            // Try converting to WebP (if supported)
-            if (canvas.toBlob) {
-                console.log("Converting to WebP...");
-                canvas.toBlob((blob) => {
-                    checkSizeAndResolve(blob);
-                }, 'image/webp', 0.7);  // WebP with reduced quality
-            } else {
-                console.log("Canvas.toBlob() not supported.");
-                reject("Canvas API not supported.");
-            }
+            }, 'image/webp', 0.5); // WebP format with 50% quality
         };
 
         img.onerror = function (error) {
-            console.error('Error loading image:', error);  // Reject if image loading fails
+            console.error('Error loading image:', error);
             reject("Error loading image: " + error);
         };
     });
 }
 
 // Function to upload photo as Blob
-function sendPhotoBlob(blob) {
+function uploadCompressedImage(blob, userId, chatWith, message) {
+    const formData = new FormData();
+    formData.append('photo', blob, 'photo.webp');
+    formData.append('userId', userId);
+    formData.append('chatWith', chatWith);
+    formData.append('message', message);  // optional message text
+
+    fetch('/api/messages', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Image uploaded successfully:', data);
+    })
+    .catch(error => {
+        console.error('Error uploading image:', error);
+    });
+}
+
+// Function to handle photo upload and resizing
+function pickPhoto() {
+    const photoInput = document.createElement('input');
+    photoInput.type = 'file';
+    photoInput.accept = 'image/*';
+    photoInput.onchange = function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageSrc = e.target.result;
+                resizeImageToMaxSize(imageSrc, 65)  // Resize the image before sending
+                    .then(resizedImageBlob => {
+                        // Send or display the resized image
+                        sendPhoto(resizedImageBlob);
+                    })
+                    .catch(error => {
+                        console.error('Error resizing image:', error);
+                    });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    photoInput.click();
+}
+
+// Function to send photo message to the backend
+function sendPhoto(blob) {
     const formData = new FormData();
     formData.append('photo', blob, 'photo.webp');  // Append the Blob to the form data
+    formData.append('userId', userId);
+    formData.append('chatWith', chatWith);
+    formData.append('message', ''); // Empty message for photo
 
     // Upload the Blob to the server
-    fetch('/api/upload', {
+    fetch('/api/messages', {
         method: 'POST',
         body: formData,
     })
     .then(response => response.json())
     .then(data => {
         if (data.photoUrl) {
-            sendPhoto(data.photoUrl);  // Send the URL of the uploaded photo
+            addMessageToChat(data);  // Add photo to chat after uploading
         }
     })
     .catch(error => {
@@ -571,6 +602,7 @@ function sendPhotoBlob(blob) {
     });
 }
 
+// Function to display messages in the chat
 function addMessageToChat(messageData) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
@@ -587,20 +619,12 @@ function addMessageToChat(messageData) {
     } else if (messageData.photo) {
         const imgElement = document.createElement('img');
 
-        // Resize the image and ensure it doesn't exceed 65KB
-        resizeImageToMaxSize(messageData.photo, 65) // Ensure size is below 65KB
-            .then((compressedImageBlob) => {
-                // Create an object URL from the Blob to display the image
-                const imageUrl = URL.createObjectURL(compressedImageBlob);
-                imgElement.src = imageUrl;
-                imgElement.alt = "User's photo";
-                imgElement.style.maxWidth = '200px';  // Control image size
-                imgElement.style.maxHeight = '200px';
-                messageBubble.appendChild(imgElement);
-            })
-            .catch(error => {
-                console.error('Error compressing image:', error);
-            });
+        // Display the photo message in the chat
+        imgElement.src = messageData.photo;
+        imgElement.alt = "User's photo";
+        imgElement.style.maxWidth = '200px';  // Control image size
+        imgElement.style.maxHeight = '200px';
+        messageBubble.appendChild(imgElement);
     }
 
     // Add timestamp to the message
@@ -616,104 +640,73 @@ function addMessageToChat(messageData) {
     // Append the new message to the container
     messagesContainer.appendChild(messageElement);
 
-    // Allow the layout to update first, then scroll to the bottom
+    // Scroll to the bottom
     setTimeout(() => {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }, 0); // Allow the browser to repaint before scrolling
 }
 
+// Function to send text message or photo
+function sendMessage() {
+    const messageInput = document.getElementById('user-message');
+    const fileInput = document.getElementById('file-input');
+    const message = messageInput.value.trim();
 
-// Function to handle photo upload and resizing
-function pickPhoto() {
-    const photoInput = document.createElement('input');
-    photoInput.type = 'file';
-    photoInput.accept = 'image/*';
-    photoInput.onchange = function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imageSrc = e.target.result;
-                resizeImageToMaxSize(imageSrc, 65)  // Resize the image before sending
-                    .then(resizedImageSrc => {
-                        // Send or display the resized image
-                        sendPhoto(resizedImageSrc);
-                    })
-                    .catch(error => {
-                        console.error('Error resizing image:', error);
-                    });
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-    photoInput.click();
-}
+    let isMessageSent = false;  // Flag to track if message was sent
 
-// Function to send photo
-function sendPhoto(photoData) {
     const messageData = {
         userId: userId,
         chatWith: chatWith,
-        photo: photoData,  // Send the photo data (resized image)
-        messageType: 'photo',
         timestamp: new Date().toISOString(),
-        message: ''  // Empty message for photo
     };
 
-    addMessageToChat(messageData);  // Display the message in chat immediately
-    sendToServer(messageData);  // Send the photo message to the server
+    // Handle sending text message
+    if (message) {
+        messageData.message = message;
+        messageData.messageType = 'text';
+        addMessageToChat(messageData);  // Show message immediately in chat
+        sendToServer(messageData);      // Send the text message to the server
+        isMessageSent = true;
+    }
+
+    // Handle sending image (either from file input or image preview)
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageSrc = e.target.result;
+            resizeImageToMaxSize(imageSrc, 65)  // Resize the image before sending
+                .then(resizedImageBlob => {
+                    messageData.photo = resizedImageBlob;
+                    messageData.messageType = 'photo';  // Set message type to photo
+                    addMessageToChat(messageData);     // Display image in chat
+                    sendToServer(messageData);         // Send the photo to the server
+                })
+                .catch(error => {
+                    console.error('Error resizing image:', error);
+                });
+        };
+        reader.readAsDataURL(file);
+        isMessageSent = true;
+    }
+
+    // Handle error message visibility (if no message or photo was sent)
+    const errorMessage = document.getElementById('error-message');
+    if (!isMessageSent) {
+        errorMessage.style.display = 'block'; // Show error if no message or photo is sent
+    } else {
+        errorMessage.style.display = 'none'; // Hide error if something was sent
+    }
+
+    // Clear inputs if a message or photo was successfully sent
+    if (isMessageSent) {
+        messageInput.value = '';  // Clear text input
+        fileInput.value = '';     // Clear the file input
+    }
 }
-
-// Function to send the photo message to the server
-function sendToServer(messageData) {
-    // Example to send the message to the backend (could be adjusted as needed)
-    fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(messageData),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message === 'Message sent successfully') {
-            console.log('Message sent');
-        } else {
-            console.error('Error sending message:', data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error sending message:', error);
-    });
-}
-
-
 
 // Function to send message to the server
 function sendToServer(messageData) {
-    // Debugging: log the messageData before processing
-    console.log('Message Data being sent:', messageData);
-
-    // If messageType is 'photo', ensure that 'message' field is empty (it should still be present)
-    if (messageData.messageType === 'photo' && !messageData.message) {
-        messageData.message = ''; // Set message to an empty string for photo messages
-    }
-
-    // Ensure that userId, chatWith, and either message or photo are present
-    if (!messageData.userId || !messageData.chatWith || (!messageData.message && !messageData.photo)) {
-        console.error('Missing required fields: userId, chatWith, message/photo');
-        return;
-    }
-
-    // If sending a photo, ensure that photo is set
-    if (messageData.messageType === 'photo' && !messageData.photo) {
-        console.error('Photo data missing for photo message');
-        return;
-    }
-
-    // Debugging: Log before sending the request
-    console.log('Sending message to server:', messageData);
-
     fetch('/api/messages', {
         method: 'POST',
         headers: {
@@ -723,27 +716,13 @@ function sendToServer(messageData) {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.message === 'Message sent successfully') {
-            // Publish the message to the receiver's channel
-            const realTimeMessage = {
-                userId: messageData.userId,
-                chatWith: messageData.chatWith,
-                message: messageData.message,  // Send message field (even if empty for photos)
-                photo: messageData.photo,      // Send the actual photo data (base64 or URL)
-                messageType: messageData.messageType,
-                timestamp: new Date().toISOString()
-            };
-
-            const receiverChannel = ably.channels.get(`chat-${messageData.chatWith}-${messageData.userId}`);  // Fixed string interpolation with backticks
-            receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
-        } else {
-            console.error('Error sending message:', data.error);
-        }
+        console.log('Message sent successfully:', data);
     })
     .catch(error => {
         console.error('Error sending message to backend:', error);
     });
 }
+
 
 // Function to send text or photo message
 function sendMessage() {

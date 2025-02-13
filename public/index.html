@@ -44,16 +44,17 @@ html, body {
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
+      body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;  /* Changed from center to flex-start */
+    min-height: 100vh;
+    overflow-y: auto; /* Allow scrolling */
+}
+
 
         .container {
             width: 90%;

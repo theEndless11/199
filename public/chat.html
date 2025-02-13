@@ -28,18 +28,18 @@
     <button id="changeThemeOption">Change Theme</button>
 </div>
 
- <script>
+<script>
     // Toggle the visibility of the dropdown menu when the three dots button is clicked
     document.getElementById('three-dots-menu').addEventListener('click', function() {
         var dropdown = document.getElementById('dropdownMenu');
-        dropdown.style.display = (dropdown.style.display === 'none' || dropdown.style.display === '') ? 'block' : 'none';
+        dropdown.classList.toggle('show'); // Toggles the 'show' class to display the menu
     });
 
     // Close the menu if clicking anywhere outside of the menu (optional)
     window.addEventListener('click', function(event) {
         var dropdown = document.getElementById('dropdownMenu');
         if (!dropdown.contains(event.target) && event.target !== document.getElementById('three-dots-menu')) {
-            dropdown.style.display = 'none';
+            dropdown.classList.remove('show'); // Close the dropdown
         }
     });
 
@@ -73,6 +73,7 @@
         document.body.classList.toggle('dark-theme');
     });
 </script>
+
 
 
     <div id="chatbox">
@@ -158,7 +159,7 @@ function handleKey(event) {
  /* Phone Icon Styling */
     #callIcon {
         font-size: 22px; /* Size of the phone icon */
-        margin-right: 10px; /* Space between the icon and the three dots */
+        margin-right: 15px; /* Space between the icon and the three dots */
         cursor: pointer;
     }
 
@@ -168,11 +169,17 @@ function handleKey(event) {
         align-items: center;
     }
 
-    #three-dots-menu {
+   #three-dots-menu {
         font-size: 30px; /* Size of the 3 dots */
         cursor: pointer;
         background: none;
         border: none;
+        color: white;
+        transition: transform 0.3s ease;
+    }
+
+    #three-dots-menu:hover {
+        transform: scale(1.1);
     }
 
     /* Dropdown Menu styling */
@@ -180,32 +187,54 @@ function handleKey(event) {
         position: absolute;
         top: 50px; /* Adjust as needed */
         right: 20px; /* Adjust position for the dropdown */
-    background-color: #4CAF50;
- /* Light gray background for contrast */
-        border: 1px solid #ccc;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 10px;
+        background: linear-gradient(135deg, #6a5acd, #00bfff); /* Blue to Purple gradient */
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 15px;
         z-index: 1000;
         display: none; /* Initially hidden */
-        width: 150px; /* Adjust width if needed */
+        width: 180px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    /* Make the dropdown visible */
+    #dropdownMenu.show {
+        display: block;
+        opacity: 1;
     }
 
     #dropdownMenu button {
-        background-color: black;
+        background-color: transparent;
         border: none;
-        padding: 10px;
+        padding: 12px 15px;
+        margin: 5px 0;
         width: 100%;
         text-align: left;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 16px;
+        color: white;
+        border-radius: 6px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
     }
 
     #dropdownMenu button:hover {
-        background-color: brown;
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
     }
 
+    /* Mobile-friendly dropdown */
+    @media (max-width: 600px) {
+        #header {
+            flex-direction: column;
+            text-align: center;
+        }
 
-
+        #header-right {
+            justify-content: center;
+            margin-top: 10px;
+        }
+    }
         /* General Reset */
         * {
             margin: 0;

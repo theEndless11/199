@@ -486,7 +486,53 @@ function pollForNewMessages() {
     }, 3000);  // 3000ms = 3 seconds
 }
 
-// Function to degrade the quality of the image before displaying it in the chat UI
+    // Function to display messages from initial fetch
+function displayMessages(messages) {
+    const messagesContainer = document.getElementById('messages-container');
+    messagesContainer.innerHTML = ''; // Clear any existing messages
+
+    messages.forEach(msg => {
+        if (msg && (msg.message || msg.photo) && msg.timestamp) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('msg-bubble');
+
+            // Check if it's a text message
+            if (msg.message && !msg.photo) {
+                messageBubble.textContent = msg.message;
+            }
+            // Check if it's a photo message
+            else if (msg.photo) {
+                const imgElement = document.createElement('img');
+                imgElement.src = msg.photo;  // Use the URL from the database or file system
+                imgElement.alt = "User's photo";
+                imgElement.style.maxWidth = '200px';  // Optionally control image size
+                imgElement.style.maxHeight = '200px';
+                messageBubble.appendChild(imgElement);
+            }
+
+            // Format timestamp
+            const timestamp = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timeElement = document.createElement('div');
+            timeElement.classList.add('timestamp');
+            timeElement.textContent = timestamp;
+
+            if (msg.userId === parseInt(userId)) {
+                messageElement.classList.add('user-msg');
+            } else {
+                messageElement.classList.add('other-msg');
+            }
+
+            messageElement.appendChild(messageBubble);
+            messageElement.appendChild(timeElement); // Append time below message bubble
+            messagesContainer.appendChild(messageElement);
+        }
+    });
+}
+
+// Function to resize the image to a maximum size and ensure it's below 65KB
 function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -505,33 +551,32 @@ function resizeImageToMaxSize(imageSrc, maxSizeKB = 65) {
             // Draw the image on the canvas with the new dimensions
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Try converting to WebP (if supported)
-            canvas.toDataURL('image/webp', 0.7, (result) => { // 0.7 is a lower quality for WebP
-                const size = dataURItoBlob(result).size / 1024;  // Get the size in KB
-                if (size <= maxSizeKB) {
-                    console.log("Image compressed successfully to WebP with size:", size, "KB");
-                    resolve(result);  // If under 65KB, resolve with the WebP image
+            // Function to convert canvas to base64 and check the size
+            function checkSizeAndResolve(dataURL) {
+                const blob = dataURItoBlob(dataURL);
+                const sizeKB = blob.size / 1024;  // Size in KB
+
+                if (sizeKB <= maxSizeKB) {
+                    resolve(dataURL);  // If under 65KB, resolve with the image data URL
                 } else {
-                    // If the size is still too large, reduce further
-                    canvas.toDataURL('image/jpeg', 0.5, (result) => { // Convert to JPEG with 50% quality
-                        const size = dataURItoBlob(result).size / 1024;  // Get the size in KB
-                        if (size <= maxSizeKB) {
-                            console.log("Image compressed to JPG successfully with size:", size, "KB");
-                            resolve(result);  // If under 65KB, resolve with the JPG image
-                        } else {
-                            reject("Image size is too large even after compression.");
-                        }
-                    });
+                    reject("Image is too large after resizing.");
                 }
-            });
+            }
+
+            // Try converting to WebP (if supported)
+            if (canvas.toDataURL) {
+                const webpDataUrl = canvas.toDataURL('image/webp', 0.7); // WebP with reduced quality
+                checkSizeAndResolve(webpDataUrl); // Check size after converting to WebP
+            }
         };
 
         img.onerror = function (error) {
-            reject(error);  // Reject the promise if there's an error with the image
+            reject("Error loading image: " + error);  // Reject if image loading fails
         };
     });
 }
 
+// Function to convert DataURI to Blob
 function dataURItoBlob(dataURI) {
     const byteString = atob(dataURI.split(',')[1]);
     const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
@@ -543,7 +588,7 @@ function dataURItoBlob(dataURI) {
     return new Blob([ab], { type: mimeString });
 }
 
-// Function to add message to chat UI and handle the photo size
+// Function to add message to the chat UI and handle the photo size
 function addMessageToChat(messageData) {
     if (!messageData || (!messageData.message && !messageData.photo)) return;  // Ensure there is a message or photo
 
@@ -602,53 +647,7 @@ function addMessageToChat(messageData) {
     }, 0); // Allow the browser to repaint before scrolling
 }
 
-
-// Function to display messages from initial fetch
-function displayMessages(messages) {
-    const messagesContainer = document.getElementById('messages-container');
-    messagesContainer.innerHTML = ''; // Clear any existing messages
-
-    messages.forEach(msg => {
-        if (msg && (msg.message || msg.photo) && msg.timestamp) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
-
-            const messageBubble = document.createElement('div');
-            messageBubble.classList.add('msg-bubble');
-
-            // Check if it's a text message
-            if (msg.message && !msg.photo) {
-                messageBubble.textContent = msg.message;
-            }
-            // Check if it's a photo message
-            else if (msg.photo) {
-                const imgElement = document.createElement('img');
-                imgElement.src = msg.photo;  // Use the URL from the database or file system
-                imgElement.alt = "User's photo";
-                imgElement.style.maxWidth = '200px';  // Optionally control image size
-                imgElement.style.maxHeight = '200px';
-                messageBubble.appendChild(imgElement);
-            }
-
-            // Format timestamp
-            const timestamp = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const timeElement = document.createElement('div');
-            timeElement.classList.add('timestamp');
-            timeElement.textContent = timestamp;
-
-            if (msg.userId === parseInt(userId)) {
-                messageElement.classList.add('user-msg');
-            } else {
-                messageElement.classList.add('other-msg');
-            }
-
-            messageElement.appendChild(messageBubble);
-            messageElement.appendChild(timeElement); // Append time below message bubble
-            messagesContainer.appendChild(messageElement);
-        }
-    });
-}
-
+// Function to handle photo upload and resizing
 function pickPhoto() {
     const photoInput = document.createElement('input');
     photoInput.type = 'file';
@@ -656,51 +655,42 @@ function pickPhoto() {
     photoInput.onchange = function(event) {
         const file = event.target.files[0];
         if (file) {
-            // Resize the image before uploading to maintain quality, and degrade quality to 0.5 for JPG/JPEG
-            resizeImage(file, 1024, 1024, 0.5) // Resize to a maximum of 1024px in width/height and degrade quality to 0.5
-                .then(resizedBlob => {
-                    const formData = new FormData();
-                    formData.append('photo', resizedBlob, file.name);  // Append the resized image Blob
-
-                    // Upload the resized photo to the backend
-                    fetch('/api/upload', {
-                        method: 'POST',
-                        body: formData,
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.photoUrl) {
-                            // Send the URL of the uploaded photo
-                            sendPhoto(data.photoUrl);  // Only send URL here
-                        }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageSrc = e.target.result;
+                resizeImageToMaxSize(imageSrc, 65)  // Resize the image before sending
+                    .then(resizedImageSrc => {
+                        // Send or display the resized image
+                        sendPhoto(resizedImageSrc);
                     })
                     .catch(error => {
-                        console.error('Error uploading photo:', error);
+                        console.error('Error resizing image:', error);
                     });
-                })
-                .catch(error => {
-                    console.error('Error resizing image:', error);
-                });
+            };
+            reader.readAsDataURL(file);
         }
     };
-    photoInput.click();  // Trigger the file input dialog
+    photoInput.click();
 }
 
-// Function to send photo URL (as per the original flow)
+// Function to send photo
 function sendPhoto(photoData) {
     const messageData = {
         userId: userId,
         chatWith: chatWith,
-        photo: photoData,  // Send the photo data (resized URL)
+        photo: photoData,  // Send the photo data (resized image)
         messageType: 'photo',
         timestamp: new Date().toISOString(),
-        message: ''  // Ensure message field is set (empty for photos)
+        message: ''  // Empty message for photo
     };
 
-    // Immediately display the sent photo message in the UI
-    addMessageToChat(messageData);
+    addMessageToChat(messageData);  // Display the message in chat immediately
+    sendToServer(messageData);  // Send the photo message to the server
+}
 
-    // Send message to the server
+// Function to send the photo message to the server
+function sendToServer(messageData) {
+    // Example to send the message to the backend (could be adjusted as needed)
     fetch('/api/messages', {
         method: 'POST',
         headers: {
@@ -711,32 +701,16 @@ function sendPhoto(photoData) {
     .then(response => response.json())
     .then(data => {
         if (data.message === 'Message sent successfully') {
-            // Hide image preview after sending
-            document.getElementById('image-preview').style.display = 'none'; 
-
-            // Publish the message to the receiver's channel
-            const realTimeMessage = {
-                userId: userId,
-                chatWith: chatWith,
-                photo: photoData,  // Send the photo reference (URL)
-                messageType: 'photo',
-                timestamp: new Date().toISOString(),
-                message: ''  // Ensure message is empty for photo messages
-            };
-
-            const receiverChannel = ably.channels.get(`chat-${chatWith}-${userId}`);  // Fixed string interpolation with backticks
-            receiverChannel.publish('newMessage', realTimeMessage);  // Publish to the receiver's channel
-
-            // Clear the input field after message is sent
-            document.getElementById('user-message').value = '';
+            console.log('Message sent');
         } else {
             console.error('Error sending message:', data.error);
         }
     })
     .catch(error => {
-        console.error('Error sending message to backend:', error);
+        console.error('Error sending message:', error);
     });
 }
+
 
 
 // Function to send message to the server

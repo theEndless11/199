@@ -426,7 +426,7 @@ function fetchMessagesAndUpdateChat() {
 }
 
 // Function to display messages from the response
-function displayMessages(messages) {
+ffunction displayMessages(messages) {
     const messagesContainer = document.getElementById('messages-container');
     messagesContainer.innerHTML = '';  // Clear previous messages
     
@@ -446,11 +446,21 @@ function displayMessages(messages) {
             // Check if it's a photo message
             else if (msg.photo) {
                 const imgElement = document.createElement('img');
-                imgElement.src = msg.photo;  // Use the URL from the backend
-                imgElement.alt = "User's photo";
-                imgElement.style.maxWidth = '200px';  // Optionally control image size
-                imgElement.style.maxHeight = '200px';
-                messageBubble.appendChild(imgElement);
+
+                // Before displaying the image, compress it to ensure it stays within size limits
+                resizeImageToMaxSize(msg.photo, 65)  // Ensure size is below 65KB
+                    .then((compressedImageBlob) => {
+                        // Create an object URL from the Blob to display the image
+                        const imageUrl = URL.createObjectURL(compressedImageBlob);
+                        imgElement.src = imageUrl;
+                        imgElement.alt = "User's photo";
+                        imgElement.style.maxWidth = '200px';  // Optionally control image size
+                        imgElement.style.maxHeight = '200px';
+                        messageBubble.appendChild(imgElement);
+                    })
+                    .catch(error => {
+                        console.error('Error compressing image:', error);
+                    });
             }
 
             // Add timestamp

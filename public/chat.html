@@ -551,7 +551,7 @@ function blobToBase64(blob) {
     });
 }
 
-// Function to upload photo as Blob
+// Function to upload photo as Base64
 function uploadCompressedImage(blob, userId, chatWith, message) {
     // Convert the Blob to Base64
     blobToBase64(blob)
@@ -729,14 +729,25 @@ function sendMessage() {
     }
 }
 
-// Function to send message to the server
+// Function to send message to the server using FormData
 function sendToServer(messageData) {
+    const formData = new FormData();
+
+    // If there's a photo in the message data, append it as base64
+    if (messageData.photo) {
+        formData.append('photo', messageData.photo); // Base64 photo or Blob
+    }
+
+    // Append other message fields (text and metadata)
+    formData.append('userId', messageData.userId);
+    formData.append('chatWith', messageData.chatWith);
+    formData.append('message', messageData.message || '');  // Optional text message
+    formData.append('timestamp', messageData.timestamp);
+
+    // Send the form data via a POST request
     fetch('/api/messages', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(messageData),
+        body: formData,  // Send FormData instead of JSON
     })
     .then(response => response.json())
     .then(data => {
@@ -747,6 +758,59 @@ function sendToServer(messageData) {
     });
 }
 
+// Example usage of sending photo and text together:
+function sendMessage() {
+    const messageInput = document.getElementById('user-message');
+    const fileInput = document.getElementById('file-input');
+    const message = messageInput.value.trim();
+
+    const messageData = {
+        userId: userId,
+        chatWith: chatWith,
+        timestamp: new Date().toISOString(),
+    };
+
+    let isMessageSent = false;  // Flag to track if message was sent
+
+    // Handle sending text message
+    if (message) {
+        messageData.message = message;
+        messageData.messageType = 'text';
+        isMessageSent = true;
+    }
+
+    // Handle sending image (either from file input or image preview)
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            resizeImageToMaxSize(e.target.result, 65)  // Resize the image before sending
+                .then(resizedImageBlob => {
+                    // Convert Blob to Base64 and add it to messageData
+                    blobToBase64(resizedImageBlob)
+                        .then(base64Image => {
+                            messageData.photo = base64Image;
+                            messageData.messageType = 'photo';  // Set message type to photo
+                            sendToServer(messageData);         // Send the photo to the server
+                        })
+                        .catch(error => {
+                            console.error('Error converting image to base64:', error);
+                        });
+                })
+                .catch(error => {
+                    console.error('Error resizing image:', error);
+                });
+        };
+        reader.readAsDataURL(file);
+        isMessageSent = true;
+    }
+
+    if (isMessageSent) {
+        // Clear the inputs after sending the message
+        messageInput.value = '';
+        fileInput.value = '';  // Clear the file input
+    }
+}
 
 
 </script>

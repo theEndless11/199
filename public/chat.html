@@ -530,9 +530,7 @@ function displayMessages(messages) {
     });
 }
 
-// Handle photo selection
-// Function to handle photo selection
-function pickPhoto() {
+// Handle photo selectionfunction pickPhoto() {
     const photoInput = document.createElement('input');
     photoInput.type = 'file';
     photoInput.accept = 'image/*';
@@ -569,12 +567,13 @@ function pickPhoto() {
     photoInput.click();  // Trigger the file input dialog
 }
 
+
 // Consolidated sendPhoto function
 function sendPhoto(photoData) {
     const messageData = {
         userId: userId,
         chatWith: chatWith,
-        photo: photoData,  // Send the photo data (either URL or ID)
+        photo: photoData,  // Send the photo data (resized URL)
         messageType: 'photo',
         timestamp: new Date().toISOString(),
         message: ''  // Ensure message field is set (empty for photos)
@@ -601,7 +600,7 @@ function sendPhoto(photoData) {
             const realTimeMessage = {
                 userId: userId,
                 chatWith: chatWith,
-                photo: photoData,  // Send the photo reference (URL or ID) here
+                photo: photoData,  // Send the photo reference (URL)
                 messageType: 'photo',
                 timestamp: new Date().toISOString(),
                 message: ''  // Ensure message is empty for photo messages
@@ -621,7 +620,46 @@ function sendPhoto(photoData) {
     });
 }
 
+
 // Resize the image and return a resized Blob
+function pickPhoto() {
+    const photoInput = document.createElement('input');
+    photoInput.type = 'file';
+    photoInput.accept = 'image/*';
+    photoInput.onchange = function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            // Resize the image before uploading to maintain quality, and degrade quality to 0.5 for JPG/JPEG
+            resizeImage(file, 1024, 1024, 0.5) // Resize to a maximum of 1024px in width/height and degrade quality to 0.5
+                .then(resizedBlob => {
+                    const formData = new FormData();
+                    formData.append('photo', resizedBlob, file.name);  // Append the resized image Blob
+
+                    // Upload the resized photo to the backend
+                    fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.photoUrl) {
+                            // Send the URL of the uploaded photo
+                            sendPhoto(data.photoUrl);  // Only send URL here
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error uploading photo:', error);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error resizing image:', error);
+                });
+        }
+    };
+    photoInput.click();  // Trigger the file input dialog
+}
+
+// Resize the image and return a resized Blob with quality degradation
 function resizeImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.5) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -648,7 +686,7 @@ function resizeImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.5) {
                     qualityParam = undefined; // PNG doesn't support quality setting, so leave it undefined
                 } else if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
                     mimeType = 'image/jpeg';  // Use JPEG for both jpg and jpeg
-                    qualityParam = quality;   // Quality parameter for JPEG
+                    qualityParam = quality;   // Apply the quality degradation (0.5) to JPEG
                 }
 
                 canvas.toBlob(function(blob) {
@@ -665,6 +703,7 @@ function resizeImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.5) {
         reader.readAsDataURL(file);  // Read the image as base64 for resizing
     });
 }
+
 
 // Function to send message to the server
 function sendToServer(messageData) {

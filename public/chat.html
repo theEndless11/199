@@ -169,27 +169,12 @@ function handleKey(event) {
 }
 
         /* Category Tabs */
-        #category-tabs {
+        #options-menu{
             display: flex;
             justify-content: space-around;
             background-color: #4CAF50;
             padding: 10px;
             border-radius: 15px 15px 0 0;
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 20px;
-            transition: background-color 0.3s ease;
-        }
-
-        .tab-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
         }
 
         /* Chatbox */
@@ -511,13 +496,13 @@ function pollForNewMessages() {
 }
 
 // Function to degrade the quality of the image before displaying it in the chat UI
-function degradeImageQuality(imageSrc, quality = 0.5) {
+function degradeJPGQuality(imageSrc, quality = 0.5) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.src = imageSrc;
 
-        img.onload = function() {
-            console.log("Image loaded:", imageSrc);
+        img.onload = function () {
+            console.log("JPG Image loaded:", imageSrc);
 
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -531,43 +516,62 @@ function degradeImageQuality(imageSrc, quality = 0.5) {
             // Draw the image on the canvas with the new dimensions
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Check the file extension to set the correct MIME type for the image
-            const fileExtension = imageSrc.split('.').pop().toLowerCase();
-            let mimeType = 'image/jpeg';  // Default to JPEG for quality degradation
-            if (fileExtension === 'png') {
-                mimeType = 'image/png';  // Use PNG for PNG images (no quality parameter here)
-            }
-
-            // Convert canvas content to a Blob with the specified quality for JPEG (or none for PNG)
-            canvas.toBlob((blob) => {
-                if (!blob) {
-                    reject("Failed to create a Blob from canvas.");
-                    return;
-                }
-
-                // Log the size of the blob to check if the file size is changing
-                console.log("Degraded Blob size:", blob.size);
-
-                // Convert the Blob to a URL (optional, for display in image tag)
-                const url = URL.createObjectURL(blob);
-
-                // Visual check: let's add both the original and degraded image for comparison
-                const originalUrl = imageSrc;
-                console.log(`Original Image URL: ${originalUrl}`);
-
-                // Log that the image is being degraded
-                console.log(`Degrading image to ${mimeType} format with quality: ${quality}`);
-                resolve({ degradedUrl: url, originalUrl: originalUrl });
-            }, mimeType, quality);  // Apply quality parameter for JPEG, no quality for PNG
+            // Convert to JPG format with specified quality
+            canvas.toDataURL('image/jpeg', quality, (result) => {
+                console.log("Degrading JPG image quality to", quality);
+                resolve(result);  // Resolve with the degraded JPG image data URL
+            });
         };
 
-        img.onerror = function(error) {
+        img.onerror = function (error) {
             reject(error);  // Reject the promise if there's an error with the image
         };
     });
 }
 
-// Example usage of degradeImageQuality:
+function compressPNG(imageSrc) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = imageSrc;
+
+        img.onload = function () {
+            console.log("PNG Image loaded:", imageSrc);
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Resize image to fit a max width of 200px (while maintaining aspect ratio)
+            const maxWidth = 200;  // You can adjust this value based on the desired image size
+            const scale = maxWidth / img.width;  // Scaling factor to resize the image
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+
+            // Draw the image on the canvas with the new dimensions
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // Check if the browser supports WebP and use it for compression
+            if (canvas.toDataURL('image/webp')) {
+                // Convert to WebP format for better compression
+                canvas.toDataURL('image/webp', 0.8, (result) => {
+                    console.log("PNG image compressed to WebP format.");
+                    resolve(result);  // Resolve with WebP image data URL
+                });
+            } else {
+                // If WebP is not supported, fallback to PNG
+                canvas.toDataURL('image/png', (result) => {
+                    console.log("PNG image compressed.");
+                    resolve(result);
+                });
+            }
+        };
+
+        img.onerror = function (error) {
+            reject(error);  // Reject the promise if there's an error with the image
+        };
+    });
+}
+
+// Example usage of degradeImageQuality for handling JPG, PNG and JPEG:
 function addMessageToChat(messageData) {
     if (!messageData || (!messageData.message && !messageData.photo)) return;  // Ensure there is a message or photo
 
@@ -586,28 +590,37 @@ function addMessageToChat(messageData) {
     } else if (messageData.photo) {
         const imgElement = document.createElement('img');
 
-        // Degrade the quality before adding the photo to the chat UI
-        degradeImageQuality(messageData.photo, 0.5) // 0.5 for quality degradation
-            .then(({ degradedUrl, originalUrl }) => {
-                imgElement.src = degradedUrl;  // Set the degraded image as the source
-                imgElement.alt = "User's photo";
-                imgElement.style.maxWidth = '200px';  // Control image size
-                imgElement.style.maxHeight = '200px';
+        // Handle PNG and JPG images
+        const fileExtension = messageData.photo.split('.').pop().toLowerCase();
 
-                // Add both original and degraded images for side-by-side comparison
-                const originalImgElement = document.createElement('img');
-                originalImgElement.src = originalUrl;
-                originalImgElement.alt = "Original User's photo";
-                originalImgElement.style.maxWidth = '200px';  // Control image size
-                originalImgElement.style.maxHeight = '200px';
+        if (fileExtension === 'png') {
+            // Compress PNG and convert to WebP
+            compressPNG(messageData.photo)
+                .then((compressedImageSrc) => {
+                    imgElement.src = compressedImageSrc;  // Set the compressed image as the source
+                    imgElement.alt = "User's photo";
+                    imgElement.style.maxWidth = '200px';  // Control image size
+                    imgElement.style.maxHeight = '200px';
+                    messageBubble.appendChild(imgElement);
+                })
+                .catch(error => {
+                    console.error('Error compressing PNG image:', error);
+                });
+        } else if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
+            // Degrade JPG/JPEG quality
+            degradeJPGQuality(messageData.photo, 0.5) // 0.5 for quality degradation
+                .then(degradedImageSrc => {
+                    imgElement.src = degradedImageSrc;  // Set the degraded image as the source
+                    imgElement.alt = "User's photo";
+                    imgElement.style.maxWidth = '200px';  // Control image size
+                    imgElement.style.maxHeight = '200px';
+                    messageBubble.appendChild(imgElement);
+                })
+                .catch(error => {
+                    console.error('Error degrading JPG/JPEG image quality:', error);
+                });
+        }
 
-                // Append both images
-                messageBubble.appendChild(originalImgElement);
-                messageBubble.appendChild(imgElement);
-            })
-            .catch(error => {
-                console.error('Error degrading image quality:', error);
-            });
     }
 
     // Add timestamp to the message
@@ -635,7 +648,6 @@ function addMessageToChat(messageData) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
     }, 0); // Allow the browser to repaint before scrolling
 }
-
 
 
 // Function to display messages from initial fetch
@@ -719,52 +731,6 @@ function pickPhoto() {
         }
     };
     photoInput.click();  // Trigger the file input dialog
-}
-
-// Resize the image and return a resized Blob with quality degradation
-function resizeImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.5) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            img.src = e.target.result;
-            img.onload = function() {
-                let canvas = document.createElement('canvas');
-                const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
-                canvas.width = img.width * scale;
-                canvas.height = img.height * scale;
-
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                // Set the output format based on the file type (PNG, JPG, or JPEG)
-                const fileExtension = file.name.split('.').pop().toLowerCase();
-                let mimeType = 'image/jpeg';  // Default to JPEG
-                let qualityParam = quality;
-
-                if (fileExtension === 'png') {
-                    mimeType = 'image/png';  // Use PNG if the file is a PNG
-                    qualityParam = undefined; // PNG doesn't support quality setting, so leave it undefined
-                } else if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
-                    mimeType = 'image/jpeg';  // Use JPEG for both jpg and jpeg
-                    qualityParam = quality;   // Apply the quality degradation (0.5) to JPEG
-                }
-
-                // Use canvas.toBlob to create a Blob object with the degraded quality
-                canvas.toBlob(function(blob) {
-                    if (blob) {
-                        resolve(blob);  // Resolve with the resized image Blob
-                    } else {
-                        reject('Error while creating blob');
-                    }
-                }, mimeType, qualityParam);  // Dynamically set the mime type and quality
-            };
-        };
-
-        reader.onerror = reject;
-        reader.readAsDataURL(file);  // Read the image as base64 for resizing
-    });
 }
 
 // Function to send photo URL (as per the original flow)

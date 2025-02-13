@@ -7,7 +7,9 @@
     <script src="https://cdn.ably.io/lib/ably.min.js"></script>
 </head>
     <body>
-   <div id="chatbox-container">
+<div id="chatbox-container">
+    <div id="three-dots-menu">...</div> <!-- 3 dot icon -->
+
     <div id="chatbox">
         <div id="messages-container">
             <!-- Messages will be dynamically added here -->
@@ -41,15 +43,13 @@
 </div>
 
 <script>
-    const chatboxContainer = document.getElementById('chatbox-container');
+    const threeDotsMenu = document.getElementById('three-dots-menu');
     const optionsMenu = document.getElementById('options-menu');
 
-    // Toggle options menu visibility when clicking on the chatbox container
-    chatboxContainer.addEventListener('click', (e) => {
-        if (e.target === chatboxContainer || e.target === optionsMenu) {
-            const isMenuVisible = optionsMenu.style.display === 'block';
-            optionsMenu.style.display = isMenuVisible ? 'none' : 'block';
-        }
+    // Show the options menu when the 3 dots menu is clicked
+    threeDotsMenu.addEventListener('click', () => {
+        const isMenuVisible = optionsMenu.style.display === 'block';
+        optionsMenu.style.display = isMenuVisible ? 'none' : 'block';
     });
 
     // Add functionality for each option
@@ -67,7 +67,8 @@
     document.getElementById('changeThemeOption').addEventListener('click', (e) => {
         e.preventDefault();
         document.body.style.backgroundColor = (document.body.style.backgroundColor === 'lightgray') ? 'white' : 'lightgray';
-    }); </script>
+    });
+</script>
 <script>
 // Function to preview selected photo
 function previewPhoto() {
@@ -96,6 +97,20 @@ function handleKey(event) {
 
 </script>
     <style>
+        /* 3 Dot Menu Style */
+        #three-dots-menu {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #333;
+            z-index: 10;
+        }
+
+        #three-dots-menu:hover {
+            color: #007bff;
+        }
          button {
             padding: 10px;
             cursor: pointer;
@@ -659,6 +674,7 @@ function resizeImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.5) {
                     qualityParam = quality;   // Apply the quality degradation (0.5) to JPEG
                 }
 
+                // Use canvas.toBlob to create a Blob object with the degraded quality
                 canvas.toBlob(function(blob) {
                     if (blob) {
                         resolve(blob);  // Resolve with the resized image Blob
@@ -725,9 +741,6 @@ function sendPhoto(photoData) {
         console.error('Error sending message to backend:', error);
     });
 }
-
-// The rest of your sendMessage function and other helper methods remain unchanged...
-
 
 
 // Function to send message to the server

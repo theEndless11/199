@@ -727,10 +727,17 @@ function sendMessage() {
             const imageSrc = e.target.result;
             resizeImageToMaxSize(imageSrc, 65)  // Resize the image before sending
                 .then(resizedImageBlob => {
-                    messageData.photo = resizedImageBlob;
-                    messageData.messageType = 'photo';  // Set message type to photo
-                    addMessageToChat(messageData);     // Display image in chat
-                    sendToServer(messageData);         // Send the photo to the server
+                    // Convert the resized image to base64 before sending
+                    blobToBase64(resizedImageBlob)
+                        .then(base64Image => {
+                            messageData.photo = base64Image;  // Add the base64 image to messageData
+                            messageData.messageType = 'photo';  // Set message type to photo
+                            addMessageToChat(messageData);     // Display image in chat
+                            sendToServer(messageData);         // Send the photo to the server
+                        })
+                        .catch(error => {
+                            console.error('Error converting image to base64:', error);
+                        });
                 })
                 .catch(error => {
                     console.error('Error resizing image:', error);
@@ -753,6 +760,18 @@ function sendMessage() {
         messageInput.value = '';  // Clear text input
         fileInput.value = '';     // Clear the file input
     }
+}
+
+// Function to convert Blob to Base64
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = function () {
+            resolve(reader.result.split(',')[1]); // Remove "data:image/jpeg;base64," part
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
 }
 
 // Function to send message to the server as JSON (with base64-encoded photo)

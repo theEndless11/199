@@ -8,9 +8,61 @@
 </head>
     <body>
     <div id="chatbox-container">
-        <div id="category-tabs">
-            <button class="tab-btn" onclick="changeCategory('support')">Zinx</button>
-        </div>
+         <div id="options-menu">
+        <a href="#" id="shareOption">Share</a>
+        <a href="#" id="clearChatOption">Clear Chat</a>
+        <a href="#" id="changeThemeOption">Change Theme</a>
+    </div>
+</div>
+
+<script>
+    const chatboxContainer = document.getElementById('chatbox-container');
+    const optionsMenu = document.getElementById('options-menu');
+
+    chatboxContainer.addEventListener('click', () => {
+        // Toggle the visibility of the options menu
+        const isMenuVisible = optionsMenu.style.display === 'block';
+        optionsMenu.style.display = isMenuVisible ? 'none' : 'block';
+    });
+
+    // Add functionality for each option
+    document.getElementById('shareOption').addEventListener('click', (e) => {
+        e.preventDefault();
+        alert("Share option clicked!");
+    });
+
+    document.getElementById('clearChatOption').addEventListener('click', (e) => {
+        e.preventDefault();
+        alert("Chat cleared!");
+    });
+
+    document.getElementById('changeThemeOption').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.body.style.backgroundColor = (document.body.style.backgroundColor === 'lightgray') ? 'white' : 'lightgray';
+    });
+</script> <style>  #options-menu {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 150px;
+            z-index: 1000;
+        }
+        #options-menu a {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            text-decoration: none;
+        }
+        #options-menu a:hover {
+            color: #007bff;
+        }
+    </style>
+        
 <div id="chatbox">
             <div id="messages-container">
                 <!-- Messages will be dynamically added here -->
@@ -565,7 +617,6 @@ function displayMessages(messages) {
         }
     };
     photoInput.click();  // Trigger the file input dialog
-}
 
 
 // Consolidated sendPhoto function

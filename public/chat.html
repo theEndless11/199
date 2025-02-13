@@ -510,6 +510,44 @@ function pollForNewMessages() {
     }, 3000);  // 3000ms = 3 seconds
 }
 
+// Function to degrade the quality of the image before displaying it in the chat UI
+function degradeImageQuality(imageSrc, quality = 0.5) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = imageSrc;
+
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set canvas size to match image
+            const scale = 200 / img.width;  // Resize image to fit a max width of 200px
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+
+            // Draw the image to the canvas
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // Detect if the image is JPEG or PNG and set appropriate format
+            const fileExtension = imageSrc.split('.').pop().toLowerCase();
+            let mimeType = 'image/jpeg';  // Default to JPEG
+
+            if (fileExtension === 'png') {
+                mimeType = 'image/png';  // For PNG images, use PNG format
+            }
+
+            // Convert the canvas to a data URL with the specified quality for JPEG, or no quality for PNG
+            canvas.toDataURL(mimeType, quality, function(result) {
+                resolve(result);  // Resolve with the new data URL (degraded image)
+            });
+        };
+
+        img.onerror = function(error) {
+            reject(error);  // Reject if there was an error with the image
+        };
+    });
+}
+
 // Function to add message to the chat UI
 function addMessageToChat(messageData) {
     if (!messageData || (!messageData.message && !messageData.photo)) return; // Ensure message or photo exists
@@ -528,11 +566,19 @@ function addMessageToChat(messageData) {
         messageBubble.textContent = messageData.message; // Display text message
     } else if (messageData.photo) {
         const imgElement = document.createElement('img');
-        imgElement.src = messageData.photo;  // This is the URL from the backend
-        imgElement.alt = "User's photo";
-        imgElement.style.maxWidth = '200px';  // Optionally control image size
-        imgElement.style.maxHeight = '200px';
-        messageBubble.appendChild(imgElement);
+        
+        // Degrade the quality before adding the photo to the chat UI
+        degradeImageQuality(messageData.photo, 0.5) // 0.5 for quality degradation
+            .then(degradedImageSrc => {
+                imgElement.src = degradedImageSrc;  // Set the degraded image as the source
+                imgElement.alt = "User's photo";
+                imgElement.style.maxWidth = '200px';  // Control image size
+                imgElement.style.maxHeight = '200px';
+                messageBubble.appendChild(imgElement);
+            })
+            .catch(error => {
+                console.error('Error degrading image quality:', error);
+            });
     }
 
     // Add timestamp to the message
@@ -560,6 +606,7 @@ function addMessageToChat(messageData) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;  // Scroll to the bottom
     }, 0); // Allow the browser to repaint before scrolling
 }
+
 
 // Function to display messages from initial fetch
 function displayMessages(messages) {

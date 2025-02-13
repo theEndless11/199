@@ -8,13 +8,14 @@
 </head>
     <body>
 <div id="chatbox-container">
+<!-- Header -->
 <header id="header">
     <div id="header-left">
         <span id="username">Username</span> <!-- Placeholder for username -->
-        <!-- Call Icon (Cloudflare logo as placeholder) -->
-        <img id="callIcon" src="https://upload.wikimedia.org/wikipedia/commons/8/86/Cloudflare_logo.svg" alt="Cloudflare" style="height: 24px; width: 24px; margin-right: 10px; cursor: pointer;">
     </div>
     <div id="header-right">
+        <!-- Phone Icon (Font Awesome) -->
+        <i id="callIcon" class="fa fa-phone" aria-hidden="true"></i> <!-- Phone icon -->
         <div id="three-dots-menu">︙</div> <!-- Three-dot menu icon -->
     </div>
 </header>
@@ -25,7 +26,6 @@
     <button id="clearChatOption">Clear Chat</button>
     <button id="changeThemeOption">Change Theme</button>
 </div>
-
 
  <script>
     // Toggle the visibility of the dropdown menu when the three dots button is clicked
@@ -154,12 +154,10 @@ function handleKey(event) {
         font-size: 18px;
         margin-right: 10px;
     }
-
-    /* Cloudflare Call Icon */
+ /* Phone Icon Styling */
     #callIcon {
-        height: 24px;
-        width: 24px;
-        margin-right: 10px; /* Space between icon and username */
+        font-size: 22px; /* Size of the phone icon */
+        margin-right: 10px; /* Space between the icon and the three dots */
         cursor: pointer;
     }
 
@@ -202,7 +200,7 @@ function handleKey(event) {
     }
 
     #dropdownMenu button:hover {
-        background-color: #f1f1f1;
+        background-color: brown;
     }
 
 

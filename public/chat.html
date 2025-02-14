@@ -30,6 +30,7 @@
     <button id="changeWallpaperOption">Change Wallpaper</button> <!-- New Option -->
 </div>
 
+
 <!-- Modal to select a wallpaper -->
 <div id="wallpaperModal" style="display: none;">
     <div id="wallpaperModalContent">
@@ -83,12 +84,12 @@ function createWallpaperOptions() {
 
 // Show the wallpaper selection modal
 document.getElementById('changeWallpaperOption').addEventListener('click', () => {
-    document.getElementById('wallpaperModal').style.display = 'block';
+    document.getElementById('wallpaperModal').style.display = 'flex'; // Show modal (use 'flex' for centering)
 });
 
 // Close the modal
 document.getElementById('closeModal').addEventListener('click', () => {
-    document.getElementById('wallpaperModal').style.display = 'none';
+    document.getElementById('wallpaperModal').style.display = 'none'; // Hide modal
 });
 
 // Load the wallpaper when the page loads
@@ -97,6 +98,7 @@ window.onload = () => {
     createWallpaperOptions(); // Create the wallpaper options when the page loads
 };
 </script>
+
 <style>/* Wallpaper Modal Styles */
 #wallpaperModal {
     position: fixed;

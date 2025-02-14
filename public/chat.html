@@ -22,12 +22,45 @@
     </div>
 </header>
 
-<!-- Dropdown Menu -->
 <div id="dropdownMenu" style="display: none;">
     <button id="shareOption">Share</button>
     <button id="clearChatOption">Clear Chat</button>
     <button id="changeThemeOption">Change Theme</button>
+    <button id="changeWallpaperOption">Change Wallpaper</button> <!-- New Option -->
 </div>
+<script>// List of available wallpapers
+const wallpapers = ['https://latestnewsandaffairs.site/public/pfp.jpg', 'https://latestnewsandaffairs.site/public/pfp1.jpg', 'https://latestnewsandaffairs.site/public/pfp2.jpg'];  // Add other wallpapers here
+
+// Function to pick a wallpaper from the list
+function pickWallpaper(wallpaper) {
+    const container = document.getElementById('container');
+    container.style.backgroundImage = `url('${wallpaper}')`;
+    localStorage.setItem('wallpaper', wallpaper); // Save wallpaper to browser storage
+}
+
+// Function to load the saved wallpaper from local storage
+function loadSavedWallpaper() {
+    const savedWallpaper = localStorage.getItem('wallpaper');
+    if (savedWallpaper) {
+        pickWallpaper(savedWallpaper);
+    } else {
+        pickWallpaper(wallpapers[0]); // Default wallpaper if none saved
+    }
+}
+
+// Add an event listener for the "Change Wallpaper" button
+document.getElementById('changeWallpaperOption').addEventListener('click', () => {
+    const newWallpaper = prompt('Enter wallpaper filename (e.g., "nlogo.png"):');
+    if (newWallpaper && wallpapers.includes(newWallpaper)) {
+        pickWallpaper(newWallpaper); // Set new wallpaper
+    } else {
+        alert('Invalid wallpaper name!');
+    }
+});
+
+// Load the wallpaper when the page loads
+window.onload = loadSavedWallpaper;
+</script>
 
 <script>
     // Toggle the visibility of the dropdown menu when the three dots button is clicked

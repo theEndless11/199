@@ -4,12 +4,211 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatVerse | Sign Up / Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
   html, body {
     height: 100%;
     overflow-y: auto; /* Show scrollbar only if content overflows */
 }
-            .message-container {
+
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* Body Flex Layout */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #000000;
+    color: #cdcdcd;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;  /* Ensure full height */
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    color: white;
+    padding: 10pxpx 10px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    width: 100%;  /* Ensures full width */
+    z-index: 10;
+}
+
+/* Container */
+.container {
+    width: 90%;
+    max-width: 400px;
+    background: #000000;
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    margin-top: 60px;  /* Adds some space below the header */
+    flex-grow: 1;  /* Allow container to grow and take available space */
+    align-self: center;  /* Center the container */
+}
+
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+/* Hamburger Menu - more attractive design */
+.hamburger-menu {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 5px;
+    margin-right: 20px;
+    transition: transform 0.3s ease;
+    position: relative;
+    z-index: 9999; /* Ensure hamburger is on top */
+}
+
+/* Gradient color for the hamburger bars */
+.hamburger-menu .bar {
+    width: 35px;
+    height: 5px;
+    background: linear-gradient(45deg, #ff6f61, #ff9f00); /* Gradient effect for bars */
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+/* Hamburger to "X" Animation */
+.hamburger-menu.active .bar:nth-child(1) {
+    transform: rotate(45deg) translateY(8px);
+    background: linear-gradient(45deg, #ff5733, #ff9f00); /* Bright color on top bar */
+}
+
+.hamburger-menu.active .bar:nth-child(2) {
+    opacity: 0; /* Hide middle bar */
+}
+
+.hamburger-menu.active .bar:nth-child(3) {
+    transform: rotate(-45deg) translateY(-8px);
+    background: linear-gradient(45deg, #ff5733, #ff9f00); /* Bright color on bottom bar */
+}
+
+/* Dropdown Menu Styling */
+.dropdown-menu {
+    display: none; /* Start hidden */
+    position: absolute;
+    top: 50px;
+    left: 0;
+    background: #333; /* Dark background for the dropdown */
+    border-radius: 8px;
+    width: 220px; /* Reduced width for the dropdown */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    padding: 10px;
+    transition: transform 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+    transform: scale(0.9); /* Start slightly scaled down */
+}
+
+/* Dropdown Menu Show Animation */
+.dropdown-menu.active {
+    display: block;
+    opacity: 1;
+    transform: scale(1); /* Smooth scale-up effect */
+}
+
+/* Styling for the list items */
+.dropdown-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dropdown-menu ul li {
+    padding: 10px 0;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.dropdown-menu ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    display: block;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover Effects for Links */
+.dropdown-menu ul li a:hover {
+    background-color: green; /* Bright color on hover */
+    transform: translateX(5px); /* Slight right shift for hover effect */
+}
+
+/* Submenu for Translation */
+.sub-menu {
+    display: none;
+    padding-left: 10px;
+}
+
+.dropdown-menu ul li:hover .sub-menu {
+    display: block;
+}
+
+/* Submenu Items Style */
+.sub-menu li {
+    padding: 8px 0;
+    text-align: left;
+    background-color: #ff0044;
+    border-radius: 5px;
+}
+
+/* Submenu Item Hover Effect */
+.sub-menu li a:hover {
+    background-color: #ff4f77;
+}
+
+/* Footer */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    margin-top: auto;  /* Push footer to the bottom */
+    width: 100%;  /* Ensures footer spans full width */
+}
+
+/* Social links */
+footer .social-links {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+footer .social-links li a {
+    text-decoration: none;
+    color: white;
+    font-size: 1.5rem;
+    transition: color 0.3s;
+}
+
+footer .social-links li a:hover {
+    color: #f39c12;
+}
+
+/* Success/Message Container */
+.message-container {
     position: fixed;
     top: 20px;
     left: 50%;
@@ -22,6 +221,7 @@
     text-align: center;
     z-index: 9999;
 }
+
 .success {
     background-color: #4CAF50;
     color: rgb(68, 63, 63);
@@ -33,36 +233,6 @@
     color: white;
     border: 1px solid #f44336;
 }
-/* General Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Poppins', sans-serif;
-    background: #000000;
-    color:#cdcdcd;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    overflow-y: auto; /* Allow scrolling */
-}
-
-.container {
-    width: 90%;
-    max-width: 400px;
-    background: #000000;
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    animation: fadeIn 1s ease-in-out;
-}
-
 h1 {
     font-size: 25px;
     font-weight: 600;
@@ -245,8 +415,34 @@ button:hover {
         font-size: 13px;
     }
 }
-</head></style>
+
+</style>
     <body>
+        <header>     
+            <div class="header-left">
+            <div class="hamburger-menu" id="hamburger-menu">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <div class="logo" id="logo">
+                <h1>News</h1>
+            </div>
+        </div>
+    
+    <!-- Dropdown Menu -->
+    <div class="dropdown-menu" id="dropdown-menu">
+        <ul>
+            <li><a href='Home.html'>Home</a></li>
+               <li><a href="news.html">News</a></li>
+                <li><a href="https://latestnewsandaffairs.site/live Ind vs Eng t20i.html">Sports</a></li>
+            <li><a href="bb.html">Quiz</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="doge.html">chat</a></li>
+               <li><a href="terms and con.html">Terms & Conditions</a></li>
+        </ul>
+    </div>
+    </header>
     <div class="container">
         <!-- Welcome Text Section -->
         <div class="welcome-text">
@@ -312,10 +508,40 @@ button:hover {
             <p>With ChatVerse, the world is just one message away. Create your account and join the millions of users already enjoying a new way to communicate. We can’t wait to welcome you to the family!</p>
         </div>
     </div>
+    <footer>
+        <p>&copy; 2025 NewsNow. All Rights Reserved.</p>
+        <p>Follow us on social media for real-time updates:</p>
+        <ul class="social-links">
+            <li><a href="www.facebook.com" class="social-icon"><i class="fab fa-facebook-f"></i></a></li>
+            <li><a href="www.twitter.com" class="social-icon"><i class="fab fa-twitter"></i></a></li>
+            <li><a href="www.instagram.com" class="social-icon"><i class="fab fa-instagram"></i></a></li>
+            <li><a href="www.youtube.com" class="social-icon"><i class="fab fa-youtube"></i></a></li>
+        </ul>
+    </footer>
+
 </body>
 
     
 <script>
+    const hamburgerMenu = document.getElementById('hamburger-menu');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    
+    // Add click event listener for the hamburger menu
+    hamburgerMenu.addEventListener('click', function() {
+        // Toggle 'active' class on hamburger to animate the icon
+        this.classList.toggle('active');
+        
+        // Toggle the visibility of the dropdown menu
+        dropdownMenu.classList.toggle('active');
+    });
+    
+    // Close the menu if clicked outside
+    document.addEventListener('click', function(event) {
+        if (!hamburgerMenu.contains(event.target) && !dropdownMenu.contains(event.target)) {
+            dropdownMenu.classList.remove('active'); // Hide the menu if clicked outside
+            hamburgerMenu.classList.remove('active'); // Reset hamburger icon
+        }
+    });
 // Show the login form
 function showLogin() {
     document.getElementById('login-form').style.display = 'block';
@@ -467,4 +693,3 @@ document.getElementById('signup').addEventListener('submit', async function(e) {
 }); // <- Closing parenthesis for the second event listener
 </script>
 <!-- Make sure you close your <script> tag properly -->
-

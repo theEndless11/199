@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
 </head>
@@ -15,13 +16,14 @@
         </header>
 
       <div class="section-toggle">
-    <button onclick="toggleSection('users-section')" title="Users">
-        <span class="material-icons">people</span>
-    </button>
-    
-    <button onclick="toggleSection('settings-section')" title="Settings">
-        <span class="material-icons">settings</span>
-    </button>
+    <button onclick="toggleSection('users-section')" title="Users" class="icon-btn">
+    <i class="fas fa-users"></i> People
+</button>
+
+<button onclick="toggleSection('settings-section')" title="Settings" class="icon-btn">
+    <i class="fas fa-cogs"></i> Settings
+</button>
+
 </div>
 
         <section id="users-section" class="section-content">
@@ -222,30 +224,36 @@ function displayUsers(users) {
             font-size: 1rem;
         }
 
-        /* Section Toggle */
-        .section-toggle {
-            display: flex;
-            justify-content: center;
-            background-color: #6c757d;
-            padding: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            gap:30%;
-        }
+        /* General button styling */
+    .icon-btn {
+        background-color:  #6c757d;;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        border-radius: 5px;
+        margin: 5px;
+        transition: background-color 0.3s;
+    }
 
-        .section-toggle button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 10px;
-            transition: background-color 0.3s;
-        }
+    /* Button icon styling */
+    .icon-btn i {
+        margin-right: 8px;  /* Space between icon and text */
+    }
 
-        .section-toggle button:hover {
-            background-color: #495057;
-            border-radius: 3px;
-        }
+    /* Hover effect */
+    .icon-btn:hover {
+        background-color: #495057;;
+    }
+
+    /* Optional: You can add focus styles for better accessibility */
+    .icon-btn:focus {
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 128, 0, 0.5);  /* Optional: Add a glow effect on focus */
+    }
 
         /* Section Content */
         .section-content {
@@ -324,11 +332,11 @@ function displayUsers(users) {
             }
 
             .section-toggle button {
-                font-size: 1.2rem;
+                font-size: 1.0rem;
             }
 
             .user img, .contact img {
-                margin-bottom: 10px;
+                margin-bottom: 5px;
             }
         }
         .profile-img {

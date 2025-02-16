@@ -137,6 +137,11 @@ function displayUsers(users) {
         const userName = document.createElement('p');
         userName.textContent = user.username;
 
+        // Add "Add to Friends" icon
+        const addButton = document.createElement('button');
+        addButton.classList.add('add-friend');
+        addButton.textContent = 'Add Friend';
+        addButton.onclick = () => addFriend(user);
 
         // Add click event to redirect to chat page when user is clicked
         userElement.onclick = () => {
@@ -164,15 +169,14 @@ function displayUsers(users) {
         const filteredUsers = allUsers.filter(user => user.username.toLowerCase().includes(searchInput));
         displayUsers(filteredUsers);
     }
-
-    
+   
     
     // Call fetchUsers when the page loads to display all users
     window.onload = () => {
         fetchUsers(); // Fetch users from API
-        displayContacts(); // Display contacts from localStorage
     };
 </script>
+
 
 <style>
         /* Global Styles */

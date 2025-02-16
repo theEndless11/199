@@ -224,37 +224,30 @@ function displayUsers(users) {
             font-size: 1rem;
         }
 
-        /* General button styling */
-    .icon-btn {
-        background-color:  #6c757d;;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        font-size: 18px;
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        border-radius: 5px;
-        margin: 5px;
-        transition: background-color 0.3s;
-    }
+      /* Section Toggle */
+        .section-toggle {
+            display: flex;
+            justify-content: center;
+            background-color: #6c757d;
+            padding: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            gap:30%;
+        }
 
-    /* Button icon styling */
-    .icon-btn i {
-        margin-right: 8px;  /* Space between icon and text */
-    }
+        .section-toggle button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.0rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: background-color 0.3s;
+        }
 
-    /* Hover effect */
-    .icon-btn:hover {
-        background-color: #495057;;
-    }
-
-    /* Optional: You can add focus styles for better accessibility */
-    .icon-btn:focus {
-        outline: none;
-        box-shadow: 0 0 5px rgba(0, 128, 0, 0.5);  /* Optional: Add a glow effect on focus */
-    }
-
+        .section-toggle button:hover {
+            background-color: #495057;
+            border-radius: 2px;
+        }
         /* Section Content */
         .section-content {
             flex: 1;

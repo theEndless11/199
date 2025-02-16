@@ -370,25 +370,7 @@ button:hover {
 
     
 <script>
-    const hamburgerMenu = document.getElementById('hamburger-menu');
-    const dropdownMenu = document.getElementById('dropdown-menu');
-    
-    // Add click event listener for the hamburger menu
-    hamburgerMenu.addEventListener('click', function() {
-        // Toggle 'active' class on hamburger to animate the icon
-        this.classList.toggle('active');
-        
-        // Toggle the visibility of the dropdown menu
-        dropdownMenu.classList.toggle('active');
-    });
-    
-    // Close the menu if clicked outside
-    document.addEventListener('click', function(event) {
-        if (!hamburgerMenu.contains(event.target) && !dropdownMenu.contains(event.target)) {
-            dropdownMenu.classList.remove('active'); // Hide the menu if clicked outside
-            hamburgerMenu.classList.remove('active'); // Reset hamburger icon
-        }
-    });
+   
 // Show the login form
 function showLogin() {
     document.getElementById('login-form').style.display = 'block';

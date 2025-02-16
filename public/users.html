@@ -10,7 +10,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Chat App</h1>
+            <h1>Chat Verse</h1>
             <input type="text" id="search" class="search-box" placeholder="Search..." oninput="searchUsers()" />
         </header>
 
@@ -18,27 +18,17 @@
     <button onclick="toggleSection('users-section')" title="Users">
         <span class="material-icons">people</span>
     </button>
-    <button onclick="toggleSection('contacts-section')" title="Contacts">
-        <span class="material-icons">contacts</span>
-    </button>
+    
     <button onclick="toggleSection('settings-section')" title="Settings">
         <span class="material-icons">settings</span>
     </button>
 </div>
 
-
         <section id="users-section" class="section-content">
             <h2>Users</h2>
             <div id="users-container">
-                <!-- User Cards will go here -->
-                <div class="user">
-                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User 1">
-                    <p>User 1</p>
-                    <div class="action-buttons">
-                        <button class="add-friend">Add Friend</button>
-                        
-                    </div>
-                </div>
+                <!-- User Cards will go here -->              
+            
             </div>
         </section>
 <section id="settings-section" class="section-content hidden">
@@ -56,13 +46,6 @@
     </div>
 </section>
 
-        <section id="contacts-section" class="section-content hidden">
-            <h2>Contacts</h2>
-            <div id="contacts-container">
-                <!-- Contact Cards will go here -->
-               
-            </div>
-        </section>
     </div>
 
     <script>
@@ -154,11 +137,6 @@ function displayUsers(users) {
         const userName = document.createElement('p');
         userName.textContent = user.username;
 
-        // Add "Add to Friends" icon
-        const addButton = document.createElement('button');
-        addButton.classList.add('add-friend');
-        addButton.textContent = 'Add Friend';
-        addButton.onclick = () => addFriend(user);
 
         // Add click event to redirect to chat page when user is clicked
         userElement.onclick = () => {
@@ -187,42 +165,7 @@ function displayUsers(users) {
         displayUsers(filteredUsers);
     }
 
-     // Function to add a user to contacts and store them in localStorage
-    function addFriend(user) {
-        let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-        contacts.push(user); // Add user to the contacts array
-
-        // Save the updated contacts list to localStorage
-        localStorage.setItem('contacts', JSON.stringify(contacts));
-
-        // Optionally, update the Contacts section immediately
-        displayContacts();
-    }
-
-    // Function to display contacts from localStorage in the Contacts section
-    function displayContacts() {
-        const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-        const contactsContainer = document.getElementById('contacts-container');
-        contactsContainer.innerHTML = ''; // Clear previous contacts
-
-        contacts.forEach(contact => {
-            const contactElement = document.createElement('div');
-            contactElement.classList.add('contact');
-
-            const profileImage = document.createElement('img');
-            profileImage.classList.add('profile-img');
-            profileImage.src = contact.profileImage || 'https://randomuser.me/api/portraits/men/32.jpg'; // Default image if no image available
-            profileImage.alt = `Profile of ${contact.name}`;
-
-            const contactName = document.createElement('p');
-            contactName.textContent = contact.name;
-
-            contactElement.appendChild(profileImage);
-            contactElement.appendChild(contactName);
-
-            contactsContainer.appendChild(contactElement);
-        });
-    }
+    
     
     // Call fetchUsers when the page loads to display all users
     window.onload = () => {
@@ -277,7 +220,7 @@ function displayUsers(users) {
             background-color: #6c757d;
             padding: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            gap:15px;
+            gap:40%;
         }
 
         .section-toggle button {
@@ -373,11 +316,6 @@ function displayUsers(users) {
 
             .section-toggle button {
                 font-size: 1.2rem;
-            }
-
-            .user, .contact {
-                flex-direction: column;
-                align-items: flex-start;
             }
 
             .user img, .contact img {

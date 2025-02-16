@@ -25,7 +25,6 @@
 </div>
 
         <section id="users-section" class="section-content">
-            <h2>Users</h2>
             <div id="users-container">
                 <!-- User Cards will go here -->              
             
@@ -97,8 +96,7 @@
         }
     }
 
-
-  // Function to fetch a random profile image (using a placeholder image API)
+// Function to fetch a random profile image (using a predefined set of images)
 function getRandomProfilePicture() {
     // Check if there's already a stored profile image in localStorage
     const storedProfilePicture = localStorage.getItem('profilePicture');
@@ -108,15 +106,22 @@ function getRandomProfilePicture() {
         return storedProfilePicture;
     }
     
-    // Otherwise, generate a new random image and store it in localStorage
-    const randomNumber = Math.floor(Math.random() * 100); // Generate random number for uniqueness
-    const newProfilePicture = `https://latestnewsandaffairs.site/public/pfp.jpg`; // Random male profile image URL
-    
-    // Store the newly generated profile picture URL in localStorage
+    // Array of available profile images
+    const profileImages = ['pfp.jpg' , 'pfp2.jpg', 'pfp3.jpg','pfp5.jpg','pfp4.jpg'];
+
+    // Pick a random image from the array
+    const randomIndex = Math.floor(Math.random() * profileImages.length);
+    const randomProfilePicture = profileImages[randomIndex];
+
+    // Construct the full URL for the profile picture
+    const newProfilePicture = `https://latestnewsandaffairs.site/public/${randomProfilePicture}`;
+
+    // Store the newly selected profile picture URL in localStorage
     localStorage.setItem('profilePicture', newProfilePicture);
     
     return newProfilePicture;
 }
+
 
 // Display users in the Users section with random profile image
 function displayUsers(users) {
@@ -222,9 +227,9 @@ function displayUsers(users) {
             display: flex;
             justify-content: center;
             background-color: #6c757d;
-            padding: 10px;
+            padding: 6px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            gap:40%;
+            gap:30%;
         }
 
         .section-toggle button {
@@ -239,7 +244,7 @@ function displayUsers(users) {
 
         .section-toggle button:hover {
             background-color: #495057;
-            border-radius: 5px;
+            border-radius: 3px;
         }
 
         /* Section Content */
@@ -257,14 +262,14 @@ function displayUsers(users) {
         }
 
         /* User/Contact Cards */
-        .user, .contact {
+        .user {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            margin: 20px 0;
+            padding: 9px;
+            margin: 12px 0;
             background-color: #fff;
-            border-radius: 10px;
+            border-radius: 6px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.3s ease;
@@ -283,7 +288,7 @@ function displayUsers(users) {
         }
 
         .user p, .contact p {
-            font-size: 1.1rem;
+            font-size: 0.8rem;
             margin: 0;
             flex-grow: 1;
         }

@@ -22,7 +22,7 @@ module.exports = async function handler(req, res) {
         console.log('Request Method:', req.method);
 
         // Handle GET request to fetch messages
-       if (req.method === 'GET') {
+    if (req.method === 'GET') {
     const { username, chatWith } = req.query;
 
     if (!username || !chatWith) {
@@ -40,6 +40,7 @@ module.exports = async function handler(req, res) {
     }
     const userId = userResult[0].id;
 
+    // Query to fetch messages between the users
     const sql = `
         SELECT * FROM messages 
         WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) 
@@ -65,67 +66,67 @@ module.exports = async function handler(req, res) {
         return res.status(404).json({ error: 'No messages found for this chat' });
     }
 }
+
         // Handle POST request to send a message (with optional photo)
-        if (req.method === 'POST') {
-            const { username, chatWith, message, photo } = req.body;
+  if (req.method === 'POST') {
+    const { username, chatWith, message, photo } = req.body;
 
-            console.log('POST request received with username:', username, 'chatWith:', chatWith, 'message:', message, 'photo:', photo);
+    console.log('POST request received with username:', username, 'chatWith:', chatWith, 'message:', message, 'photo:', photo);
 
-            if (!username || !chatWith || (!message && !photo)) {
-                console.error('Missing fields in POST request: username, chatWith, message/photo');
-                return res.status(400).json({ error: 'Missing required fields: username, chatWith, message/photo' });
-            }
+    if (!username || !chatWith || (!message && !photo)) {
+        console.error('Missing fields in POST request: username, chatWith, message/photo');
+        return res.status(400).json({ error: 'Missing required fields: username, chatWith, message/photo' });
+    }
 
-            // Fetch the userId based on username
-            const [userResult] = await pool.execute('SELECT id FROM users WHERE username = ?', [username]);
-            if (userResult.length === 0) {
-                console.error('User not found for username:', username);
-                return res.status(404).json({ error: 'User not found' });
-            }
-            const userId = userResult[0].id;
+    // Fetch the userId based on username
+    const [userResult] = await pool.execute('SELECT id FROM users WHERE username = ?', [username]);
+    if (userResult.length === 0) {
+        console.error('User not found for username:', username);
+        return res.status(404).json({ error: 'User not found' });
+    }
+    const userId = userResult[0].id;
 
-            let photoPath = null;
+    let photoPath = null;
 
-            // Handle base64 photo data
-            if (photo && photo.startsWith('data:image')) {
-                photoPath = photo;  // Store the base64 string directly
-            }
+    // Handle base64 photo data
+    if (photo && photo.startsWith('data:image')) {
+        photoPath = photo;  // Store the base64 string directly
+    }
 
-            // Insert the message into the database
-            const sql = `
-                INSERT INTO messages (userId, chatWith, message, photo, timestamp) 
-                VALUES (?, ?, ?, ?, NOW())
-            `;
-            console.log('Inserting message into database:', message, 'Photo:', photoPath);
+    // Insert the message into the database
+    const sql = `
+        INSERT INTO messages (userId, chatWith, message, photo, timestamp) 
+        VALUES (?, ?, ?, ?, NOW())
+    `;
+    console.log('Inserting message into database:', message, 'Photo:', photoPath);
 
-            const [result] = await pool.execute(sql, [
-                userId,
-                chatWith,
-                message || '',   
-                photoPath || null  
-            ]);
+    const [result] = await pool.execute(sql, [
+        userId,
+        chatWith,
+        message || '',   
+        photoPath || null  
+    ]);
 
-            if (result.affectedRows > 0) {
-                console.log('Message inserted successfully');
+    if (result.affectedRows > 0) {
+        console.log('Message inserted successfully');
 
-                const messageData = { userId, chatWith, message, photo: photoPath };
+        const messageData = { userId, chatWith, message, photo: photoPath };
 
-                try {
-                    console.log('Publishing to Ably with data:', messageData);
-                    await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData);
-                    console.log('Message published to Ably successfully');
-                } catch (err) {
-                    console.error('Error publishing to Ably:', err);
-                    return res.status(500).json({ error: 'Failed to publish message to Ably' });
-                }
-
-                return res.status(200).json({ message: 'Message sent successfully' });
-            } else {
-                console.error('Message insertion failed');
-                return res.status(500).json({ error: 'Failed to insert message into the database' });
-            }
+        try {
+            console.log('Publishing to Ably with data:', messageData);
+            await publishToAbly(`chat-${chatWith}-${userId}`, 'newMessage', messageData);
+            console.log('Message published to Ably successfully');
+        } catch (err) {
+            console.error('Error publishing to Ably:', err);
+            return res.status(500).json({ error: 'Failed to publish message to Ably' });
         }
 
+        return res.status(200).json({ message: 'Message sent successfully' });
+    } else {
+        console.error('Message insertion failed');
+        return res.status(500).json({ error: 'Failed to insert message into the database' });
+    }
+}
         // If method is not GET or POST, return 405
         return res.status(405).json({ error: 'Method Not Allowed' });
 

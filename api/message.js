@@ -22,50 +22,49 @@ module.exports = async function handler(req, res) {
         console.log('Request Method:', req.method);
 
         // Handle GET request to fetch messages
-        if (req.method === 'GET') {
-            const { username, chatWith } = req.query;
+       if (req.method === 'GET') {
+    const { username, chatWith } = req.query;
 
-            if (!username || !chatWith) {
-                console.error('Missing query parameters: username or chatWith');
-                return res.status(400).json({ error: 'Missing required query parameters: username or chatWith' });
-            }
+    if (!username || !chatWith) {
+        console.error('Missing query parameters: username or chatWith');
+        return res.status(400).json({ error: 'Missing required query parameters: username or chatWith' });
+    }
 
-            console.log('Fetching messages for username:', username, 'chatWith:', chatWith);
+    console.log('Fetching messages for username:', username, 'chatWith:', chatWith);
 
-            // Fetch the userId based on username
-            const [userResult] = await pool.execute('SELECT id FROM users WHERE username = ?', [username]);
-            if (userResult.length === 0) {
-                console.error('User not found for username:', username);
-                return res.status(404).json({ error: 'User not found' });
-            }
-            const userId = userResult[0].id;
+    // Fetch the userId based on username
+    const [userResult] = await pool.execute('SELECT id FROM users WHERE username = ?', [username]);
+    if (userResult.length === 0) {
+        console.error('User not found for username:', username);
+        return res.status(404).json({ error: 'User not found' });
+    }
+    const userId = userResult[0].id;
 
-            const sql = `
-                SELECT * FROM messages 
-                WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) 
-                ORDER BY timestamp
-            `;
-            const [messages] = await pool.execute(sql, [userId, chatWith, chatWith, userId]);
+    const sql = `
+        SELECT * FROM messages 
+        WHERE (userId = ? AND chatWith = ?) OR (userId = ? AND chatWith = ?) 
+        ORDER BY timestamp
+    `;
+    const [messages] = await pool.execute(sql, [userId, chatWith, chatWith, userId]);
 
-            if (messages.length > 0) {
-                console.log('Fetched messages:', messages);
+    if (messages.length > 0) {
+        console.log('Fetched messages:', messages);
 
-                const formattedMessages = messages.map(message => ({
-                    id: message.id,
-                    userId: message.userId,
-                    chatWith: message.chatWith,
-                    message: message.message,
-                    photo: message.photo,  
-                    timestamp: message.timestamp
-                }));
+        const formattedMessages = messages.map(message => ({
+            id: message.id,
+            userId: message.userId,
+            chatWith: message.chatWith,
+            message: message.message,
+            photo: message.photo,  
+            timestamp: message.timestamp
+        }));
 
-                return res.status(200).json({ messages: formattedMessages });
-            } else {
-                console.log('No messages found for this chat');
-                return res.status(404).json({ error: 'No messages found for this chat' });
-            }
-        }
-
+        return res.status(200).json({ messages: formattedMessages });
+    } else {
+        console.log('No messages found for this chat');
+        return res.status(404).json({ error: 'No messages found for this chat' });
+    }
+}
         // Handle POST request to send a message (with optional photo)
         if (req.method === 'POST') {
             const { username, chatWith, message, photo } = req.body;

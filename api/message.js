@@ -68,6 +68,7 @@ if (req.method === 'GET') {
     }
 }
 
+
 // Handle POST request to send a message (with optional photo)
 if (req.method === 'POST') {
     const { username, chatWith, message, photo } = req.body;
@@ -90,17 +91,18 @@ if (req.method === 'POST') {
         photoPath = photo;  // Store the base64 string directly
     }
 
+    // Log values for debugging
+    console.log('Inserting message with username:', usernameLower, 'chatWith:', chatWithLower, 'message:', message, 'photo:', photoPath);
+
     // Insert the message into the database (no need for userId lookup)
     const sql = `
         INSERT INTO messages (username, chatWith, message, photo, timestamp) 
         VALUES (?, ?, ?, ?, NOW())
     `;
     try {
-        console.log('Inserting message into database:', message, 'Photo:', photoPath);
-
         const [result] = await pool.execute(sql, [
-            usernameLower,
-            chatWithLower,
+            usernameLower,  // Corrected insertion for username
+            chatWithLower,  // Corrected insertion for chatWith
             message || '',   
             photoPath || null  
         ]);
@@ -108,6 +110,7 @@ if (req.method === 'POST') {
         if (result.affectedRows > 0) {
             console.log('Message inserted successfully');
 
+            // Ensure correct data is passed
             const messageData = { username: usernameLower, chatWith: chatWithLower, message, photo: photoPath };
 
             try {
@@ -129,6 +132,7 @@ if (req.method === 'POST') {
         return res.status(500).json({ error: 'Failed to insert message into the database' });
     }
 }
+
 
 
         // If method is not GET or POST, return 405

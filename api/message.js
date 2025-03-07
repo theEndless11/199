@@ -22,7 +22,7 @@ module.exports = async function handler(req, res) {
         console.log('Request Method:', req.method);
 
         // Handle GET request to fetch messages
-    if (req.method === 'GET') {
+  if (req.method === 'GET') {
     const { username, chatWith } = req.query;
 
     if (!username || !chatWith) {
@@ -32,7 +32,7 @@ module.exports = async function handler(req, res) {
 
     console.log('Fetching messages for username:', username, 'chatWith:', chatWith);
 
-    // Fetch the userId based on username
+    // Fetch the userId based on the username
     const [userResult] = await pool.execute('SELECT id FROM users WHERE username = ?', [username]);
     if (userResult.length === 0) {
         console.error('User not found for username:', username);

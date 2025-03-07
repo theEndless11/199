@@ -1,25 +1,6 @@
 const pool = require('../utils/db');
-const multer = require('multer');
 const { publishToAbly } = require('../utils/ably');
-const path = require('path');
-const fs = require('fs');
 
-// Set up storage for photo uploads (store in 'uploads' folder)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, './uploads/');  // Folder where photos will be saved
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));  // Unique file name
-  }
-});
-
-const upload = multer({ storage: storage });
-
-// Middleware for handling photo uploads in POST request
-const uploadPhoto = upload.single('photo');
-
-// Handle requests
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
 
@@ -77,13 +58,7 @@ module.exports = async (req, res) => {
 
       // Case 1: If photo data is sent as base64 string
       if (photo && photo.startsWith('data:image')) {
-        photoPath = photo;  // Store the base64 string
-      }
-      
-      // Case 2: If a file is uploaded (via multer)
-      else if (req.file) {
-        photoPath = `/uploads/${req.file.filename}`;  // Store the file path
-        console.log('Photo uploaded, path:', photoPath);
+        photoPath = photo;  // Store the base64 string directly
       }
 
       // Insert the message into the database
@@ -122,3 +97,4 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Unexpected error occurred', details: err.message });
   }
 };
+

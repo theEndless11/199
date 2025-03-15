@@ -43,40 +43,45 @@ module.exports = async (req, res) => {
 
             return res.status(201).json({ message: 'Signup successful' });
 
-// API Endpoint for login
-else if (action === 'login') {
-    const [results] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
+        } else if (action === 'login') { // ✅ Fixed indentation and structure
+            const [results] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
 
-    if (results.length === 0) {
-        return res.status(401).json({ message: 'Incorrect email or password' });
+            if (results.length === 0) {
+                return res.status(401).json({ message: 'Incorrect email or password' });
+            }
+
+            const user = results[0]; // Get the user from the database
+            const isMatch = await bcrypt.compare(password, user.password);
+
+            if (!isMatch) {
+                return res.status(401).json({ message: 'Incorrect email or password' });
+            }
+
+            try {
+                const token = jwt.sign(
+                    { userId: user.id },
+                    process.env.JWT_SECRET,
+                    { expiresIn: process.env.JWT_EXPIRATION }
+                );
+
+                // Include username in the response
+                return res.status(200).json({
+                    message: 'Login successful',
+                    userId: user.id,
+                    username: user.username, // Include username
+                    token
+                });
+
+            } catch (jwtError) {
+                return res.status(500).json({ message: 'JWT generation failed' });
+            }
+        } else {
+            return res.status(400).json({ message: 'Invalid action' });
+        }
+    } catch (err) {
+        return res.status(500).json({ message: 'Server error' });
     }
-
-    const user = results[0]; // Get the user from the database
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-        return res.status(401).json({ message: 'Incorrect email or password' });
-    }
-
-    try {
-        const token = jwt.sign(
-            { userId: user.id },
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRATION }
-        );
-
-        // Include username in the response
-        return res.status(200).json({
-            message: 'Login successful',
-            userId: user.id,
-            username: user.username, // Include username
-            token
-        });
-
-    } catch (jwtError) {
-        return res.status(500).json({ message: 'JWT generation failed' });
-    }
-}
+};
 
 // Helper function to generate a 4-character username
 function generateUsername() {

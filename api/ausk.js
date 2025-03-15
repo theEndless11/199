@@ -30,11 +30,11 @@ module.exports = async (req, res) => {
         return handlePreflight(req, res);  // Handle pre-flight OPTIONS requests properly
     }
 
-    const { email, username, password, action } = req.body;
+    const { email, password, action } = req.body;
 
     // Check if required fields are provided
-    if (!email || !username || !password || !action) {
-        return res.status(400).json({ message: 'Missing required fields: email, username, password, action' });
+    if (!email || !password || !action) {
+        return res.status(400).json({ message: 'Missing required fields: email, password, action' });
     }
 
     try {
@@ -47,23 +47,17 @@ module.exports = async (req, res) => {
                 return res.status(400).json({ message: 'Email already exists' });
             }
 
-            // Check if username already exists in the database
-            const [usernameCheck] = await pool.execute('SELECT * FROM users WHERE username = ?', [username]);
-
-            if (usernameCheck.length > 0) {
-                return res.status(400).json({ message: 'Username already exists' });
-            }
-
             // Hash password
             const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Generate a random username (as per your existing frontend logic)
+            const username = generateUsername();
 
             // Save new user to DB with email, username, and password
             const [insertResult] = await pool.execute('INSERT INTO users (email, username, password) VALUES (?, ?, ?)', [email, username, hashedPassword]);
 
-            const userId = insertResult.insertId;  // Retrieve the generated user ID after insertion
-
-            // Return the userId along with the success message
-            return res.status(201).json({ message: 'Signup successful', userId });
+            // Return the success message (no need to return ID)
+            return res.status(201).json({ message: 'Signup successful' });
 
         } else if (action === 'login') {
             // Login logic
@@ -107,3 +101,14 @@ module.exports = async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
+// Helper function to generate a 4-word username
+function generateUsername() {
+    const words = ["K", "7", "Q", "V", "1", "M", "2", "Z", "9", "S", "0", "X"];
+    const randomWords = [];
+    for (let i = 0; i < 4; i++) {
+        const randomIndex = Math.floor(Math.random() * words.length);
+        randomWords.push(words[randomIndex]);
+    }
+    return randomWords.join("");
+}

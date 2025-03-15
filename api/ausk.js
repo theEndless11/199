@@ -30,77 +30,75 @@ module.exports = async (req, res) => {
         return handlePreflight(req, res);  // Handle pre-flight OPTIONS requests properly
     }
 
-    const { email, password, action } = req.body;
+  const { email, password, action } = req.body;
 
-    // Check if required fields are provided
-    if (!email || !password || !action) {
-        return res.status(400).json({ message: 'Missing required fields: email, password, action' });
-    }
+// Check if required fields are provided
+if (!email || !password || !action) {
+    return res.status(400).json({ message: 'Missing required fields: email, password, action' });
+}
 
-    try {
-        if (action === 'signup') {
-            // Signup logic
-            // Check if email already exists in the database
-            const [emailCheck] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
+try {
+    if (action === 'signup') {
+        // Signup logic
+        const [emailCheck] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
 
-            if (emailCheck.length > 0) {
-                return res.status(400).json({ message: 'Email already exists' });
-            }
-
-            // Hash password
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            // Generate a random username (as per your existing frontend logic)
-            const username = generateUsername();
-
-            // Save new user to DB with email, username, and password
-            const [insertResult] = await pool.execute('INSERT INTO users (email, username, password) VALUES (?, ?, ?)', [email, username, hashedPassword]);
-
-            // Return the success message (no need to return ID)
-            return res.status(201).json({ message: 'Signup successful' });
-
-        } else if (action === 'login') {
-            // Login logic
-            // Check if the email exists in the database
-            const [results] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
-
-            if (results.length === 0) {
-                return res.status(401).json({ message: 'Incorrect email or password' });
-            }
-
-            const user = results[0];
-
-            // Compare password with hashed password
-            const isMatch = await bcrypt.compare(password, user.password);
-
-            if (!isMatch) {
-                console.error('Password mismatch for user:', email); // Log for debugging
-                return res.status(401).json({ message: 'Incorrect email or password' });
-            }
-
-            try {
-                // Generate JWT Token
-                const token = jwt.sign(
-                    { userId: user.id },
-                    process.env.JWT_SECRET,
-                    { expiresIn: process.env.JWT_EXPIRATION }
-                );
-
-                console.log('JWT Token generated:', token); // Log the token for debugging
-                return res.status(200).json({ message: 'Login successful', userId: user.id, token });
-
-            } catch (jwtError) {
-                console.error('JWT Signing Error:', jwtError);
-                return res.status(500).json({ message: 'JWT generation failed' });
-            }
-        } else {
-            return res.status(400).json({ message: 'Invalid action' });
+        if (emailCheck.length > 0) {
+            return res.status(400).json({ message: 'Email already exists' });
         }
-    } catch (err) {
-        console.error('Error during authentication:', err);
-        return res.status(500).json({ message: 'Server error' });
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log('Hashed Password (Signup):', hashedPassword); // Log the hashed password
+
+        const username = generateUsername();
+
+        const [insertResult] = await pool.execute('INSERT INTO users (email, username, password) VALUES (?, ?, ?)', [email, username, hashedPassword]);
+
+        return res.status(201).json({ message: 'Signup successful' });
+
+    } else if (action === 'login') {
+        // Login logic
+        const [results] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
+
+        if (results.length === 0) {
+            return res.status(401).json({ message: 'Incorrect email or password' });
+        }
+
+        const user = results[0];
+
+        console.log('User found:', user); // Log the user object for debugging
+        console.log('Stored Password Hash:', user.password); // Log the stored password hash
+
+        // Compare password with hashed password
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+            console.error('Password mismatch for user:', email); // Log for debugging
+            return res.status(401).json({ message: 'Incorrect email or password' });
+        }
+
+        try {
+            // Generate JWT Token
+            const token = jwt.sign(
+                { userId: user.id },
+                process.env.JWT_SECRET,
+                { expiresIn: process.env.JWT_EXPIRATION }
+            );
+
+            console.log('JWT Token generated:', token); // Log the token for debugging
+            return res.status(200).json({ message: 'Login successful', userId: user.id, token });
+
+        } catch (jwtError) {
+            console.error('JWT Signing Error:', jwtError);
+            return res.status(500).json({ message: 'JWT generation failed' });
+        }
+    } else {
+        return res.status(400).json({ message: 'Invalid action' });
     }
-};
+} catch (err) {
+    console.error('Error during authentication:', err);
+    return res.status(500).json({ message: 'Server error' });
+}
 
 // Helper function to generate a 4-word username
 function generateUsername() {

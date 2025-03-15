@@ -3,21 +3,13 @@ const jwt = require('jsonwebtoken');
 const pool = require('../utils/db'); // Ensure this is promisePool from db.js
 
 // Set CORS headers for all methods
-const setCorsHeaders = (res) => {
-    // Specify allowed origins, can also be an array or a function
-    const allowedOrigins = ['*', 'http://localhost:3000']; // Add your frontend domains here
+const setCorsHeaders = (req, res) => {
+    // Allow all origins for now
+    res.setHeader('Access-Control-Allow-Origin', '*');  // Allow all origins
     
-    // Allow dynamic origin matching
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);  // Allow specific origin
-    } else {
-        res.setHeader('Access-Control-Allow-Origin', '');  // Allow no origin if not matched
-    }
-
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS');  // Allowed methods
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');  // Allowed headers
-    res.setHeader('Access-Control-Allow-Credentials', 'true');  // Allow cookies (if needed)
+    res.setHeader('Access-Control-Allow-Credentials', 'true');  // Allow credentials (if needed)
 };
 
 // Handle OPTIONS requests for CORS pre-flight
@@ -26,43 +18,52 @@ const handlePreflight = (req, res) => {
 };
 
 module.exports = async (req, res) => {
-    setCorsHeaders(res);
-  
+    setCorsHeaders(req, res);  // Set CORS headers
+    
     // Handle pre-flight OPTIONS request
     if (req.method === 'OPTIONS') {
         return handlePreflight(req, res);  // Handle pre-flight request
     }
 
-    const { username, password, action } = req.body;
+    const { email, username, password, action } = req.body;
 
     // Check if required fields are provided
-    if (!username || !password || !action) {
-        return res.status(400).json({ message: 'Missing required fields: username, password, action' });
+    if (!email || !username || !password || !action) {
+        return res.status(400).json({ message: 'Missing required fields: email, username, password, action' });
     }
 
     try {
         if (action === 'signup') {
             // Signup logic
-            const [results] = await pool.execute('SELECT * FROM users WHERE username = ?', [username]);
+            // Check if email already exists in the database
+            const [emailCheck] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
 
-            if (results.length > 0) {
+            if (emailCheck.length > 0) {
+                return res.status(400).json({ message: 'Email already exists' });
+            }
+
+            // Check if username already exists in the database
+            const [usernameCheck] = await pool.execute('SELECT * FROM users WHERE username = ?', [username]);
+
+            if (usernameCheck.length > 0) {
                 return res.status(400).json({ message: 'Username already exists' });
             }
 
             // Hash password
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            // Save new user to DB
-            await pool.execute('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
+            // Save new user to DB with email, username, and password
+            await pool.execute('INSERT INTO users (email, username, password) VALUES (?, ?, ?)', [email, username, hashedPassword]);
 
             return res.status(201).json({ message: 'Signup successful' });
 
         } else if (action === 'login') {
             // Login logic
-            const [results] = await pool.execute('SELECT * FROM users WHERE username = ?', [username]);
+            // Check if the email exists in the database
+            const [results] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
 
             if (results.length === 0) {
-                return res.status(401).json({ message: 'Incorrect username or password' });
+                return res.status(401).json({ message: 'Incorrect email or password' });
             }
 
             const user = results[0];
@@ -71,8 +72,8 @@ module.exports = async (req, res) => {
             const isMatch = await bcrypt.compare(password, user.password);
 
             if (!isMatch) {
-                console.error('Password mismatch for user:', username); // Log for debugging
-                return res.status(401).json({ message: 'Incorrect username or password' });
+                console.error('Password mismatch for user:', email); // Log for debugging
+                return res.status(401).json({ message: 'Incorrect email or password' });
             }
 
             try {

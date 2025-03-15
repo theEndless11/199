@@ -53,9 +53,12 @@ module.exports = async (req, res) => {
             const hashedPassword = await bcrypt.hash(password, 10);
 
             // Save new user to DB with email, username, and password
-            await pool.execute('INSERT INTO users (email, username, password) VALUES (?, ?, ?)', [email, username, hashedPassword]);
+            const [insertResult] = await pool.execute('INSERT INTO users (email, username, password) VALUES (?, ?, ?)', [email, username, hashedPassword]);
 
-            return res.status(201).json({ message: 'Signup successful' });
+            const userId = insertResult.insertId;  // Retrieve the generated user ID after insertion
+
+            // Return the userId along with the success message
+            return res.status(201).json({ message: 'Signup successful', userId });
 
         } else if (action === 'login') {
             // Login logic

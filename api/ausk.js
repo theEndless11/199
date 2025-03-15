@@ -4,25 +4,30 @@ const pool = require('../utils/db'); // Ensure this is promisePool from db.js
 
 // Set CORS headers for all methods
 const setCorsHeaders = (req, res) => {
-    // Allow all origins for now
-    res.setHeader('Access-Control-Allow-Origin', '*');  // Allow all origins
+    // For development, allow all origins (use *). For production, replace * with specific domain names.
+    res.setHeader('Access-Control-Allow-Origin', '*');  // Allow all origins for now. Change '*' to a specific domain for production.
     
+    // Allow specific HTTP methods
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS');  // Allowed methods
+    
+    // Allow specific headers for the CORS request
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');  // Allowed headers
-    res.setHeader('Access-Control-Allow-Credentials', 'true');  // Allow credentials (if needed)
+    
+    // Allow credentials if needed (cookies, authorization headers, etc.)
+    res.setHeader('Access-Control-Allow-Credentials', 'true');  // Allow credentials (cookies or HTTP authentication)
 };
 
-// Handle OPTIONS requests for CORS pre-flight
+// Handle pre-flight OPTIONS requests (CORS)
 const handlePreflight = (req, res) => {
-    res.status(200).end();  // Respond immediately for pre-flight (OPTIONS)
+    res.status(200).end();  // Respond immediately with 200 OK for OPTIONS (pre-flight request)
 };
 
 module.exports = async (req, res) => {
-    setCorsHeaders(req, res);  // Set CORS headers
+    setCorsHeaders(req, res);  // Set CORS headers for the response
     
     // Handle pre-flight OPTIONS request
     if (req.method === 'OPTIONS') {
-        return handlePreflight(req, res);  // Handle pre-flight request
+        return handlePreflight(req, res);  // Handle pre-flight OPTIONS requests properly
     }
 
     const { email, username, password, action } = req.body;

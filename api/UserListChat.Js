@@ -19,16 +19,31 @@ const handler = async (req, res) => {
 
         setCorsHeaders(res); // Set CORS headers for actual request
 
-        // Query to fetch users and their profile pictures
-        const [users] = await promisePool.execute('SELECT username, profile_picture FROM posts');
+    // Query to fetch users and their profile pictures from posts
+try {
+    // Step 1: Fetch usernames from the users table
+    const [users] = await promisePool.execute('SELECT username FROM users');
+    
+    // Step 2: Loop through the users and fetch the corresponding profile_picture from the posts table
+    const userProfiles = [];
 
-        // Respond with the list of users
-        res.status(200).json(users);
-    } catch (error) {
-        console.error("❌ Error fetching users:", error);
-        res.status(500).json({ message: 'Error fetching users', error });
+    for (const user of users) {
+        // Query to fetch profile picture from posts where the username matches
+        const [profilePic] = await promisePool.execute('SELECT profile_picture FROM posts WHERE username = ?', [user.username]);
+
+        // Add the user data along with the profile picture if available
+        userProfiles.push({
+            username: user.username,
+            profile_picture: profilePic.length > 0 ? profilePic[0].profile_picture : null, // If no profile picture, set to null
+        });
     }
-};
+
+    // Respond with the list of users and their profile pictures
+    res.status(200).json(userProfiles);
+} catch (error) {
+    console.error("❌ Error fetching users:", error);
+    res.status(500).json({ message: 'Error fetching users', error });
+}
 
 // Default export
 module.exports = handler;

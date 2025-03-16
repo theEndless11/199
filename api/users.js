@@ -44,25 +44,26 @@ module.exports = async (req, res) => {
         return res.status(400).json({ message: 'userId, oldUsername, and newUsername are required' });
     }
 
-    // Perform validation and check if newUsername is available
+    // Check if newUsername is the same as the old one
     if (newUsername === oldUsername) {
         return res.status(400).json({ message: 'Username is the same as the current one.' });
     }
 
     try {
-        // Update the username in MongoDB, using the userId to locate the user
+        // Locate the user by userId and update the username in the database
         const user = await User.findByIdAndUpdate(userId, { username: newUsername }, { new: true });
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        // Respond with success message if update is successful
         res.status(200).json({ message: 'Username updated successfully' });
     } catch (error) {
+        // If there’s an error, send a failure response with the error message
         res.status(500).json({ message: 'Failed to update username', error: error.message });
-    
-        }
     }
+ }
 };
 
 

@@ -1,6 +1,17 @@
 const pool = require('../utils/db'); // MySQL connection pool
 
+// Set CORS headers for all methods
+const setCorsHeaders = (res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');  // Allow all origins or specify your domain
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS');  // Allowed methods
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');  // Allowed headers
+};
 module.exports = async (req, res) => {
+      setCorsHeaders(res);
+     // Handle pre-flight OPTIONS request
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end(); // End the request immediately after sending a response for OPTIONS
+    }
     // Fetch all users excluding the userId
     const userId = req.query.userId;
 

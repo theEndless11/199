@@ -1,14 +1,16 @@
 import mysql from 'mysql2';
 
-// Create a connection pool to your MySQL database
+require('dotenv').config(); // To load environment variables from .env
+
+// Create a connection pool using environment variables
 const pool = mysql.createPool({
-  host: 'srv787.hstgr.io',   // e.g. localhost or a remote MySQL server
-  user: 'u208245805_Crypto21',   // Your MySQL username
-  password: 'Crypto21@',  // Your MySQL password
-  database: 'u208245805_Crypto21',  // Your MySQL database name
-  waitForConnections: true,      // Wait for available connection slots
-  connectionLimit: 100,           // Max number of connections in the pool
-  queueLimit: 0                  // Max number of requests to queue before returning an error
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10, // Number of connections allowed in the pool
+  queueLimit: 0 // Unlimited queue length
 });
 
 // Wrap the pool to return promises (using async/await)

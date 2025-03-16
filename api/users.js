@@ -35,13 +35,17 @@ module.exports = async (req, res) => {
         }
     }
 
-    // Handle PUT request for updating the username
-    if (req.method === 'PUT') {
-       const { userId, oldUsername, newUsername } = req.body;
+// Handle PUT request for updating the username
+if (req.method === 'PUT') {
+    const { id, oldUsername, newUsername } = req.body;
 
-    // Validate the presence of userId, oldUsername, and newUsername
-    if (!userId || !oldUsername || !newUsername) {
-        return res.status(400).json({ message: 'userId, oldUsername, and newUsername are required' });
+    console.log('Received ID:', id);  // Log the ID for debugging
+    console.log('Old Username:', oldUsername);  // Log the old username
+    console.log('New Username:', newUsername);  // Log the new username
+
+    // Validate the presence of id, oldUsername, and newUsername
+    if (!id || !oldUsername || !newUsername) {
+        return res.status(400).json({ message: 'id, oldUsername, and newUsername are required' });
     }
 
     // Check if newUsername is the same as the old one
@@ -50,8 +54,8 @@ module.exports = async (req, res) => {
     }
 
     try {
-        // Locate the user by userId and update the username in the database
-        const user = await User.findByIdAndUpdate(userId, { username: newUsername }, { new: true });
+        // Locate the user by id and update the username in the database
+        const user = await User.findByIdAndUpdate(id, { username: newUsername }, { new: true });
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -63,7 +67,8 @@ module.exports = async (req, res) => {
         // If there’s an error, send a failure response with the error message
         res.status(500).json({ message: 'Failed to update username', error: error.message });
     }
- }
+}
+
 };
 
 

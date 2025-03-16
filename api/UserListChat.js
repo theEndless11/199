@@ -1,4 +1,4 @@
-const { promisePool } = require('../utils/db');  // Make sure the path is correct
+const { promisePool } = require('../utils/dbs');  // Make sure the path is correct
 
 // Function to set CORS headers
 const setCorsHeaders = (res) => {

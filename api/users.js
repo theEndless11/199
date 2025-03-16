@@ -53,25 +53,31 @@ if (req.method === 'PUT') {
     }
 
     try {
+        // Log the query
+        console.log('Querying for user with oldUsername:', oldUsername);
+
         // Locate the user by oldUsername and update the username
         const user = await User.findOneAndUpdate(
-            { username: oldUsername },  // Use the old username to find the user
+            { username: oldUsername },  // Query by oldUsername
             { username: newUsername },   // Update the username
             { new: true }                // Return the updated user object
         );
 
+        // Check if user was found and updated
         if (!user) {
+            console.log('User not found with username:', oldUsername);  // Log if user is not found
             return res.status(404).json({ message: 'User not found' });
         }
 
         // Respond with success message if update is successful
+        console.log('User updated successfully:', user);
         res.status(200).json({ message: 'Username updated successfully' });
     } catch (error) {
-        // If there’s an error, send a failure response with the error message
+        // Log the error message if there’s an error
+        console.error('Error updating username:', error);
         res.status(500).json({ message: 'Failed to update username', error: error.message });
     }
 }
-
 
 };
 

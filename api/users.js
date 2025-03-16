@@ -35,8 +35,7 @@ module.exports = async (req, res) => {
         }
     }
 
- 
-    // Handle PUT request for updating the username
+   // Handle PUT request for updating the username
     if (req.method === 'PUT') {
         const { userId, oldUsername, newUsername } = req.body;
 
@@ -44,9 +43,13 @@ module.exports = async (req, res) => {
         console.log('Old Username:', oldUsername);  // Log the old username for debugging
         console.log('New Username:', newUsername);  // Log the new username for debugging
 
-        // Validate the presence of userId, oldUsername, and newUsername
+        // Validate the presence and types of userId, oldUsername, and newUsername
         if (!userId || !oldUsername || !newUsername) {
             return res.status(400).json({ message: 'userId, oldUsername, and newUsername are required' });
+        }
+
+        if (typeof userId !== 'string' || typeof oldUsername !== 'string' || typeof newUsername !== 'string') {
+            return res.status(400).json({ message: 'userId, oldUsername, and newUsername must be strings' });
         }
 
         // Check if newUsername is the same as the old one
@@ -55,20 +58,24 @@ module.exports = async (req, res) => {
         }
 
         try {
-            // Log the query
-            console.log('Querying for user with userId:', userId);
+            // Check if the user exists with the old username
+            const [userResults] = await pool.query('SELECT id, username FROM users WHERE id = ? AND username = ?', [userId, oldUsername]);
+            
+            if (userResults.length === 0) {
+                return res.status(404).json({ message: 'User not found or old username does not match' });
+            }
 
-            // Locate the user by userId and update the username in MySQL
-            const [results] = await pool.query(
+            // Update the username in MySQL
+            const [updateResults] = await pool.query(
                 'UPDATE users SET username = ? WHERE id = ? AND username = ?',
-                [newUsername, userId, oldUsername]  // Using userId to ensure the correct user is updated
+                [newUsername, userId, oldUsername]
             );
 
-            console.log('SQL Query Results:', results);  // Log the query result for debugging
+            console.log('SQL Query Results:', updateResults);  // Log the query result for debugging
 
             // Check if any rows were affected
-            if (results.affectedRows === 0) {
-                console.log('User not found or username not updated');  // Log if no rows were updated
+            if (updateResults.affectedRows === 0) {
+                console.log('No rows were updated'); // Log if no rows were updated
                 return res.status(404).json({ message: 'User not found or username not updated' });
             }
 

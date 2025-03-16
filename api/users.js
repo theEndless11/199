@@ -35,16 +35,18 @@ module.exports = async (req, res) => {
         }
     }
 
- // Handle PUT request for updating the username
+ 
+    // Handle PUT request for updating the username
     if (req.method === 'PUT') {
-        const { oldUsername, newUsername } = req.body;
+        const { userId, oldUsername, newUsername } = req.body;
 
+        console.log('UserId:', userId);  // Log the userId for debugging
         console.log('Old Username:', oldUsername);  // Log the old username for debugging
         console.log('New Username:', newUsername);  // Log the new username for debugging
 
-        // Validate the presence of oldUsername and newUsername
-        if (!oldUsername || !newUsername) {
-            return res.status(400).json({ message: 'oldUsername and newUsername are required' });
+        // Validate the presence of userId, oldUsername, and newUsername
+        if (!userId || !oldUsername || !newUsername) {
+            return res.status(400).json({ message: 'userId, oldUsername, and newUsername are required' });
         }
 
         // Check if newUsername is the same as the old one
@@ -54,12 +56,12 @@ module.exports = async (req, res) => {
 
         try {
             // Log the query
-            console.log('Querying for user with oldUsername:', oldUsername);
+            console.log('Querying for user with userId:', userId);
 
-            // Locate the user by oldUsername and update the username in MySQL
+            // Locate the user by userId and update the username in MySQL
             const [results] = await pool.query(
-                'UPDATE users SET username = ? WHERE username = ?',
-                [newUsername, oldUsername]
+                'UPDATE users SET username = ? WHERE id = ? AND username = ?',
+                [newUsername, userId, oldUsername]  // Using userId to ensure the correct user is updated
             );
 
             console.log('SQL Query Results:', results);  // Log the query result for debugging

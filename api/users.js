@@ -6,12 +6,15 @@ const setCorsHeaders = (res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS');  // Allowed methods
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');  // Allowed headers
 };
+
 module.exports = async (req, res) => {
-      setCorsHeaders(res);
-     // Handle pre-flight OPTIONS request
+    setCorsHeaders(res);
+
+    // Handle pre-flight OPTIONS request
     if (req.method === 'OPTIONS') {
         return res.status(200).end(); // End the request immediately after sending a response for OPTIONS
     }
+
     // Fetch all users excluding the userId
     const userId = req.query.userId;
 
@@ -35,13 +38,11 @@ module.exports = async (req, res) => {
         }
     }
 
-   // Handle PUT request for updating the username
+    // Handle PUT request for updating the username
     if (req.method === 'PUT') {
         const { userId, oldUsername, newUsername } = req.body;
 
-        console.log('UserId:', userId);  // Log the userId for debugging
-        console.log('Old Username:', oldUsername);  // Log the old username for debugging
-        console.log('New Username:', newUsername);  // Log the new username for debugging
+        console.log('Received request body:', req.body);  // Log the whole body for debugging
 
         // Validate the presence and types of userId, oldUsername, and newUsername
         if (!userId || !oldUsername || !newUsername) {
@@ -60,7 +61,7 @@ module.exports = async (req, res) => {
         try {
             // Check if the user exists with the old username
             const [userResults] = await pool.query('SELECT id, username FROM users WHERE id = ? AND username = ?', [userId, oldUsername]);
-            
+
             if (userResults.length === 0) {
                 return res.status(404).json({ message: 'User not found or old username does not match' });
             }
@@ -88,7 +89,6 @@ module.exports = async (req, res) => {
             res.status(500).json({ message: 'Failed to update username', error: error.message });
         }
     }
-
 };
 
 

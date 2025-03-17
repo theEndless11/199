@@ -1,4 +1,4 @@
-const mysql = require('mysql2'); // No need for 'mysql2/promise' separately
+import mysql from 'mysql2';
 
 require('dotenv').config(); // To load environment variables from .env
 

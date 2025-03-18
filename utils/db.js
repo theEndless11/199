@@ -1,6 +1,7 @@
 import mysql from 'mysql2';
+import dotenv from 'dotenv';
 
-require('dotenv').config(); // To load environment variables from .env
+dotenv.config(); // Load environment variables from .env
 
 // Create a connection pool using environment variables
 const pool = mysql.createPool({
@@ -13,8 +14,8 @@ const pool = mysql.createPool({
   queueLimit: 0 // Unlimited queue length
 });
 
-// Explicitly call .promise() to enable promise-based queries
-const promisePool = pool.promise(); // Here, ensure this line is included
+// Enable promise-based queries
+const promisePool = pool.promise();
 
-// Export the promise-enabled pool
-module.exports = promisePool; // Export promisePool
+// ✅ Fix: Export `promisePool` correctly
+export { promisePool };

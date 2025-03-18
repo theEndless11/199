@@ -1,4 +1,4 @@
-const { promisePool } = require('../utils/db');  // Make sure the path is correct
+const { promisePool } = require('../utils/db');  // ✅ Fix import
 
 // Function to set CORS headers
 const setCorsHeaders = (res) => {
@@ -23,22 +23,26 @@ const handler = async (req, res) => {
         const [users] = await promisePool.execute('SELECT username FROM users');
         console.log('Users:', users);  // Log the users to verify the query results
 
-        // Step 2: Loop through the users and fetch the corresponding profile_picture from the posts table
-        const userProfiles = [];
+        // Step 2: Fetch profile pictures in a single query (Optimization)
+        const usernames = users.map(user => user.username);
+        let profilePics = [];
 
-        for (const user of users) {
-            // Query to fetch profile picture from posts where the username matches
-            const [profilePic] = await promisePool.execute('SELECT profile_picture FROM posts WHERE username = ?', [user.username]);
+        if (usernames.length > 0) {
+            const placeholders = usernames.map(() => '?').join(',');
+            const query = `SELECT username, profile_picture FROM posts WHERE username IN (${placeholders})`;
+            const [profilePicResults] = await promisePool.execute(query, usernames);
 
-            // Log the profilePic to verify the query results
-            console.log('Profile picture for user', user.username, profilePic);
-
-            // Add the user data along with the profile picture (fallback to default if none found)
-            userProfiles.push({
-                username: user.username,
-                profile_picture: profilePic.length > 0 ? profilePic[0].profile_picture : 'https://latestnewsandaffairs.site/public/pfp3.jpg', // Default image URL if no profile picture
-            });
+            profilePics = profilePicResults.reduce((acc, row) => {
+                acc[row.username] = row.profile_picture;
+                return acc;
+            }, {});
         }
+
+        // Step 3: Combine results
+        const userProfiles = users.map(user => ({
+            username: user.username,
+            profile_picture: profilePics[user.username] || 'https://latestnewsandaffairs.site/public/pfp3.jpg', // Default if no picture
+        }));
 
         // Respond with the list of users and their profile pictures
         res.status(200).json(userProfiles);

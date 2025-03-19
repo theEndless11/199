@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
         console.log('Request received at:', new Date().toISOString());
         console.log('Request Method:', req.method);
 
-      // Handle GET request to fetch messages
+ // Handle GET request to fetch messages
 if (req.method === 'GET') {
     const { username, chatWith } = req.query;
 
@@ -54,7 +54,9 @@ if (req.method === 'GET') {
                 chatWith: message.chatWith,
                 message: message.message,
                 photo: message.photo,  
-                timestamp: message.timestamp
+                timestamp: message.timestamp,
+                // Add alignment class based on the username
+                alignmentClass: message.username === usernameLower ? 'user-msg' : 'other-msg'
             }));
 
             return res.status(200).json({ messages: formattedMessages });
@@ -67,7 +69,6 @@ if (req.method === 'GET') {
         return res.status(500).json({ error: 'Failed to fetch messages from the database' });
     }
 }
-
 
 // Handle POST request to send a message (with optional photo)
 if (req.method === 'POST') {
@@ -132,6 +133,7 @@ if (req.method === 'POST') {
         return res.status(500).json({ error: 'Failed to insert message into the database' });
     }
 }
+
 
 
 

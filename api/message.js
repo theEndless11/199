@@ -1,4 +1,4 @@
-const pool = require('../utils/db');
+const { promisePool } = require('../utils/db'); // ✅ Correct
 const { publishToAbly } = require('../utils/ably');
 
 // Set CORS headers for all methods

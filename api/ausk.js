@@ -16,10 +16,10 @@ const handlePreflight = (req, res) => {
 };
 
 module.exports = async (req, res) => {
-    setCorsHeaders(req, res);  
+    setCorsHeaders(req, res);
 
     if (req.method === 'OPTIONS') {
-        return handlePreflight(req, res);  
+        return handlePreflight(req, res);
     }
 
     const { email, password, action } = req.body;
@@ -39,11 +39,15 @@ module.exports = async (req, res) => {
             const hashedPassword = await bcrypt.hash(password, 10);
             const username = generateUsername();
 
-            await pool.execute('INSERT INTO users (email, username, password) VALUES (?, ?, ?)', [email, username, hashedPassword]);
+            // Insert the user with null values for location, status, profession, and hobby
+            await pool.execute(
+                'INSERT INTO users (email, username, password, location, status, profession, hobby) VALUES (?, ?, ?, NULL, NULL, NULL, NULL)', 
+                [email, username, hashedPassword]
+            );
 
             return res.status(201).json({ message: 'Signup successful' });
 
-        } else if (action === 'login') { // ✅ Fixed indentation and structure
+        } else if (action === 'login') {
             const [results] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
 
             if (results.length === 0) {

@@ -22,83 +22,73 @@ module.exports = async (req, res) => {
         return handlePreflight(req, res);
     }
 
-    const { email, password, action } = req.body;
+    const { email, password, action, profilePic } = req.body;
 
     if (!email || !password || !action) {
         return res.status(400).json({ message: 'Missing required fields: email, password, action' });
     }
 
-try {
-    if (action === 'signup') {
-        const [emailCheck] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
+    try {
+        if (action === 'signup') {
+            const [emailCheck] = await promisePool.execute('SELECT * FROM users WHERE email = ?', [email]);
 
-        if (emailCheck.length > 0) {
-            return res.status(400).json({ message: 'Email already exists' });
-        }
+            if (emailCheck.length > 0) {
+                return res.status(400).json({ message: 'Email already exists' });
+            }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const username = generateUsername();
-         const profile_picture=  generateProfilePic();
-        // Get the profile picture from the request
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const username = generateUsername(); // Generate random username
 
-        // Insert the user with the profile picture and null values for other fields
-        await pool.execute(
-            'INSERT INTO users (email, username, password, profile_picture, location, status, profession, hobby) VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL)', 
-            [email, username, hashedPassword, profilePic]
-        );
+            // Insert the user into the database
+            await promisePool.execute(
+                `INSERT INTO users (email, username, password, profile_picture) VALUES (?, ?, ?, ?)`, 
+                [email, username, hashedPassword, profilePic || null]
+            );
 
-        return res.status(201).json({ message: 'Signup successful' });
+            return res.status(201).json({ message: 'Signup successful' });
 
         } else if (action === 'login') {
-    const [results] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
+            const [results] = await promisePool.execute('SELECT * FROM users WHERE email = ?', [email]);
 
-    if (results.length === 0) {
-        return res.status(401).json({ message: 'Incorrect email or password' });
-    }
+            if (results.length === 0) {
+                return res.status(401).json({ message: 'Incorrect email or password' });
+            }
 
-    const user = results[0]; // Get the user from the database
-    const isMatch = await bcrypt.compare(password, user.password);
+            const user = results[0];
+            const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!isMatch) {
-        return res.status(401).json({ message: 'Incorrect email or password' });
-    }
+            if (!isMatch) {
+                return res.status(401).json({ message: 'Incorrect email or password' });
+            }
 
-    try {
-        const token = jwt.sign(
-            { userId: user.id },
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRATION }
-        );
+            // Generate JWT token
+            const token = jwt.sign(
+                { userId: user.id },
+                process.env.JWT_SECRET,
+                { expiresIn: process.env.JWT_EXPIRATION || '24h' } // Default expiry to 24h if not set
+            );
 
-        // Include username and profile picture in the response
-        return res.status(200).json({
-            message: 'Login successful',
-            userId: user.id,
-            username: user.username, // Include username
-            profile_picture: user.profile_picture, // Include profile picture
-            token
-        });
+            return res.status(200).json({
+                message: 'Login successful',
+                userId: user.id,
+                username: user.username,
+                profile_picture: user.profile_picture,
+                token
+            });
 
-    } catch (jwtError) {
-        return res.status(500).json({ message: 'JWT generation failed' });
-    }
- } else {
+        } else {
             return res.status(400).json({ message: 'Invalid action' });
         }
-    } catch (err) {
-        return res.status(500).json({ message: 'Server error' });
+    } catch (error) {
+        console.error('Server error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-// Helper function to generate a 4-character username
+// ✅ Helper function to generate a 4-character username
 function generateUsername() {
     const words = ["K", "7", "Q", "V", "1", "M", "2", "Z", "9", "S", "0", "X"];
     return Array.from({ length: 4 }, () => words[Math.floor(Math.random() * words.length)]).join("");
 }
-// Helper function to generate a random profile picture filename
-function generateProfilePic() {
-    const pics = ["https://latestnewsandaffairs.site/public/pfp1.jpg", "https://latestnewsandaffairs.site/public/pfp2.jpg", "https://latestnewsandaffairs.site/public/pfp3.jpg", "https://latestnewsandaffairs.site/public/pfp.jpg"];
-    const randomIndex = Math.floor(Math.random() * pics.length);
-    return pics[randomIndex];
-}
+
 

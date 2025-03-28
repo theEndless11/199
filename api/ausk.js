@@ -28,24 +28,25 @@ module.exports = async (req, res) => {
         return res.status(400).json({ message: 'Missing required fields: email, password, action' });
     }
 
-    try {
-        if (action === 'signup') {
-            const [emailCheck] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
+try {
+    if (action === 'signup') {
+        const [emailCheck] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
 
-            if (emailCheck.length > 0) {
-                return res.status(400).json({ message: 'Email already exists' });
-            }
+        if (emailCheck.length > 0) {
+            return res.status(400).json({ message: 'Email already exists' });
+        }
 
-            const hashedPassword = await bcrypt.hash(password, 10);
-            const username = generateUsername();
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const username = generateUsername();
+        const profilePic = req.body.profilePic; // Get the profile picture from the request
 
-            // Insert the user with null values for location, status, profession, and hobby
-            await pool.execute(
-                'INSERT INTO users (email, username, password, location, status, profession, hobby) VALUES (?, ?, ?, NULL, NULL, NULL, NULL)', 
-                [email, username, hashedPassword]
-            );
+        // Insert the user with the profile picture and null values for other fields
+        await pool.execute(
+            'INSERT INTO users (email, username, password, profile_picture, location, status, profession, hobby) VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL)', 
+            [email, username, hashedPassword, profilePic]
+        );
 
-            return res.status(201).json({ message: 'Signup successful' });
+        return res.status(201).json({ message: 'Signup successful' });
 
         } else if (action === 'login') {
             const [results] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);

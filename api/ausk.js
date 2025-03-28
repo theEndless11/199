@@ -38,7 +38,8 @@ try {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const username = generateUsername();
-        const profilePic = req.body.profilePic; // Get the profile picture from the request
+         const profile_picture=  generateProfilePic();
+        // Get the profile picture from the request
 
         // Insert the user with the profile picture and null values for other fields
         await pool.execute(

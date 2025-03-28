@@ -19,29 +19,14 @@ const handler = async (req, res) => {
 
         setCorsHeaders(res); // Set CORS headers for actual request
 
-        // Query to fetch usernames from the users table
-        const [users] = await promisePool.execute('SELECT username FROM users');
+        // Query to fetch usernames and profile pictures from the users table
+        const [users] = await promisePool.execute('SELECT username, profile_picture FROM users');
         console.log('Users:', users);  // Log the users to verify the query results
 
-        // Step 2: Fetch profile pictures in a single query (Optimization)
-        const usernames = users.map(user => user.username);
-        let profilePics = [];
-
-        if (usernames.length > 0) {
-            const placeholders = usernames.map(() => '?').join(',');
-            const query = `SELECT username, profile_picture FROM posts WHERE username IN (${placeholders})`;
-            const [profilePicResults] = await promisePool.execute(query, usernames);
-
-            profilePics = profilePicResults.reduce((acc, row) => {
-                acc[row.username] = row.profile_picture;
-                return acc;
-            }, {});
-        }
-
-        // Step 3: Combine results
+        // Step 2: Handle default profile pictures if not available
         const userProfiles = users.map(user => ({
             username: user.username,
-            profile_picture: profilePics[user.username] || 'https://latestnewsandaffairs.site/public/pfp3.jpg', // Default if no picture
+            profile_picture: user.profile_picture || 'https://latestnewsandaffairs.site/public/pfp2.jpg', // Default if no picture
         }));
 
         // Respond with the list of users and their profile pictures
@@ -54,4 +39,5 @@ const handler = async (req, res) => {
 
 // Default export
 module.exports = handler;
+
 

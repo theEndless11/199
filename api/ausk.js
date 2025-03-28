@@ -94,4 +94,10 @@ function generateUsername() {
     const words = ["K", "7", "Q", "V", "1", "M", "2", "Z", "9", "S", "0", "X"];
     return Array.from({ length: 4 }, () => words[Math.floor(Math.random() * words.length)]).join("");
 }
+// Helper function to generate a random profile picture filename
+function generateProfilePic() {
+    const pics = ["https://latestnewsandaffairs.site/public/pfp1.jpg", "https://latestnewsandaffairs.site/public/pfp2.jpg", "https://latestnewsandaffairs.site/public/pfp3.jpg", "https://latestnewsandaffairs.site/public/pfp.jpg"];
+    const randomIndex = Math.floor(Math.random() * pics.length);
+    return pics[randomIndex];
+}
 

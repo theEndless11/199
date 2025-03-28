@@ -1,21 +1,21 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const pool = require('../utils/db'); // Ensure this is promisePool from db.js
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { promisePool } from '../utils/db';  // Use ES module import for promisePool
 
 // Set CORS headers for all methods
 const setCorsHeaders = (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');  
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS');  
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');  
-    res.setHeader('Access-Control-Allow-Credentials', 'true');  
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
 };
 
 // Handle pre-flight OPTIONS requests (CORS)
 const handlePreflight = (req, res) => {
-    res.status(200).end();  
+    res.status(200).end();
 };
 
-module.exports = async (req, res) => {
+export default async (req, res) => {  // Use export default for ES module
     setCorsHeaders(req, res);
 
     if (req.method === 'OPTIONS') {
@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
 
             // Insert the user into the database
             await promisePool.execute(
-                `INSERT INTO users (email, username, password, profile_picture) VALUES (?, ?, ?, ?)`, 
+                `INSERT INTO users (email, username, password, profile_picture) VALUES (?, ?, ?, ?)`,
                 [email, username, hashedPassword, profilePic || null]
             );
 

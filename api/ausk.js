@@ -49,38 +49,39 @@ try {
         return res.status(201).json({ message: 'Signup successful' });
 
         } else if (action === 'login') {
-            const [results] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
+    const [results] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
 
-            if (results.length === 0) {
-                return res.status(401).json({ message: 'Incorrect email or password' });
-            }
+    if (results.length === 0) {
+        return res.status(401).json({ message: 'Incorrect email or password' });
+    }
 
-            const user = results[0]; // Get the user from the database
-            const isMatch = await bcrypt.compare(password, user.password);
+    const user = results[0]; // Get the user from the database
+    const isMatch = await bcrypt.compare(password, user.password);
 
-            if (!isMatch) {
-                return res.status(401).json({ message: 'Incorrect email or password' });
-            }
+    if (!isMatch) {
+        return res.status(401).json({ message: 'Incorrect email or password' });
+    }
 
-            try {
-                const token = jwt.sign(
-                    { userId: user.id },
-                    process.env.JWT_SECRET,
-                    { expiresIn: process.env.JWT_EXPIRATION }
-                );
+    try {
+        const token = jwt.sign(
+            { userId: user.id },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRATION }
+        );
 
-                // Include username in the response
-                return res.status(200).json({
-                    message: 'Login successful',
-                    userId: user.id,
-                    username: user.username, // Include username
-                    token
-                });
+        // Include username and profile picture in the response
+        return res.status(200).json({
+            message: 'Login successful',
+            userId: user.id,
+            username: user.username, // Include username
+            profile_picture: user.profile_picture, // Include profile picture
+            token
+        });
 
-            } catch (jwtError) {
-                return res.status(500).json({ message: 'JWT generation failed' });
-            }
-        } else {
+    } catch (jwtError) {
+        return res.status(500).json({ message: 'JWT generation failed' });
+    }
+ } else {
             return res.status(400).json({ message: 'Invalid action' });
         }
     } catch (err) {

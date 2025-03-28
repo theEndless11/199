@@ -16,6 +16,4 @@ const pool = mysql.createPool({
 
 // Enable promise-based queries
 const promisePool = pool.promise();
-
-// ✅ Fixed Export
-module.exports = { promisePool }; 
+export { promisePool };

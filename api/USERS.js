@@ -1,5 +1,4 @@
-const pool = require('../utils/db'); // MySQL connection pool
-
+import { promisePool } from '../utils/db';  // Use ES module import for promisePool
 // Set CORS headers for all methods
 const setCorsHeaders = (res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');  // Allow all origins or specify your domain

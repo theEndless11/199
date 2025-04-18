@@ -7,12 +7,9 @@ const CORS_HEADERS = {
 };
 
 // Middleware to check if JWT token is valid
-const authenticateToken = (req) => {
-    const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
-
-    if (!token) {
-        return null; // Let the handler handle 403
-    }
+const authenticateToken = (event) => {
+    const token = event.headers?.authorization?.split(' ')[1];
+    if (!token) return null;
 
     try {
         const user = jwt.verify(token, process.env.JWT_SECRET);
@@ -24,7 +21,7 @@ const authenticateToken = (req) => {
 
 // Serverless function
 export const handler = async (event) => {
-    // ✅ Handle CORS preflight request (OPTIONS)
+    // CORS preflight
     if (event.httpMethod === 'OPTIONS') {
         return {
             statusCode: 200,
@@ -33,9 +30,8 @@ export const handler = async (event) => {
         };
     }
 
-    // ✅ Auth check for other requests
     const result = authenticateToken(event);
-    const user = result && result.user;
+    const user = result?.user;
 
     if (!user) {
         return {
@@ -45,13 +41,25 @@ export const handler = async (event) => {
         };
     }
 
-    // ✅ Protected route logic
+    // Handle GET request
     if (event.httpMethod === 'GET') {
         return {
             statusCode: 200,
             headers: CORS_HEADERS,
             body: JSON.stringify({
-                message: 'This is a protected route',
+                message: 'GET success - protected route',
+                user,
+            }),
+        };
+    }
+
+    // Handle POST request
+    if (event.httpMethod === 'POST') {
+        return {
+            statusCode: 200,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({
+                message: 'POST success - protected route',
                 user,
             }),
         };

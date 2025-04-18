@@ -8,20 +8,25 @@ const CORS_HEADERS = {
 
 // Middleware to check if JWT token is valid
 const authenticateToken = (event) => {
-    const token = event.headers?.authorization?.split(' ')[1];
-    if (!token) return null;
+    const authHeader = event.headers?.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+
+    if (!token) {
+        console.warn('⛔ No token provided');
+        return null;
+    }
 
     try {
         const user = jwt.verify(token, process.env.JWT_SECRET);
         return { user };
     } catch (err) {
+        console.error('❌ Invalid or expired token:', err.message);
         return null;
     }
 };
 
-// Serverless function
 export const handler = async (event) => {
-    // CORS preflight
+    // Handle CORS preflight
     if (event.httpMethod === 'OPTIONS') {
         return {
             statusCode: 200,
@@ -41,25 +46,13 @@ export const handler = async (event) => {
         };
     }
 
-    // Handle GET request
-    if (event.httpMethod === 'GET') {
+    // Protected route logic
+    if (event.httpMethod === 'GET' || event.httpMethod === 'POST') {
         return {
             statusCode: 200,
             headers: CORS_HEADERS,
             body: JSON.stringify({
-                message: 'GET success - protected route',
-                user,
-            }),
-        };
-    }
-
-    // Handle POST request
-    if (event.httpMethod === 'POST') {
-        return {
-            statusCode: 200,
-            headers: CORS_HEADERS,
-            body: JSON.stringify({
-                message: 'POST success - protected route',
+                message: `${event.httpMethod} success - protected route`,
                 user,
             }),
         };

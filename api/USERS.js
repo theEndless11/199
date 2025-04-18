@@ -43,4 +43,4 @@ if (req.method === 'PUT') {
         await pool.query('ROLLBACK');
         res.status(500).json({ message: 'Failed to update username', error: error.message });
     }
-}
+}};

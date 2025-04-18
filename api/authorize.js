@@ -1,60 +1,66 @@
 import jwt from 'jsonwebtoken';
 
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
 // Middleware to check if JWT token is valid
 const authenticateToken = (req) => {
     const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
 
     if (!token) {
-        return { statusCode: 403, body: JSON.stringify({ message: 'Access denied, no token provided' }) };
+        return null; // Let the handler handle 403
     }
 
     try {
         const user = jwt.verify(token, process.env.JWT_SECRET);
         return { user };
     } catch (err) {
-        return { statusCode: 403, body: JSON.stringify({ message: 'Invalid or expired token' }) };
+        return null;
     }
 };
 
 // Serverless function
 export const handler = async (event) => {
-    const { user } = authenticateToken(event);  // Validate JWT token
-
-    // If authentication failed (no user)
-    if (!user) {
+    // ✅ Handle CORS preflight request (OPTIONS)
+    if (event.httpMethod === 'OPTIONS') {
         return {
-            statusCode: 403,
-            body: JSON.stringify({ message: 'Invalid or expired token' }),
-            headers: {
-                'Access-Control-Allow-Origin': '*',  // Allow all origins
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            }
+            statusCode: 200,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ message: 'CORS preflight success' }),
         };
     }
 
-    // CORS headers
-    const headers = {
-        'Access-Control-Allow-Origin': '*',  // Allow all origins
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    };
+    // ✅ Auth check for other requests
+    const result = authenticateToken(event);
+    const user = result && result.user;
 
-    // Your protected route logic
+    if (!user) {
+        return {
+            statusCode: 403,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ message: 'Invalid or expired token' }),
+        };
+    }
+
+    // ✅ Protected route logic
     if (event.httpMethod === 'GET') {
         return {
             statusCode: 200,
+            headers: CORS_HEADERS,
             body: JSON.stringify({
                 message: 'This is a protected route',
-                user: user,  // Send user data back
+                user,
             }),
-            headers,
         };
     }
 
     return {
-        statusCode: 405,  // Method not allowed
+        statusCode: 405,
+        headers: CORS_HEADERS,
         body: JSON.stringify({ message: 'Method not allowed' }),
-        headers,
     };
 };
+

@@ -6,10 +6,13 @@ const CORS_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-// Middleware to check if JWT token is valid
 const authenticateToken = (event) => {
     const authHeader = event.headers?.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+
+    console.log('🔐 Authorization Header:', authHeader);
+    console.log('🔑 Token Extracted:', token);
+    console.log('🧪 JWT_SECRET present:', !!process.env.JWT_SECRET);
 
     if (!token) {
         console.warn('⛔ No token provided');
@@ -18,6 +21,7 @@ const authenticateToken = (event) => {
 
     try {
         const user = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('✅ Token verified. User:', user);
         return { user };
     } catch (err) {
         console.error('❌ Invalid or expired token:', err.message);
@@ -26,7 +30,6 @@ const authenticateToken = (event) => {
 };
 
 export const handler = async (event) => {
-    // Handle CORS preflight
     if (event.httpMethod === 'OPTIONS') {
         return {
             statusCode: 200,
@@ -46,7 +49,7 @@ export const handler = async (event) => {
         };
     }
 
-    // Protected route logic
+    // You can allow more methods here if needed
     if (event.httpMethod === 'GET' || event.httpMethod === 'POST') {
         return {
             statusCode: 200,

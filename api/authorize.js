@@ -6,6 +6,22 @@ const CORS_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
+// ✅ Safe token generator with fallback expiration
+const DEFAULT_EXPIRATION = '30d'; // fallback if JWT_EXPIRATION is invalid
+
+const generateToken = (payload) => {
+    const isValidFormat = (exp) => /^\d+[smhd]?$/.test(exp); // e.g., 60, 15m, 2d
+
+    const expiresIn = isValidFormat(process.env.JWT_EXPIRATION)
+        ? process.env.JWT_EXPIRATION
+        : DEFAULT_EXPIRATION;
+
+    console.log('📦 Using expiresIn:', expiresIn);
+
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
+};
+
+// ✅ Auth middleware
 const authenticateToken = (event) => {
     const authHeader = event.headers?.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
@@ -29,7 +45,9 @@ const authenticateToken = (event) => {
     }
 };
 
+// ✅ Main serverless function
 export const handler = async (event) => {
+    // Handle preflight CORS
     if (event.httpMethod === 'OPTIONS') {
         return {
             statusCode: 200,
@@ -38,6 +56,23 @@ export const handler = async (event) => {
         };
     }
 
+    // For testing/demo: issue a token on POST with dummy user
+    if (event.httpMethod === 'POST' && event.path === '/api/issue-token') {
+        const dummyUser = { id: '123', username: 'testuser' };
+        const token = generateToken(dummyUser);
+
+        return {
+            statusCode: 200,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({
+                message: 'Token issued',
+                token,
+                user: dummyUser,
+            }),
+        };
+    }
+
+    // 🔐 Authenticate token
     const result = authenticateToken(event);
     const user = result?.user;
 
@@ -49,7 +84,7 @@ export const handler = async (event) => {
         };
     }
 
-    // You can allow more methods here if needed
+    // Protected route logic
     if (event.httpMethod === 'GET' || event.httpMethod === 'POST') {
         return {
             statusCode: 200,

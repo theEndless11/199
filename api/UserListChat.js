@@ -18,17 +18,14 @@ const handler = async (req, res) => {
         }
 
         setCorsHeaders(res); // Set CORS headers for actual request
+           const [users] = await promisePool.execute('SELECT id, username, profile_picture FROM users');
 
-        // Query to fetch usernames and profile pictures from the users table
-        const [users] = await promisePool.execute('SELECT username, profile_picture FROM users');
         console.log('Users:', users);  // Log the users to verify the query results
-
-        // Step 2: Handle default profile pictures if not available
-        const userProfiles = users.map(user => ({
-            username: user.username,
-            profile_picture: user.profile_picture || 'https://latestnewsandaffairs.site/public/pfp2.jpg', // Default if no picture
-        }));
-
+      const userProfiles = users.map(user => ({
+    id: user.id,
+    username: user.username,
+    profile_picture: user.profile_picture || 'https://latestnewsandaffairs.site/public/pfp2.jpg',
+}));
         // Respond with the list of users and their profile pictures
         res.status(200).json(userProfiles);
     } catch (error) {

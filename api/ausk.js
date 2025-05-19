@@ -15,7 +15,7 @@ const handlePreflight = (req, res) => {
     res.status(200).end();
 };
 
-// ✅ Helper: validate expiration value (e.g., "30d", "60", "15m")
+// Helper: validate expiration value (e.g., "30d", "60", "15m")
 const getSafeExpiration = () => {
     const exp = process.env.JWT_EXPIRATION;
     const isValid = exp && /^\d+[smhd]?$/.test(exp);
@@ -29,10 +29,14 @@ export default async (req, res) => {
         return handlePreflight(req, res);
     }
 
-    const { email, password, action, profilePic } = req.body;
+    const { email, password, action, username, profilePic } = req.body;
 
     if (!email || !password || !action) {
         return res.status(400).json({ message: 'Missing required fields: email, password, action' });
+    }
+
+    if (action === 'signup' && (!username || !profilePic)) {
+        return res.status(400).json({ message: 'Username and profileshepherd profile picture are required for signup' });
     }
 
     try {
@@ -44,11 +48,10 @@ export default async (req, res) => {
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
-            const username = generateUsername();
 
             await promisePool.execute(
                 `INSERT INTO users (email, username, password, profile_picture) VALUES (?, ?, ?, ?)`,
-                [email, username, hashedPassword, profilePic || null]
+                [email, username, hashedPassword, profilePic]
             );
 
             return res.status(201).json({ message: 'Signup successful' });
@@ -67,7 +70,6 @@ export default async (req, res) => {
                 return res.status(401).json({ message: 'Incorrect email or password' });
             }
 
-            // ✅ Use safe expiration
             const token = jwt.sign(
                 { userId: user.id, username: user.username },
                 process.env.JWT_SECRET,
@@ -90,11 +92,3 @@ export default async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
-
-// ✅ Helper function to generate a random username
-function generateUsername() {
-    const words = ["K", "7", "Q", "V", "1", "M", "2", "Z", "9", "S", "0", "X"];
-    return Array.from({ length: 4 }, () => words[Math.floor(Math.random() * words.length)]).join("");
-}
-
-

@@ -1,71 +1,72 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const pool = require('../utils/db'); // Ensure this is promisePool from db.js
+import jwt from 'jsonwebtoken';
 
-module.exports = async (req, res) => {
-    const { username, password, action } = req.body;
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
-    // Check if required fields are provided
-    if (!username || !password || !action) {
-        return res.status(400).json({ message: 'Missing required fields: username, password, action' });
-    }
+const authenticateToken = (req) => {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+
+    if (!token) return null;
 
     try {
-        if (action === 'signup') {
-            // Signup logic
-            const [results] = await pool.execute('SELECT * FROM users WHERE username = ?', [username]);
-
-            if (results.length > 0) {
-                return res.status(400).json({ message: 'Username already exists' });
-            }
-
-            // Hash password
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            // Save new user to DB
-            await pool.execute('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
-
-            return res.status(201).json({ message: 'Signup successful' });
-
-        } else if (action === 'login') {
-            // Login logic
-            const [results] = await pool.execute('SELECT * FROM users WHERE username = ?', [username]);
-
-            if (results.length === 0) {
-                return res.status(401).json({ message: 'Incorrect username or password' });
-            }
-
-            const user = results[0];
-
-            // Compare password with hashed password
-            const isMatch = await bcrypt.compare(password, user.password);
-
-            if (!isMatch) {
-                console.error('Password mismatch for user:', username); // Log for debugging
-                return res.status(401).json({ message: 'Incorrect username or password' });
-            }
-
-            try {
-                // Generate JWT Token
-                const token = jwt.sign(
-                    { userId: user.id },
-                    process.env.JWT_SECRET,
-                    { expiresIn: process.env.JWT_EXPIRATION }
-                );
-
-                console.log('JWT Token generated:', token); // Log the token for debugging
-                return res.status(200).json({ message: 'Login successful', userId: user.id, token });
-
-            } catch (jwtError) {
-                console.error('JWT Signing Error:', jwtError);
-                return res.status(500).json({ message: 'JWT generation failed' });
-            }
-        } else {
-            return res.status(400).json({ message: 'Invalid action' });
-        }
+        const user = jwt.verify(token, process.env.JWT_SECRET);
+        return { user };
     } catch (err) {
-        console.error('Error during authentication:', err);
-        return res.status(500).json({ message: 'Server error' });
+        return null;
     }
 };
+
+// Vercel-compliant default export
+export default async function handler(req, res) {
+    // CORS preflight
+    if (req.method === 'OPTIONS') {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        return res.status(200).end();
+    }
+
+    // Auth check
+    const result = authenticateToken(req);
+    const user = result?.user;
+
+    if (!user) {
+        res.writeHead(403, CORS_HEADERS);
+        return res.end(JSON.stringify({ message: 'Invalid or expired token' }));
+    }
+
+    if (req.method === 'POST') {
+        const { username, userId, profilePicture } = req.body;
+
+        if (!username || !userId || !profilePicture) {
+            res.writeHead(400, CORS_HEADERS);
+            return res.end(JSON.stringify({ message: 'Missing required fields' }));
+        }
+
+        // Validate userId matches the token's userId
+        if (user.userId !== userId) {
+            res.writeHead(403, CORS_HEADERS);
+            return res.end(JSON.stringify({ message: 'Unauthorized: User ID mismatch' }));
+        }
+
+        // Simulate profile picture update (replace with actual database logic)
+        // Assuming the update is successful
+        res.writeHead(200, CORS_HEADERS);
+        return res.end(JSON.stringify({
+            message: 'Profile picture updated successfully',
+            user,
+        }));
+    }
+
+    // Default token validation response
+    res.writeHead(200, CORS_HEADERS);
+    return res.end(JSON.stringify({
+        message: 'Token valid',
+        user,
+    }));
+}
 

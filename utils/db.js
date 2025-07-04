@@ -9,9 +9,8 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10, // Number of connections allowed in the pool
-  queueLimit: 0 // Unlimited queue length
+   connectionLimit: 100,           // Max number of connections in the pool
+  queueLimit: 0    
 });
 
 // Enable promise-based queries

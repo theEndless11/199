@@ -1,313 +1,215 @@
-const { promisePool: pool } = require('../utils/db');
+const { promisePool } = require('../utils/db');
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Credentials': 'true'
+}
 
 export default async function handler(req, res) {
-  // ✅ Set CORS headers for all requests
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  // ✅ Handle preflight request (OPTIONS)
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return res.status(200).end(); // No body for preflight
+    Object.keys(corsHeaders).forEach(key => {
+      res.setHeader(key, corsHeaders[key])
+    })
+    return res.status(200).end()
   }
 
+  // Set CORS headers for all requests
+  Object.keys(corsHeaders).forEach(key => {
+    res.setHeader(key, corsHeaders[key])
+  })
+
+  let connection
   try {
+    connection = await mysql.createConnection(dbConfig)
+    
     switch (req.method) {
       case 'POST':
-        return await createHashtagFeatures(req, res);
-
+        return await createHashtagEntries(req, res, connection)
       case 'GET':
-        const { action } = req.query;
-        switch (action) {
-          case 'trending':
-            return await getTrendingHashtags(req, res);
-          case 'search':
-            return await searchHashtags(req, res);
-          case 'hashtag-posts':
-            return await getPostsByHashtag(req, res);
-          case 'user-activity':
-            return await getUserHashtagActivity(req, res);
-          case 'related':
-            return await getRelatedHashtags(req, res);
-          case 'stats':
-            return await getSystemStats(req, res);
-          default:
-            return await getTrendingHashtags(req, res);
-        }
-
+        return await getTrendingHashtags(req, res, connection)
+      case 'DELETE':
+        return await deleteOldHashtags(req, res, connection)
       default:
-        res.status(405).json({ error: 'Method not allowed' });
+        return res.status(405).json({ error: 'Method not allowed' })
     }
   } catch (error) {
-    console.error('API Error:', error);
-    res.status(500).json({
-      error: 'Internal server error',
-      message: error.message
-    });
-  }
-}
-
-// === API Route Handlers ===
-
-async function createHashtagFeatures(req, res) {
-  const { hashtags, postId, username } = req.body;
-
-  if (!hashtags?.length || !postId || !username) {
-    return res.status(400).json({
-      error: 'hashtags array, postId, and username are required'
-    });
-  }
-
-  const connection = await pool.getConnection();
-  try {
-    const values = hashtags.map(h =>
-      [h.toLowerCase().replace('#', '').trim(), postId, username]
-    );
-
-    await connection.query(
-      'INSERT INTO features (hashtag, post_id, username) VALUES ?',
-      [values]
-    );
-
-    res.status(201).json({
-      success: true,
-      message: `Created ${values.length} hashtag features`,
-      hashtags: values.map(v => v[0])
-    });
+    console.error('Database error:', error)
+    return res.status(500).json({ error: 'Database connection failed' })
   } finally {
-    connection.release();
+    if (connection) {
+      await connection.end()
+    }
   }
 }
 
-async function getTrendingHashtags(req, res) {
-  const { period = '7d', limit = 20 } = req.query;
-
-  const hoursMap = { '1h': 1, '24h': 24, '3d': 72, '7d': 168 };
-  const selectedHours = hoursMap[period] || 168;
-
-  const connection = await pool.getConnection();
+// Create hashtag entries for a post
+async function createHashtagEntries(req, res, connection) {
   try {
-    const [trending] = await connection.query(`
-      SELECT 
-        hashtag,
-        COUNT(*) as total_uses,
-        COUNT(DISTINCT username) as unique_users,
-        MAX(created_at) as latest_use,
-        MIN(created_at) as first_use,
-        ROUND(COUNT(*) / COUNT(DISTINCT username), 1) as avg_uses_per_user
-      FROM features 
-      WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? HOUR)
-      GROUP BY hashtag 
-      ORDER BY total_uses DESC, unique_users DESC
-      LIMIT ?
-    `, [selectedHours, parseInt(limit)]);
+    const { postId, hashtags, username, profilePic } = req.body
 
-    res.json({
-      success: true,
-      period,
-      trending_hashtags: trending,
-      generated_at: new Date()
-    });
-  } finally {
-    connection.release();
-  }
-}
+    if (!postId || !hashtags || !Array.isArray(hashtags) || hashtags.length === 0) {
+      return res.status(400).json({ error: 'Invalid input: postId and hashtags array required' })
+    }
 
-async function searchHashtags(req, res) {
-  const { q: query, limit = 10 } = req.query;
+    // Create table if not exists
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS trending_hashtags (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        hashtag VARCHAR(100) NOT NULL,
+        post_id VARCHAR(100) NOT NULL,
+        username VARCHAR(100) NOT NULL,
+        profile_pic TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP DEFAULT (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 7 DAY)),
+        INDEX idx_hashtag (hashtag),
+        INDEX idx_created_at (created_at),
+        INDEX idx_expires_at (expires_at)
+      )
+    `)
 
-  if (!query) {
-    return res.status(400).json({ error: 'Search query required' });
-  }
-
-  const connection = await pool.getConnection();
-  try {
-    const [results] = await connection.query(`
-      SELECT 
-        hashtag,
-        COUNT(*) as total_uses,
-        COUNT(DISTINCT username) as unique_users,
-        MAX(created_at) as latest_use
-      FROM features 
-      WHERE hashtag LIKE CONCAT(?, '%')
-        AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-      GROUP BY hashtag
-      ORDER BY total_uses DESC, latest_use DESC
-      LIMIT ?
-    `, [query.toLowerCase().replace('#', ''), parseInt(limit)]);
-
-    res.json({
-      success: true,
-      query,
-      results
-    });
-  } finally {
-    connection.release();
-  }
-}
-
-async function getPostsByHashtag(req, res) {
-  const { hashtag, limit = 20, offset = 0 } = req.query;
-
-  if (!hashtag) {
-    return res.status(400).json({ error: 'Hashtag parameter required' });
-  }
-
-  const connection = await pool.getConnection();
-  try {
-    const cleanHashtag = hashtag.toLowerCase().replace('#', '');
-
-    const [posts] = await connection.query(`
-  SELECT 
-    f.id as feature_id,
-    f.hashtag,
-    f.created_at as tagged_at,
-    p._id as post_id,    
-    p.message,
-    p.username,
-    p.photo,
-    p.timestamp
-  FROM features f
-  LEFT JOIN posts p ON f.post_id = p._id    -- <--- FIX HERE
-  WHERE f.hashtag = ?
-    AND f.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-  ORDER BY f.created_at DESC
-  LIMIT ? OFFSET ?
-`, [cleanHashtag, parseInt(limit), parseInt(offset)]);
-
-
-    const [countResult] = await connection.query(`
-      SELECT COUNT(*) as total
-      FROM features 
-      WHERE hashtag = ?
-        AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-    `, [cleanHashtag]);
-
-    res.json({
-      success: true,
-      hashtag: `#${cleanHashtag}`,
-      posts,
-      total: countResult[0].total,
-      limit: parseInt(limit),
-      offset: parseInt(offset)
-    });
-  } finally {
-    connection.release();
-  }
-}
-
-async function getUserHashtagActivity(req, res) {
-  const { username, limit = 10 } = req.query;
-
-  if (!username) {
-    return res.status(400).json({ error: 'Username parameter required' });
-  }
-
-  const connection = await pool.getConnection();
-  try {
-    const [activity] = await connection.query(`
-      SELECT 
-        hashtag,
-        COUNT(*) as usage_count,
-        MAX(created_at) as last_used,
-        MIN(created_at) as first_used
-      FROM features 
-      WHERE username = ?
-        AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-      GROUP BY hashtag
-      ORDER BY usage_count DESC, last_used DESC
-      LIMIT ?
-    `, [username, parseInt(limit)]);
-
-    res.json({
-      success: true,
+    // Insert hashtag entries
+    const values = hashtags.map(hashtag => [
+      hashtag.toLowerCase(),
+      postId,
       username,
-      hashtag_activity: activity
-    });
-  } finally {
-    connection.release();
+      profilePic || null
+    ])
+
+    const placeholders = values.map(() => '(?, ?, ?, ?)').join(', ')
+    const flatValues = values.flat()
+
+    const [result] = await connection.execute(
+      `INSERT INTO trending_hashtags (hashtag, post_id, username, profile_pic) VALUES ${placeholders}`,
+      flatValues
+    )
+    
+    return res.status(201).json({
+      message: 'Hashtag entries created successfully',
+      insertedCount: result.affectedRows,
+      insertedId: result.insertId
+    })
+  } catch (error) {
+    console.error('Error creating hashtag entries:', error)
+    return res.status(500).json({ error: 'Failed to create hashtag entries' })
   }
 }
 
-async function getRelatedHashtags(req, res) {
-  const { hashtag, limit = 10 } = req.query;
-
-  if (!hashtag) {
-    return res.status(400).json({ error: 'Hashtag parameter required' });
-  }
-
-  const connection = await pool.getConnection();
+// Get trending hashtags with counts and recent posts
+async function getTrendingHashtags(req, res, connection) {
   try {
-    const cleanHashtag = hashtag.toLowerCase().replace('#', '');
-
-    const [related] = await connection.query(`
+    const { hours = 24, limit = 20 } = req.query
+    
+    // Get trending hashtags with counts
+    const [trendingResults] = await connection.execute(`
       SELECT 
-        f2.hashtag as related_hashtag,
-        COUNT(*) as co_occurrence_count,
-        COUNT(DISTINCT f1.username) as common_users
-      FROM features f1
-      JOIN features f2 ON f1.post_id = f2.post_id 
-        AND f1.hashtag != f2.hashtag
-      WHERE f1.hashtag = ?
-        AND f1.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-      GROUP BY f2.hashtag
-      ORDER BY co_occurrence_count DESC
+        hashtag,
+        COUNT(*) as count,
+        COUNT(DISTINCT username) as unique_user_count,
+        MIN(created_at) as first_seen,
+        MAX(created_at) as last_seen,
+        (COUNT(*) * COUNT(DISTINCT username)) as trending_score
+      FROM trending_hashtags 
+      WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? HOUR)
+        AND expires_at > NOW()
+      GROUP BY hashtag 
+      ORDER BY trending_score DESC, count DESC
       LIMIT ?
-    `, [cleanHashtag, parseInt(limit)]);
+    `, [parseInt(hours), parseInt(limit)])
 
-    res.json({
-      success: true,
-      base_hashtag: `#${cleanHashtag}`,
-      related_hashtags: related
-    });
-  } finally {
-    connection.release();
+    // Get recent posts for each trending hashtag
+    const hashtagsWithPosts = await Promise.all(
+      trendingResults.map(async (hashtag) => {
+        const [recentPosts] = await connection.execute(`
+          SELECT post_id, username, profile_pic, created_at
+          FROM trending_hashtags 
+          WHERE hashtag = ? 
+            AND created_at >= DATE_SUB(NOW(), INTERVAL ? HOUR)
+            AND expires_at > NOW()
+          ORDER BY created_at DESC 
+          LIMIT 3
+        `, [hashtag.hashtag, parseInt(hours)])
+
+        return {
+          ...hashtag,
+          recent_posts: recentPosts
+        }
+      })
+    )
+    
+    return res.status(200).json({
+      trending_hashtags: hashtagsWithPosts,
+      period_hours: parseInt(hours),
+      generated_at: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Error getting trending hashtags:', error)
+    return res.status(500).json({ error: 'Failed to get trending hashtags' })
   }
 }
 
-async function getSystemStats(req, res) {
-  const connection = await pool.getConnection();
+// Delete old hashtags (cleanup function)
+async function deleteOldHashtags(req, res, connection) {
   try {
-    const [overallStats] = await connection.query(`
-      SELECT 
-        COUNT(*) as total_hashtag_uses,
-        COUNT(DISTINCT hashtag) as unique_hashtags,
-        COUNT(DISTINCT username) as active_users,
-        COUNT(DISTINCT post_id) as posts_with_hashtags
-      FROM features 
-      WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-    `);
-
-    const [dailyStats] = await connection.query(`
-      SELECT 
-        DATE(created_at) as day,
-        COUNT(*) as total_uses,
-        COUNT(DISTINCT hashtag) as unique_hashtags,
-        COUNT(DISTINCT username) as active_users
-      FROM features 
-      WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-      GROUP BY DATE(created_at)
-      ORDER BY day DESC
-    `);
-
-    const [todayTop] = await connection.query(`
-      SELECT hashtag, COUNT(*) as uses
-      FROM features 
-      WHERE DATE(created_at) = CURDATE()
-      GROUP BY hashtag
-      ORDER BY uses DESC
-      LIMIT 5
-    `);
-
-    res.json({
-      success: true,
-      overall_stats: overallStats[0],
-      daily_breakdown: dailyStats,
-      today_top_hashtags: todayTop,
-      generated_at: new Date()
-    });
-  } finally {
-    connection.release();
+    const [result] = await connection.execute(`
+      DELETE FROM trending_hashtags 
+      WHERE expires_at <= NOW()
+    `)
+    
+    return res.status(200).json({
+      message: 'Old hashtag entries deleted successfully',
+      deletedCount: result.affectedRows
+    })
+  } catch (error) {
+    console.error('Error deleting old hashtags:', error)
+    return res.status(500).json({ error: 'Failed to delete old hashtags' })
   }
 }
 
+// Additional endpoint to get specific hashtag details
+export async function getHashtagDetails(req, res, connection) {
+  try {
+    const { hashtag } = req.query
+    
+    if (!hashtag) {
+      return res.status(400).json({ error: 'Hashtag parameter required' })
+    }
+
+    const [results] = await connection.execute(`
+      SELECT 
+        post_id,
+        username,
+        profile_pic,
+        created_at,
+        hashtag
+      FROM trending_hashtags 
+      WHERE hashtag = ? 
+        AND expires_at > NOW()
+      ORDER BY created_at DESC
+    `, [hashtag.toLowerCase()])
+    
+    const [countResult] = await connection.execute(`
+      SELECT 
+        COUNT(*) as total_count,
+        COUNT(DISTINCT username) as unique_users,
+        MIN(created_at) as first_used,
+        MAX(created_at) as last_used
+      FROM trending_hashtags 
+      WHERE hashtag = ? 
+        AND expires_at > NOW()
+    `, [hashtag.toLowerCase()])
+    
+    return res.status(200).json({
+      hashtag: hashtag.toLowerCase(),
+      posts: results,
+      statistics: countResult[0]
+    })
+  } catch (error) {
+    console.error('Error getting hashtag details:', error)
+    return res.status(500).json({ error: 'Failed to get hashtag details' })
+  }
+}
+
+module.exports = handler;

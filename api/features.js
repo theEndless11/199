@@ -1,4 +1,5 @@
 const { promisePool } = require('../utils/db');
+
 // CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,31 +16,24 @@ async function handler(req, res) {
 
   Object.entries(corsHeaders).forEach(([key, value]) => res.setHeader(key, value));
 
-  let connection;
   try {
-    connection = await mysql.createConnection(dbConfig);
-
-    await createHashtagsTable(connection);
-
     switch (req.method) {
       case 'POST':
-        return await createHashtagEntries(req, res, connection);
+        return await createHashtagEntries(req, res);
       case 'GET':
-        return await getTrendingHashtags(req, res, connection);
+        return await getTrendingHashtags(req, res);
       case 'DELETE':
-        return await deleteOldHashtags(req, res, connection);
+        return await deleteOldHashtags(req, res);
       default:
         return res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
-    console.error('Database error:', error);
-    return res.status(500).json({ error: 'Database connection failed' });
-  } finally {
-    if (connection) await connection.end();
+    console.error('Handler error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
 
-async function createHashtagEntries(req, res, connection) {
+async function createHashtagEntries(req, res) {
   try {
     const { postId, hashtags, username } = req.body;
 
@@ -56,7 +50,7 @@ async function createHashtagEntries(req, res, connection) {
     const placeholders = values.map(() => '(?, ?, ?)').join(', ');
     const flatValues = values.flat();
 
-    const [result] = await connection.execute(
+    const [result] = await promisePool.execute(
       `INSERT INTO hashtags (hashtag, post_id, username) VALUES ${placeholders}`,
       flatValues
     );
@@ -72,11 +66,11 @@ async function createHashtagEntries(req, res, connection) {
   }
 }
 
-async function getTrendingHashtags(req, res, connection) {
+async function getTrendingHashtags(req, res) {
   try {
     const { hours = 24, limit = 20 } = req.query;
 
-    const [trendingResults] = await connection.execute(
+    const [trendingResults] = await promisePool.execute(
       `
       SELECT 
         hashtag,
@@ -98,7 +92,7 @@ async function getTrendingHashtags(req, res, connection) {
     // Fetch recent posts joined with user profile_picture from users table
     const hashtagsWithPosts = await Promise.all(
       trendingResults.map(async (hashtag) => {
-        const [recentPosts] = await connection.execute(
+        const [recentPosts] = await promisePool.execute(
           `
           SELECT 
             h.post_id, 
@@ -134,9 +128,9 @@ async function getTrendingHashtags(req, res, connection) {
   }
 }
 
-async function deleteOldHashtags(req, res, connection) {
+async function deleteOldHashtags(req, res) {
   try {
-    const [result] = await connection.execute(
+    const [result] = await promisePool.execute(
       `DELETE FROM hashtags WHERE expires_at <= NOW()`
     );
 

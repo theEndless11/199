@@ -39,23 +39,6 @@ async function handler(req, res) {
   }
 }
 
-async function createHashtagsTable(connection) {
-  const createTableSQL = `
-    CREATE TABLE IF NOT EXISTS hashtags (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      hashtag VARCHAR(100) NOT NULL,
-      post_id VARCHAR(100) NOT NULL,
-      username VARCHAR(100) NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      expires_at TIMESTAMP DEFAULT (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 7 DAY)),
-      INDEX idx_hashtag (hashtag),
-      INDEX idx_created_at (created_at),
-      INDEX idx_expires_at (expires_at)
-    );
-  `;
-  await connection.execute(createTableSQL);
-}
-
 async function createHashtagEntries(req, res, connection) {
   try {
     const { postId, hashtags, username } = req.body;

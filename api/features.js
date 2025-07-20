@@ -158,22 +158,23 @@ async function getPostsByHashtag(req, res) {
     const cleanHashtag = hashtag.toLowerCase().replace('#', '');
 
     const [posts] = await connection.query(`
-      SELECT 
-        f.id as feature_id,
-        f.hashtag,
-        f.created_at as tagged_at,
-        p._id as post_id,    
-        p.message,
-        p.username,
-        p.photo,
-        p.timestamp
-      FROM features f
-      LEFT JOIN posts p ON f.post_id = p.id
-      WHERE f.hashtag = ?
-        AND f.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-      ORDER BY f.created_at DESC
-      LIMIT ? OFFSET ?
-    `, [cleanHashtag, parseInt(limit), parseInt(offset)]);
+  SELECT 
+    f.id as feature_id,
+    f.hashtag,
+    f.created_at as tagged_at,
+    p._id as post_id,    
+    p.message,
+    p.username,
+    p.photo,
+    p.timestamp
+  FROM features f
+  LEFT JOIN posts p ON f.post_id = p._id    -- <--- FIX HERE
+  WHERE f.hashtag = ?
+    AND f.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+  ORDER BY f.created_at DESC
+  LIMIT ? OFFSET ?
+`, [cleanHashtag, parseInt(limit), parseInt(offset)]);
+
 
     const [countResult] = await connection.query(`
       SELECT COUNT(*) as total

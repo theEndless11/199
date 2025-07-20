@@ -5,42 +5,42 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Allow-Credentials': 'true'
-}
+};
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     Object.keys(corsHeaders).forEach(key => {
-      res.setHeader(key, corsHeaders[key])
-    })
-    return res.status(200).end()
+      res.setHeader(key, corsHeaders[key]);
+    });
+    return res.status(200).end();
   }
 
   // Set CORS headers for all requests
   Object.keys(corsHeaders).forEach(key => {
-    res.setHeader(key, corsHeaders[key])
-  })
+    res.setHeader(key, corsHeaders[key]);
+  });
 
-  let connection
+  let connection;
   try {
-    connection = await mysql.createConnection(dbConfig)
+    connection = await promisePool.getConnection(); // Use your promisePool to get connection
     
     switch (req.method) {
       case 'POST':
-        return await createHashtagEntries(req, res, connection)
+        return await createHashtagEntries(req, res, connection);
       case 'GET':
-        return await getTrendingHashtags(req, res, connection)
+        return await getTrendingHashtags(req, res, connection);
       case 'DELETE':
-        return await deleteOldHashtags(req, res, connection)
+        return await deleteOldHashtags(req, res, connection);
       default:
-        return res.status(405).json({ error: 'Method not allowed' })
+        return res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
-    console.error('Database error:', error)
-    return res.status(500).json({ error: 'Database connection failed' })
+    console.error('Database error:', error);
+    return res.status(500).json({ error: 'Database connection failed' });
   } finally {
     if (connection) {
-      await connection.end()
+      connection.release(); // Release connection back to pool
     }
   }
 }
@@ -212,4 +212,7 @@ export async function getHashtagDetails(req, res, connection) {
   }
 }
 
-module.exports = handler;
+module.exports = {
+  handler,
+  getHashtagDetails,
+};

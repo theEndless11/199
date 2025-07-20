@@ -162,7 +162,7 @@ async function getPostsByHashtag(req, res) {
         f.id as feature_id,
         f.hashtag,
         f.created_at as tagged_at,
-        p.id as post_id,
+        p._id as post_id,    
         p.message,
         p.username,
         p.photo,

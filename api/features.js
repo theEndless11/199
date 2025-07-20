@@ -166,8 +166,7 @@ async function getPostsByHashtag(req, res) {
         p.message,
         p.username,
         p.photo,
-        p.profile_pic,
-        p.created_at as post_created_at
+        p.timestamp
       FROM features f
       LEFT JOIN posts p ON f.post_id = p.id
       WHERE f.hashtag = ?

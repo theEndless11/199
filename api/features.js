@@ -1,24 +1,21 @@
-const { promisePool } = require('../utils/db');
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+const { promisePool: pool } = require('../utils/db');
 
 export default async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    return res.status(200).json({});
-  }
+  // ✅ Set CORS headers for all requests
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  Object.entries(corsHeaders).forEach(([key, value]) => {
-    res.setHeader(key, value);
-  });
+  // ✅ Handle preflight request (OPTIONS)
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end(); // No body for preflight
+  }
 
   try {
     switch (req.method) {
       case 'POST':
         return await createHashtagFeatures(req, res);
+
       case 'GET':
         const { action } = req.query;
         switch (action) {
@@ -37,41 +34,41 @@ export default async function handler(req, res) {
           default:
             return await getTrendingHashtags(req, res);
         }
+
       default:
         res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
     console.error('API Error:', error);
-    res.status(500).json({ 
-      error: 'Internal server error', 
-      message: error.message 
+    res.status(500).json({
+      error: 'Internal server error',
+      message: error.message
     });
   }
 }
 
-// Create hashtag features from post
+// === API Route Handlers ===
+
 async function createHashtagFeatures(req, res) {
   const { hashtags, postId, username } = req.body;
 
   if (!hashtags?.length || !postId || !username) {
-    return res.status(400).json({ 
-      error: 'hashtags array, postId, and username are required' 
+    return res.status(400).json({
+      error: 'hashtags array, postId, and username are required'
     });
   }
 
   const connection = await pool.getConnection();
   try {
-    const values = hashtags.map(hashtag => [
-      hashtag.toLowerCase().replace('#', '').trim(), 
-      postId, 
-      username
-    ]);
+    const values = hashtags.map(h =>
+      [h.toLowerCase().replace('#', '').trim(), postId, username]
+    );
 
     await connection.query(
       'INSERT INTO features (hashtag, post_id, username) VALUES ?',
       [values]
     );
-    
+
     res.status(201).json({
       success: true,
       message: `Created ${values.length} hashtag features`,
@@ -82,20 +79,12 @@ async function createHashtagFeatures(req, res) {
   }
 }
 
-// Get trending hashtags with different time periods
 async function getTrendingHashtags(req, res) {
   const { period = '7d', limit = 20 } = req.query;
-  
-  // Convert period to hours
-  const hours = {
-    '1h': 1,
-    '24h': 24,
-    '3d': 72,
-    '7d': 168
-  };
-  
-  const selectedHours = hours[period] || 168;
-  
+
+  const hoursMap = { '1h': 1, '24h': 24, '3d': 72, '7d': 168 };
+  const selectedHours = hoursMap[period] || 168;
+
   const connection = await pool.getConnection();
   try {
     const [trending] = await connection.query(`
@@ -115,7 +104,7 @@ async function getTrendingHashtags(req, res) {
 
     res.json({
       success: true,
-      period: period,
+      period,
       trending_hashtags: trending,
       generated_at: new Date()
     });
@@ -124,10 +113,9 @@ async function getTrendingHashtags(req, res) {
   }
 }
 
-// Search hashtags with autocomplete
 async function searchHashtags(req, res) {
   const { q: query, limit = 10 } = req.query;
-  
+
   if (!query) {
     return res.status(400).json({ error: 'Search query required' });
   }
@@ -150,18 +138,17 @@ async function searchHashtags(req, res) {
 
     res.json({
       success: true,
-      query: query,
-      results: results
+      query,
+      results
     });
   } finally {
     connection.release();
   }
 }
 
-// Get posts for specific hashtag
 async function getPostsByHashtag(req, res) {
   const { hashtag, limit = 20, offset = 0 } = req.query;
-  
+
   if (!hashtag) {
     return res.status(400).json({ error: 'Hashtag parameter required' });
   }
@@ -169,7 +156,7 @@ async function getPostsByHashtag(req, res) {
   const connection = await pool.getConnection();
   try {
     const cleanHashtag = hashtag.toLowerCase().replace('#', '');
-    
+
     const [posts] = await connection.query(`
       SELECT 
         f.id as feature_id,
@@ -189,7 +176,6 @@ async function getPostsByHashtag(req, res) {
       LIMIT ? OFFSET ?
     `, [cleanHashtag, parseInt(limit), parseInt(offset)]);
 
-    // Get total count
     const [countResult] = await connection.query(`
       SELECT COUNT(*) as total
       FROM features 
@@ -200,7 +186,7 @@ async function getPostsByHashtag(req, res) {
     res.json({
       success: true,
       hashtag: `#${cleanHashtag}`,
-      posts: posts,
+      posts,
       total: countResult[0].total,
       limit: parseInt(limit),
       offset: parseInt(offset)
@@ -210,10 +196,9 @@ async function getPostsByHashtag(req, res) {
   }
 }
 
-// Get user's hashtag activity
 async function getUserHashtagActivity(req, res) {
   const { username, limit = 10 } = req.query;
-  
+
   if (!username) {
     return res.status(400).json({ error: 'Username parameter required' });
   }
@@ -236,7 +221,7 @@ async function getUserHashtagActivity(req, res) {
 
     res.json({
       success: true,
-      username: username,
+      username,
       hashtag_activity: activity
     });
   } finally {
@@ -244,10 +229,9 @@ async function getUserHashtagActivity(req, res) {
   }
 }
 
-// Get related hashtags (used together)
 async function getRelatedHashtags(req, res) {
   const { hashtag, limit = 10 } = req.query;
-  
+
   if (!hashtag) {
     return res.status(400).json({ error: 'Hashtag parameter required' });
   }
@@ -255,7 +239,7 @@ async function getRelatedHashtags(req, res) {
   const connection = await pool.getConnection();
   try {
     const cleanHashtag = hashtag.toLowerCase().replace('#', '');
-    
+
     const [related] = await connection.query(`
       SELECT 
         f2.hashtag as related_hashtag,
@@ -281,11 +265,9 @@ async function getRelatedHashtags(req, res) {
   }
 }
 
-// Get system statistics
 async function getSystemStats(req, res) {
   const connection = await pool.getConnection();
   try {
-    // Overall stats
     const [overallStats] = await connection.query(`
       SELECT 
         COUNT(*) as total_hashtag_uses,
@@ -296,7 +278,6 @@ async function getSystemStats(req, res) {
       WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
     `);
 
-    // Daily breakdown
     const [dailyStats] = await connection.query(`
       SELECT 
         DATE(created_at) as day,
@@ -309,7 +290,6 @@ async function getSystemStats(req, res) {
       ORDER BY day DESC
     `);
 
-    // Top hashtags today
     const [todayTop] = await connection.query(`
       SELECT hashtag, COUNT(*) as uses
       FROM features 
@@ -330,3 +310,4 @@ async function getSystemStats(req, res) {
     connection.release();
   }
 }
+

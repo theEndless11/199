@@ -1,20 +1,26 @@
 const { promisePool } = require('../utils/db');
 
-// CORS headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': 'http://localhost:5173'
-  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Credentials': 'true'
-};
+const allowedOrigins = ['http://localhost:5173', 'https://latestnewsandaffairs.site'];
 
-async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    Object.entries(corsHeaders).forEach(([key, value]) => res.setHeader(key, value));
-    return res.status(200).end();
+function setCorsHeaders(req, res) {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
   }
 
-  Object.entries(corsHeaders).forEach(([key, value]) => res.setHeader(key, value));
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
+
+async function handler(req, res) {
+  setCorsHeaders(req, res); // ✅ Apply CORS headers on all requests
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end(); // ✅ Preflight response
+  }
 
   try {
     switch (req.method) {
@@ -32,6 +38,7 @@ async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
 
 async function createHashtagEntries(req, res) {
   try {

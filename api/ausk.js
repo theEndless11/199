@@ -35,27 +35,36 @@ export default async (req, res) => {
         return res.status(400).json({ message: 'Missing required fields: email, password, action' });
     }
 
-    if (action === 'signup' && (!username || !profilePic)) {
-        return res.status(400).json({ message: 'Username and profileshepherd profile picture are required for signup' });
-    }
+  if (action === 'signup' && (!username || !profilePic)) {
+    return res.status(400).json({ message: 'Username and profile picture are required for signup' });
+}
 
-    try {
-        if (action === 'signup') {
-            const [emailCheck] = await promisePool.execute('SELECT * FROM users WHERE email = ?', [email]);
-
-            if (emailCheck.length > 0) {
-                return res.status(400).json({ message: 'Email already exists' });
-            }
-
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            await promisePool.execute(
-                `INSERT INTO users (email, username, password, profile_picture) VALUES (?, ?, ?, ?)`,
-                [email, username, hashedPassword, profilePic]
-            );
-
-            return res.status(201).json({ message: 'Signup successful' });
-
+try {
+    if (action === 'signup') {
+        const [emailCheck] = await promisePool.execute('SELECT * FROM users WHERE email = ?', [email]);
+        if (emailCheck.length > 0) {
+            return res.status(400).json({ message: 'Email already exists' });
+        }
+        
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Extract location data from request
+        const region = req.body.region || 'Unknown';
+        const country = req.body.country || 'Unknown';
+        const city = req.body.city || 'Unknown';
+        
+        // Get current timestamp for created_at
+        const createdAt = new Date();
+        
+        await promisePool.execute(
+            `INSERT INTO users (email, username, password, profile_picture, region, country, city, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [email, username, hashedPassword, profilePic, region, country, city, createdAt]
+        );
+        
+        return res.status(201).json({ 
+            message: 'Signup successful',
+            location: region
+        });
         } else if (action === 'login') {
             const [results] = await promisePool.execute('SELECT * FROM users WHERE email = ?', [email]);
 

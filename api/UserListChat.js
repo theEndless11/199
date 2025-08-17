@@ -25,7 +25,7 @@ const handler = async (req, res) => {
   }
 
   try {
-    // Fetch post
+    // Fetch the post
     const postQuery = `
       SELECT 
         _id, message, timestamp, username, sessionId, 
@@ -41,12 +41,12 @@ const handler = async (req, res) => {
 
     const post = postResults[0];
 
-    // Fetch comments for the post (top-level only)
+    // Fetch all comments for the post
     const commentsQuery = `
       SELECT 
         comment_id, parent_comment_id, username, comment_text, created_at, hearts_count 
       FROM comments 
-      WHERE post_id = ? AND is_deleted = FALSE
+      WHERE post_id = ?
       ORDER BY created_at ASC
     `;
     const [commentResults] = await promisePool.execute(commentsQuery, [id]);
@@ -86,6 +86,7 @@ const handler = async (req, res) => {
 };
 
 module.exports = handler;
+
 
 
 

@@ -1,94 +1,83 @@
-const pool = require('../utils/db'); // MySQL connection pool
+const { promisePool } = require('../utils/db');
 
 // Set CORS headers for all methods
 const setCorsHeaders = (res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');  // Allow all origins or specify your domain
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS');  // Allowed methods
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');  // Allowed headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 };
 
-module.exports = async (req, res) => {
+module.exports = async function handler(req, res) {
     setCorsHeaders(res);
 
     // Handle pre-flight OPTIONS request
     if (req.method === 'OPTIONS') {
-        return res.status(200).end(); // End the request immediately after sending a response for OPTIONS
-    }
-
-    // Fetch all users excluding the userId
-    const userId = req.query.userId;
-
-    if (!userId) {
-        return res.status(400).json({ message: 'userId is required' });
+        return res.status(200).end();
     }
 
     if (req.method === 'GET') {
-        try {
-            console.log(`Fetching users excluding userId: ${userId}`); // Debugging
-            const [results] = await pool.query('SELECT id, username FROM users WHERE id != ?', [userId]);
+        const { username } = req.query;
 
-            if (results.length === 0) {
-                return res.status(404).json({ message: 'No users found' });
-            }
-
-            return res.status(200).json({ users: results });
-        } catch (err) {
-            console.error('Error fetching users:', err);
-            return res.status(500).json({ message: 'Server error' });
-        }
-    }
-
-    // Handle PUT request for updating the username
-    if (req.method === 'PUT') {
-        const { userId, oldUsername, newUsername } = req.body;
-
-        console.log('Received request body:', req.body);  // Log the whole body for debugging
-
-        // Validate the presence and types of userId, oldUsername, and newUsername
-        if (!userId || !oldUsername || !newUsername) {
-            return res.status(400).json({ message: 'userId, oldUsername, and newUsername are required' });
-        }
-
-        if (typeof userId !== 'string' || typeof oldUsername !== 'string' || typeof newUsername !== 'string') {
-            return res.status(400).json({ message: 'userId, oldUsername, and newUsername must be strings' });
-        }
-
-        // Check if newUsername is the same as the old one
-        if (newUsername === oldUsername) {
-            return res.status(400).json({ message: 'Username is the same as the current one.' });
+        if (!username) {
+            return res.status(400).json({ message: 'Username is required' });
         }
 
         try {
-            // Check if the user exists with the old username
-            const [userResults] = await pool.query('SELECT id, username FROM users WHERE id = ? AND username = ?', [userId, oldUsername]);
+            // Get friends list - users with accepted relationship status
+            const friendsQuery = `
+                SELECT DISTINCT
+                    CASE 
+                        WHEN f.follower = ? THEN u2.username
+                        WHEN f.following = ? THEN u1.username
+                    END as friend_username,
+                    CASE 
+                        WHEN f.follower = ? THEN u2.id
+                        WHEN f.following = ? THEN u1.id
+                    END as friend_id,
+                    CASE 
+                        WHEN f.follower = ? THEN u2.profile_picture
+                        WHEN f.following = ? THEN u1.profile_picture
+                    END as friend_profile_picture
+                FROM follows f
+                LEFT JOIN users u1 ON f.follower = u1.username
+                LEFT JOIN users u2 ON f.following = u2.username
+                WHERE (f.follower = ? OR f.following = ?) 
+                AND f.relationship_status = 'accepted'
+                AND (u1.username IS NOT NULL AND u2.username IS NOT NULL)
+            `;
 
-            if (userResults.length === 0) {
-                return res.status(404).json({ message: 'User not found or old username does not match' });
-            }
+            const [friendsResult] = await promisePool.execute(friendsQuery, [
+                username, username, username, username, username, username, username, username
+            ]);
 
-            // Update the username in MySQL
-            const [updateResults] = await pool.query(
-                'UPDATE users SET username = ? WHERE id = ? AND username = ?',
-                [newUsername, userId, oldUsername]
-            );
+            // Format friends list
+            const friendsList = friendsResult
+                .filter(friend => friend.friend_username) // Filter out any null usernames
+                .map(friend => ({
+                    id: friend.friend_id,
+                    username: friend.friend_username,
+                    profile_picture: friend.friend_profile_picture || 'https://latestnewsandaffairs.site/public/pfp.jpg'
+                }));
 
-            console.log('SQL Query Results:', updateResults);  // Log the query result for debugging
+            // Response payload
+            const response = {
+                username: username,
+                friends: friendsList,
+                totalFriends: friendsList.length
+            };
 
-            // Check if any rows were affected
-            if (updateResults.affectedRows === 0) {
-                console.log('No rows were updated'); // Log if no rows were updated
-                return res.status(404).json({ message: 'User not found or username not updated' });
-            }
+            return res.status(200).json(response);
 
-            // Respond with success message if update is successful
-            console.log('Username updated successfully');
-            res.status(200).json({ message: 'Username updated successfully' });
         } catch (error) {
-            // Log the error message if there’s an error
-            console.error('Error updating username:', error);
-            res.status(500).json({ message: 'Failed to update username', error: error.message });
+            console.error("❌ Error fetching friends list:", error);
+            return res.status(500).json({ message: 'Error retrieving friends list', error: error.message });
         }
     }
+
+    return res.status(405).json({ message: 'Method Not Allowed' });
 };
+
+
+
 
 

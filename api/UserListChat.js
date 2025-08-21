@@ -26,6 +26,8 @@ const handler = async (req, res) => {
   }
 
   try {
+    console.log('[DEBUG] Fetching post and comments for ID:', id);
+    
     const postQuery = `
       SELECT 
         _id, message, timestamp, username, sessionId, 
@@ -34,15 +36,22 @@ const handler = async (req, res) => {
       WHERE _id = ?
     `;
 
-    // Limit comments to 50 for now to avoid timeout
+    // FIXED: Updated query to properly calculate hearts count from comment_hearts table
     const commentsQuery = `
       SELECT 
-        comment_id, parent_comment_id, username, comment_text, 
-        created_at, updated_at, hearts_count 
-      FROM comments 
-      WHERE post_id = ?
-      ORDER BY created_at ASC
-      LIMIT 50
+        c.comment_id, 
+        c.parent_comment_id, 
+        c.username, 
+        c.comment_text, 
+        c.created_at, 
+        c.updated_at,
+        COUNT(ch.id) as hearts_count
+      FROM comments c
+      LEFT JOIN comment_hearts ch ON c.comment_id = ch.comment_id
+      WHERE c.post_id = ?
+      GROUP BY c.comment_id, c.parent_comment_id, c.username, c.comment_text, c.created_at, c.updated_at
+      ORDER BY c.created_at ASC
+      LIMIT 200
     `;
 
     console.time('fetchPostAndComments');
@@ -52,6 +61,15 @@ const handler = async (req, res) => {
       promisePool.execute(commentsQuery, [id]),
     ]);
     console.timeEnd('fetchPostAndComments');
+
+    console.log('[DEBUG] Found', commentResults.length, 'comments');
+    console.log('[DEBUG] Comment details:', commentResults.map(c => ({
+      comment_id: c.comment_id,
+      parent_comment_id: c.parent_comment_id,
+      username: c.username,
+      comment_text: c.comment_text?.substring(0, 30) + '...',
+      hearts_count: c.hearts_count
+    })));
 
     if (postResults.length === 0) {
       return res.status(404).json({ message: 'Post not found' });
@@ -89,18 +107,38 @@ const handler = async (req, res) => {
       });
     }
 
-    // Format comments and structure replies
-    const allComments = commentResults.map(comment => ({
-      commentId: comment.comment_id,
-      parentCommentId: ['*NULL*', null, 'NULL'].includes(comment.parent_comment_id) ? null : comment.parent_comment_id,
-      username: comment.username,
-      profilePicture: usersMap[comment.username.toLowerCase()] || defaultPfp,
-      commentText: comment.comment_text,
-      createdAt: comment.created_at,
-      updatedAt: comment.updated_at,
-      hearts: comment.hearts_count || 0,
-      replies: []
-    }));
+    // FIXED: Format comments and structure replies with proper parent_comment_id handling
+    const allComments = commentResults.map(comment => {
+      // Normalize parent_comment_id - handle various null representations
+      let parentCommentId = comment.parent_comment_id;
+      if (!parentCommentId || 
+          parentCommentId === '*NULL*' || 
+          parentCommentId === 'NULL' || 
+          parentCommentId === null || 
+          parentCommentId === 'null') {
+        parentCommentId = null;
+      }
+
+      return {
+        commentId: comment.comment_id,
+        parentCommentId: parentCommentId,
+        username: comment.username,
+        profilePicture: usersMap[comment.username.toLowerCase()] || defaultPfp,
+        commentText: comment.comment_text,
+        createdAt: comment.created_at,
+        updatedAt: comment.updated_at,
+        hearts: parseInt(comment.hearts_count) || 0, // FIXED: Properly parse hearts count
+        replies: []
+      };
+    });
+
+    console.log('[DEBUG] Formatted comments:', allComments.map(c => ({
+      commentId: c.commentId,
+      parentCommentId: c.parentCommentId,
+      username: c.username,
+      isReply: c.parentCommentId !== null,
+      hearts: c.hearts
+    })));
 
     const commentsMap = new Map();
     allComments.forEach(comment => commentsMap.set(comment.commentId, comment));
@@ -108,6 +146,7 @@ const handler = async (req, res) => {
     const topLevelComments = [];
     const replies = [];
 
+    // FIXED: Better separation of top-level comments and replies
     allComments.forEach(comment => {
       if (comment.parentCommentId === null) {
         topLevelComments.push(comment);
@@ -116,18 +155,29 @@ const handler = async (req, res) => {
       }
     });
 
+    console.log('[DEBUG] Top level comments:', topLevelComments.length);
+    console.log('[DEBUG] Replies:', replies.length);
+
+    // FIXED: Attach replies to their parent comments with better error handling
     replies.forEach(reply => {
       const parent = commentsMap.get(reply.parentCommentId);
       if (parent) {
         parent.replies.push(reply);
+        console.log('[DEBUG] Attached reply', reply.commentId, 'to parent', parent.commentId);
       } else {
+        // If parent not found, treat as orphaned reply and add to top level
+        console.warn('[DEBUG] Orphaned reply found:', reply.commentId, 'parent:', reply.parentCommentId);
         reply.parentCommentId = null;
         topLevelComments.push(reply);
       }
     });
 
+    // Sort replies by creation time
     topLevelComments.forEach(comment => {
-      comment.replies.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      if (comment.replies.length > 0) {
+        comment.replies.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        console.log('[DEBUG] Comment', comment.commentId, 'has', comment.replies.length, 'replies');
+      }
     });
 
     const formattedPost = {
@@ -148,6 +198,12 @@ const handler = async (req, res) => {
             : `data:image/jpeg;base64,${post.photo.toString('base64')}`)
         : null,
     };
+
+    console.log('[DEBUG] Final post structure - comments:', formattedPost.comments.length);
+    console.log('[DEBUG] Comments with replies:', formattedPost.comments.filter(c => c.replies.length > 0).map(c => ({
+      commentId: c.commentId,
+      repliesCount: c.replies.length
+    })));
 
     return res.status(200).json({ post: formattedPost });
   } catch (error) {

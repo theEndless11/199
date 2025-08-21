@@ -26,7 +26,6 @@ const handler = async (req, res) => {
   }
 
   try {
-    // Fetch the post
     const postQuery = `
       SELECT 
         _id, message, timestamp, username, sessionId, 
@@ -34,15 +33,8 @@ const handler = async (req, res) => {
       FROM posts 
       WHERE _id = ?
     `;
-    const [postResults] = await promisePool.execute(postQuery, [id]);
 
-    if (postResults.length === 0) {
-      return res.status(404).json({ message: 'Post not found' });
-    }
-
-    const post = postResults[0];
-
-    // Fetch all comments for the post - order by created_at to maintain chronological order
+    // Limit comments to 50 for now to avoid timeout
     const commentsQuery = `
       SELECT 
         comment_id, parent_comment_id, username, comment_text, 
@@ -50,87 +42,90 @@ const handler = async (req, res) => {
       FROM comments 
       WHERE post_id = ?
       ORDER BY created_at ASC
+      LIMIT 50
     `;
-    const [commentResults] = await promisePool.execute(commentsQuery, [id]);
 
-    // Collect unique usernames from post + comments
+    console.time('fetchPostAndComments');
+    // Run queries in parallel
+    const [[postResults], [commentResults]] = await Promise.all([
+      promisePool.execute(postQuery, [id]),
+      promisePool.execute(commentsQuery, [id]),
+    ]);
+    console.timeEnd('fetchPostAndComments');
+
+    if (postResults.length === 0) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    const post = postResults[0];
+
+    // Collect unique usernames
     const usernamesSet = new Set();
     usernamesSet.add(post.username.toLowerCase());
     commentResults.forEach(c => usernamesSet.add(c.username.toLowerCase()));
-
     const usernames = Array.from(usernamesSet);
 
-    // Fetch users profile pictures
-    const placeholders = usernames.map(() => '?').join(',');
-    const usersQuery = `
-      SELECT username, profile_picture 
-      FROM users 
-      WHERE LOWER(username) IN (${placeholders})
-    `;
-    const [users] = await promisePool.execute(usersQuery, usernames);
+    let usersMap = {};
+    if (usernames.length > 0) {
+      // Fetch profile pictures
+      const placeholders = usernames.map(() => '?').join(',');
+      const usersQuery = `
+        SELECT username, profile_picture 
+        FROM users 
+        WHERE LOWER(username) IN (${placeholders})
+      `;
+      console.time('fetchUsers');
+      const [users] = await promisePool.execute(usersQuery, usernames);
+      console.timeEnd('fetchUsers');
 
-    // Map usernames to profile pictures (base64 or default)
-    const usersMap = {};
-    users.forEach(u => {
-      let pic = u.profile_picture;
-      if (!pic) {
-        pic = defaultPfp;
-      } else if (!pic.startsWith('data:image')) {
-        pic = `data:image/jpeg;base64,${pic}`;
-      }
-      usersMap[u.username.toLowerCase()] = pic;
-    });
+      users.forEach(u => {
+        let pic = u.profile_picture;
+        if (!pic) {
+          pic = defaultPfp;
+        } else if (!pic.startsWith('data:image')) {
+          pic = `data:image/jpeg;base64,${pic}`;
+        }
+        usersMap[u.username.toLowerCase()] = pic;
+      });
+    }
 
-    // Format all comments first
+    // Format comments and structure replies
     const allComments = commentResults.map(comment => ({
       commentId: comment.comment_id,
-      parentCommentId: comment.parent_comment_id === '*NULL*' || 
-                       comment.parent_comment_id === null || 
-                       comment.parent_comment_id === 'NULL' 
-                       ? null : comment.parent_comment_id,
+      parentCommentId: ['*NULL*', null, 'NULL'].includes(comment.parent_comment_id) ? null : comment.parent_comment_id,
       username: comment.username,
       profilePicture: usersMap[comment.username.toLowerCase()] || defaultPfp,
       commentText: comment.comment_text,
       createdAt: comment.created_at,
       updatedAt: comment.updated_at,
       hearts: comment.hearts_count || 0,
-      replies: [] // Initialize empty replies array
+      replies: []
     }));
 
-    // Create a map for quick lookup of comments by ID
     const commentsMap = new Map();
-    allComments.forEach(comment => {
-      commentsMap.set(comment.commentId, comment);
-    });
+    allComments.forEach(comment => commentsMap.set(comment.commentId, comment));
 
-    // Separate top-level comments and replies
     const topLevelComments = [];
     const replies = [];
 
     allComments.forEach(comment => {
       if (comment.parentCommentId === null) {
-        // This is a top-level comment
         topLevelComments.push(comment);
       } else {
-        // This is a reply
         replies.push(comment);
       }
     });
 
-    // Attach replies to their parent comments
     replies.forEach(reply => {
-      const parentComment = commentsMap.get(reply.parentCommentId);
-      if (parentComment) {
-        parentComment.replies.push(reply);
+      const parent = commentsMap.get(reply.parentCommentId);
+      if (parent) {
+        parent.replies.push(reply);
       } else {
-        // If parent comment not found, treat as top-level comment
-        console.warn(`Parent comment ${reply.parentCommentId} not found for reply ${reply.commentId}`);
-        reply.parentCommentId = null; // Reset to null
+        reply.parentCommentId = null;
         topLevelComments.push(reply);
       }
     });
 
-    // Sort replies within each comment by creation time
     topLevelComments.forEach(comment => {
       comment.replies.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
     });
@@ -146,7 +141,7 @@ const handler = async (req, res) => {
       views_count: post.views_count || 0,
       likedBy: post.likedBy ? JSON.parse(post.likedBy || '[]') : [],
       commentCount: post.comments_count || allComments.length,
-      comments: topLevelComments, // Now properly structured with replies
+      comments: topLevelComments,
       photo: post.photo
         ? (post.photo.startsWith('http') || post.photo.startsWith('data:image/')
             ? post.photo
@@ -165,4 +160,3 @@ const handler = async (req, res) => {
 };
 
 module.exports = handler;
-

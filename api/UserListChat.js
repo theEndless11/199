@@ -42,10 +42,11 @@ const handler = async (req, res) => {
 
     const post = postResults[0];
 
-    // Fetch all comments for the post
+    // Fetch all comments for the post - order by created_at to maintain chronological order
     const commentsQuery = `
       SELECT 
-        comment_id, parent_comment_id, username, comment_text, created_at, hearts_count 
+        comment_id, parent_comment_id, username, comment_text, 
+        created_at, updated_at, hearts_count 
       FROM comments 
       WHERE post_id = ?
       ORDER BY created_at ASC
@@ -80,16 +81,59 @@ const handler = async (req, res) => {
       usersMap[u.username.toLowerCase()] = pic;
     });
 
-    // Format comments with profile pictures
-    const formattedComments = commentResults.map(comment => ({
+    // Format all comments first
+    const allComments = commentResults.map(comment => ({
       commentId: comment.comment_id,
-      parentCommentId: comment.parent_comment_id,
+      parentCommentId: comment.parent_comment_id === '*NULL*' || 
+                       comment.parent_comment_id === null || 
+                       comment.parent_comment_id === 'NULL' 
+                       ? null : comment.parent_comment_id,
       username: comment.username,
       profilePicture: usersMap[comment.username.toLowerCase()] || defaultPfp,
       commentText: comment.comment_text,
       createdAt: comment.created_at,
+      updatedAt: comment.updated_at,
       hearts: comment.hearts_count || 0,
+      replies: [] // Initialize empty replies array
     }));
+
+    // Create a map for quick lookup of comments by ID
+    const commentsMap = new Map();
+    allComments.forEach(comment => {
+      commentsMap.set(comment.commentId, comment);
+    });
+
+    // Separate top-level comments and replies
+    const topLevelComments = [];
+    const replies = [];
+
+    allComments.forEach(comment => {
+      if (comment.parentCommentId === null) {
+        // This is a top-level comment
+        topLevelComments.push(comment);
+      } else {
+        // This is a reply
+        replies.push(comment);
+      }
+    });
+
+    // Attach replies to their parent comments
+    replies.forEach(reply => {
+      const parentComment = commentsMap.get(reply.parentCommentId);
+      if (parentComment) {
+        parentComment.replies.push(reply);
+      } else {
+        // If parent comment not found, treat as top-level comment
+        console.warn(`Parent comment ${reply.parentCommentId} not found for reply ${reply.commentId}`);
+        reply.parentCommentId = null; // Reset to null
+        topLevelComments.push(reply);
+      }
+    });
+
+    // Sort replies within each comment by creation time
+    topLevelComments.forEach(comment => {
+      comment.replies.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    });
 
     const formattedPost = {
       _id: post._id,
@@ -101,8 +145,8 @@ const handler = async (req, res) => {
       likes: post.likes || 0,
       views_count: post.views_count || 0,
       likedBy: post.likedBy ? JSON.parse(post.likedBy || '[]') : [],
-      commentCount: post.comments_count || formattedComments.length,
-      comments: formattedComments,
+      commentCount: post.comments_count || allComments.length,
+      comments: topLevelComments, // Now properly structured with replies
       photo: post.photo
         ? (post.photo.startsWith('http') || post.photo.startsWith('data:image/')
             ? post.photo
@@ -121,7 +165,4 @@ const handler = async (req, res) => {
 };
 
 module.exports = handler;
-
-
-
 

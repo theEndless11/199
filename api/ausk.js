@@ -63,7 +63,7 @@ try {
         
         return res.status(201).json({ 
             message: 'Signup successful',
-            location: region
+            location: country
         });
         } else if (action === 'login') {
             const [results] = await promisePool.execute('SELECT * FROM users WHERE email = ?', [email]);

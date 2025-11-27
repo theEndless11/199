@@ -49,7 +49,7 @@ try {
         const hashedPassword = await bcrypt.hash(password, 10);
         
         // Extract location data from request
-        const region = req.body.region || 'Unknown';
+     
         const country = req.body.country || 'Unknown';
         const city = req.body.city || 'Unknown';
         

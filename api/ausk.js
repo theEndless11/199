@@ -57,7 +57,7 @@ try {
         const createdAt = new Date();
         
         await promisePool.execute(
-            `INSERT INTO users (email, username, password, profile_picture, country, city, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO users (email, username, password, profile_picture, country, city, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [email, username, hashedPassword, profilePic, country, city, createdAt]
         );
         

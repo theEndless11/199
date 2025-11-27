@@ -58,7 +58,7 @@ try {
         
         await promisePool.execute(
             `INSERT INTO users (email, username, password, profile_picture, country, city, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [email, username, hashedPassword, profilePic, region, country, city, createdAt]
+            [email, username, hashedPassword, profilePic, country, city, createdAt]
         );
         
         return res.status(201).json({ 
